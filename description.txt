@@ -1,0 +1,14 @@
+一个 UI 类库，提供一些 UI 组件
+
+可以方便的快速创建游戏 UI
+
+对 Flexbox 进行部分实现
+
+三种定位模式: 
+        Absolute positioning
+        Relative positioning
+        Sticky positioning
+
+拖动，滚动无需 Recalculate UI 降低一些性能消耗.
+
+目前还未确定结构，随时可能重构，使用需要承担重构风险。

@@ -1,0 +1,12 @@
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\bin\Release\net8.0\SilkyUIFramework.deps.json
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\bin\Release\net8.0\SilkyUIFramework.dll
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\bin\Release\net8.0\SilkyUIFramework.pdb
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.csproj.AssemblyReference.cache
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.AssemblyInfoInputs.cache
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.AssemblyInfo.cs
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.csproj.CoreCompileInputs.cache
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.dll
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\refint\SilkyUIFramework.dll
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\SilkyUIFramework.pdb
+c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\obj\Release\net8.0\ref\SilkyUIFramework.dll

@@ -1,0 +1,15 @@
+Configs: {
+	ClientConfig: {
+		DisplayName: 客户端配置
+
+		DeathTextOffset: {
+			Label: DeathText 偏移
+			Tooltip: ""
+		}
+
+		MouseTextOffset: {
+			Label: MouseText 偏移
+			Tooltip: ""
+		}
+	}
+}

@@ -1,0 +1,11 @@
+root = true
+
+[*.cs]
+# 缩进类型 space: 空格
+indent_style = space
+# 缩进大小 4: 4 个空格（如果用的 tab 实际上是一个字符，而配置这个项将使一个 tab 占用四个空格的宽度）
+indent_size = 4
+# case 后的内容是否缩进 (true: 缩进)
+csharp_indent_case_contents = true
+# case 后的内容如果有块的时候是否缩进 (false: 不缩进)
+csharp_indent_case_contents_when_block = false
