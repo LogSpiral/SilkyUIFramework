@@ -13,17 +13,17 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = SilkyUIFramework
-build_property.ProjectDir = c:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\
+build_property.ProjectDir = C:\Users\48766\Documents\My Games\Terraria\tModLoader\ModSources\SilkyUIFramework\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Localization/en-US_Mods.SilkyUIFramework.hjson]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Localization/en-US_Mods.SilkyUIFramework.hjson]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Localization\en-US_Mods.SilkyUIFramework.hjson
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/build.txt]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/build.txt]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.Pack = true
@@ -31,7 +31,7 @@ build_metadata.AdditionalFiles.ModPath = build.txt
 build_metadata.AdditionalFiles.ModPath = build.txt
 build_metadata.AdditionalFiles.ModPath = build.txt
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/description.txt]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/description.txt]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.Pack = true
@@ -39,50 +39,34 @@ build_metadata.AdditionalFiles.ModPath = description.txt
 build_metadata.AdditionalFiles.ModPath = description.txt
 build_metadata.AdditionalFiles.ModPath = description.txt
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Assets/Images/PreviewBorder.png]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Assets/Images/PreviewBorder.png]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Assets\Images\PreviewBorder.png
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/icon.png]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/icon.png]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = icon.png
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/Mask.fx]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/Mask.fx]
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.ModPath = Graphics2D\Mask.fx
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/SDFGraphics.fx]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/SDFGraphics.fx]
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFGraphics.fx
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/SDFRectangle.fx]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/SDFRectangle.fx]
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFRectangle.fx
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.idea/.idea.SilkyUIFramework.dir/.idea/indexLayout.xml]
-build_metadata.AdditionalFiles.Pack = true
-build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework.dir\.idea\indexLayout.xml
-
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.idea/.idea.SilkyUIFramework.dir/.idea/projectSettingsUpdater.xml]
-build_metadata.AdditionalFiles.Pack = true
-build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework.dir\.idea\projectSettingsUpdater.xml
-
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.idea/.idea.SilkyUIFramework.dir/.idea/vcs.xml]
-build_metadata.AdditionalFiles.Pack = true
-build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework.dir\.idea\vcs.xml
-
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.idea/.idea.SilkyUIFramework.dir/.idea/workspace.xml]
-build_metadata.AdditionalFiles.Pack = true
-build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework.dir\.idea\workspace.xml
-
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/Mask.xnb]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/Mask.xnb]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Graphics2D\Mask.xnb
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/SDFGraphics.xnb]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/SDFGraphics.xnb]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFGraphics.xnb
 
-[c:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/SDFRectangle.xnb]
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/SDFRectangle.xnb]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFRectangle.xnb

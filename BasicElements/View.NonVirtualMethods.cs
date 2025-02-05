@@ -17,10 +17,15 @@ public partial class View
             if (element is View view)
             {
                 view.FlowIndex = 0;
-                if (view is { Invalidate: false, Positioning: Positioning.Relative or Positioning.Sticky })
+                if (view is { Invalidate: true }) return;
+                if (view is { Positioning: Positioning.Relative or Positioning.Sticky })
                 {
                     view.FlowIndex = FlowElements.Count;
                     FlowElements.Add(view);
+                }
+                else
+                {
+                    AbsoluteElements.Add(element);
                 }
                 return;
             }

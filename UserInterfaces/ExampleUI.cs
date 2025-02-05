@@ -2,7 +2,7 @@
 
 namespace SilkyUIFramework.UserInterfaces;
 
-[AutoloadUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
+// [AutoloadUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
 public class ExampleUI : BasicBody
 {
     public SUIDraggableView MainPanel { get; private set; }
@@ -54,6 +54,7 @@ public class ExampleUI : BasicBody
             // 创建并添加
             var block = new SUIItemSlot
             {
+                ItemInteractive = false,
                 CornerRadius = new Vector4(8f),
                 Border = 2f,
                 BorderColor = borderColor * 0.5f,
@@ -63,15 +64,6 @@ public class ExampleUI : BasicBody
             block.Item = new Item(i + 1);
             block.Item.stack = block.Item.maxStack;
             block.SetSize(0f, 0f, 1f, 1f);
-
-            block.OnLeftMouseDown += (_, _) =>
-            {
-                if (Main.playerInventory && Main.mouseItem.IsAir && !block.Item.IsAir)
-                {
-                    var item = block.Item;
-                    Main.mouseItem = new Item(item.type, item.stack);
-                }
-            };
         }
 
         var container2 = new View

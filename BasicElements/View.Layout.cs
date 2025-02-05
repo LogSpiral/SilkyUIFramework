@@ -41,7 +41,7 @@ public partial class View
 
     protected virtual Vector2 GetContainer()
     {
-        if (Parent is View { Display: Display.Grid } parent)
+        if (Positioning is not Positioning.Absolute && Parent is View { Display: Display.Grid } parent)
             return parent.GetTemplateValue(FlowIndex);
 
         return Parent is null ? SilkyUIHelper.GetScreenScaledSize() : Parent._innerDimensions.Size();
@@ -67,7 +67,7 @@ public partial class View
         #region width height
 
         float width, height;
-        if (FlexWeight.Enable && Parent is View { Display: Display.Flexbox, FlexMainAxisFixed: true } parent)
+        if (Positioning is not Positioning.Absolute && FlexWeight.Enable && Parent is View { Display: Display.Flexbox, FlexMainAxisFixed: true } parent)
         {
             switch (parent.LayoutDirection)
             {
@@ -103,7 +103,7 @@ public partial class View
     }
 
     /// <summary> 排列流元素 </summary>
-    protected virtual void ArrangeFlowElements()
+    protected virtual void ArrangeElements()
     {
         if (FlowElements.Count == 0)
             return;
@@ -161,7 +161,7 @@ public partial class View
         RecalculateChildren();
 
         // 排列流元素
-        ArrangeFlowElements();
+        ArrangeElements();
 
         // 计算自身大小那一步如果是自适应大小，则计算结果是零
         // 到了这一步子元素大小已经计算好了，此刻再设定自身大小
