@@ -220,22 +220,27 @@ public partial class Other
         {
             switch (LayoutDirection)
             {
+                // 这段是错的，有空修
                 case LayoutDirection.Row:
                 {
-                    WidthValue = _children.Sum(child => child.OuterBounds.Width) + (_children.Count - 1) * Gap.X;
-                    HeightValue = _children.Max(child => child.OuterBounds.Height);
+                    if (WidthIsAuto)
+                        WidthValue = _children.Sum(child => child.OuterBounds.Width) + (_children.Count - 1) * Gap.X;
+                    if (HeightIsAuto)
+                        HeightValue = _children.Max(child => child.OuterBounds.Height);
                     break;
                 }
                 default:
                 case LayoutDirection.Column:
                 {
-                    WidthValue = _children.Max(child => child.OuterBounds.Width);
-                    HeightValue = _children.Sum(child => child.OuterBounds.Height) + (_children.Count - 1) * Gap.Y;
+                    if (WidthIsAuto)
+                        WidthValue = _children.Max(child => child.OuterBounds.Width);
+                    if (HeightIsAuto)
+                        HeightValue = _children.Sum(child => child.OuterBounds.Height) + (_children.Count - 1) * Gap.Y;
                     break;
                 }
             }
 
-            CalculateBoxSize(new Size(WidthValue, HeightValue) + Padding, out var box, out var outerBox, out var innerBox);
+            CalculateBoxSize(new Size(WidthValue, HeightValue), out var box, out var outerBox, out var innerBox);
 
             _bounds.Size = box;
             _outerBounds.Size = outerBox;

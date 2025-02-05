@@ -6,4 +6,7 @@ public class Margin
     public float Top { get; set; }
     public float Right { get; set; }
     public float Bottom { get; set; }
+
+    public float Width => Left + Right;
+    public float Height => Top + Bottom;
 }
