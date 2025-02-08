@@ -5,7 +5,7 @@
 /// <summary>
 /// 动画当前的状态
 /// </summary>
-public enum AnimationTimerStaus : byte
+public enum AnimationTimerStaus
 {
     ForwardUpdating,
     ReverseUpdating,

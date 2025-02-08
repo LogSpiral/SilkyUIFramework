@@ -7,10 +7,11 @@ public enum Positioning
     Sticky,
 }
 
+[Flags]
 public enum StickyType
 {
-    Left,
-    Top,
-    Right,
-    Bottom,
+    Left = 0,
+    Top = 1 << 0,
+    Right = 1 << 1,
+    Bottom = 1 << 2,
 }

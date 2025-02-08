@@ -25,14 +25,35 @@ public struct Unit(float pixels = 0f, float percent = 0f)
     }
     private float _percent = percent;
 
-    public void Set(float? pixels = null, float? percent = null)
+    public void Set(float pixels, float? percent = null)
     {
-        _pixels = pixels ?? _pixels;
-        _percent = percent ?? _percent;
+        _pixels = pixels;
+        if (percent.HasValue)
+            _percent = percent.Value;
     }
 
     public readonly float GetValue(float container)
     {
         return _pixels + container * _percent;
+    }
+
+    public static bool operator ==(Unit unit1, Unit unit2)
+    {
+        return unit1._pixels == unit2._pixels && unit1._percent == unit2._percent;
+    }
+
+    public static bool operator !=(Unit unit1, Unit unit2)
+    {
+        return unit1._pixels != unit2._pixels || unit1._percent != unit2._percent;
+    }
+
+    public override readonly bool Equals(object obj)
+    {
+        return obj is Unit unit && unit == this;
+    }
+
+    public override readonly int GetHashCode()
+    {
+        return HashCode.Combine(_pixels, _percent);
     }
 }

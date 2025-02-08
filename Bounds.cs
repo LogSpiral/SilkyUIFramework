@@ -5,6 +5,8 @@
 /// </summary>
 public struct Bounds
 {
+    public static readonly Bounds Zero = new(0, 0, 0, 0);
+
     private float _x;
     private float _y;
     private float _width;
@@ -31,8 +33,6 @@ public struct Bounds
     public float Width { readonly get => _width; set => _width = value; }
     public float Height { readonly get => _height; set => _height = value; }
 
-    public readonly Rectangle Rectangle => new((int)_x, (int)_y, (int)_width, (int)_height);
-
     public float Left { readonly get => _x; set => _x = value; }
     public float Top { readonly get => _y; set => _y = value; }
     public readonly float Right => _x + _width;
@@ -48,13 +48,13 @@ public struct Bounds
         }
     }
 
-    public Vector2 Size
+    public Size Size
     {
         readonly get => new(_width, _height);
         set
         {
-            _width = value.X;
-            _height = value.Y;
+            _width = value.Width;
+            _height = value.Height;
         }
     }
 
@@ -63,6 +63,16 @@ public struct Bounds
     public readonly Vector2 RightBottom => new(_x + _width, _y + _height);
     public readonly Vector2 LeftTop => new(_x, _y);
     public readonly Vector2 RightTop => new(_x + _width, _y);
+
+    public static implicit operator Bounds(Rectangle rectangle)
+    {
+        return new Bounds(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+    }
+
+    public static implicit operator Rectangle(Bounds bounds)
+    {
+        return new Rectangle((int)bounds._x, (int)bounds._y, (int)bounds._width, (int)bounds._height);
+    }
 
     /// <summary>
     /// 判断点是否在内
