@@ -13,6 +13,8 @@ public enum LayoutType
 /// </summary>
 public partial class Other
 {
+    #region Properties Fields
+
     public LayoutType LayoutType
     {
         get => _layoutType;
@@ -27,7 +29,6 @@ public partial class Other
 
     public void AutoWidth(bool auto = true) => WidthIsAuto = auto;
     public void AutoHeight(bool auto = true) => HeightIsAuto = auto;
-
     public void AutoSize(bool auto = true)
     {
         _widthIsAuto = auto;
@@ -139,7 +140,31 @@ public partial class Other
     }
     private Unit _heightUnit;
 
-    public Vector2 Gap
+    public Unit MinHeightUnit
+    {
+        get => _minHeightUnit;
+        set
+        {
+            if (value == _minHeightUnit) return;
+            _minHeightUnit = value;
+            BubbleMarkerDirty();
+        }
+    }
+    private Unit _minHeightUnit;
+
+    public Unit MaxHeightUnit
+    {
+        get => _maxHeightUnit;
+        set
+        {
+            if (value == _maxHeightUnit) return;
+            _maxHeightUnit = value;
+            BubbleMarkerDirty();
+        }
+    }
+    private Unit _maxHeightUnit;
+
+    public Size Gap
     {
         get => _gap;
         set
@@ -149,7 +174,7 @@ public partial class Other
             BubbleMarkerDirty();
         }
     }
-    private Vector2 _gap;
+    private Size _gap;
 
     public LayoutDirection LayoutDirection
     {
@@ -188,6 +213,19 @@ public partial class Other
     }
     private Margin _margin;
 
+    public Margin Border
+    {
+        get => _border;
+        set
+        {
+            if (value == _border) return;
+            _border = value;
+            BubbleMarkerDirty();
+            IsPositionDirty = true;
+        }
+    }
+    private Margin _border;
+
     public Margin Padding
     {
         get => _padding;
@@ -201,60 +239,83 @@ public partial class Other
     }
     private Margin _padding;
 
-    public void CalculateBoxSize(Size size, out Size box, out Size outerBox, out Size innerBox)
-    {
-        switch (BoxSizing)
-        {
-            default:
-            case BoxSizing.BorderBox:
-            {
-                box = size;
-                outerBox = size + Margin;
-                innerBox = size - Padding;
-                break;
-            }
-            case BoxSizing.ContentBox:
-            {
-                innerBox = size;
-                box = innerBox + Padding;
-                outerBox = box + Margin;
-                break;
-            }
-        }
+    #endregion
 
-        box = Size.Max(Size.Zero, box);
-        outerBox = Size.Max(Size.Zero, outerBox);
-        innerBox = Size.Max(Size.Zero, innerBox);
+    public MainAlignment MainAlignment
+    {
+        get => _mainAlignment;
+        set
+        {
+            if (value == _mainAlignment) return;
+            _mainAlignment = value;
+            BubbleMarkerDirty();
+        }
     }
+    private MainAlignment _mainAlignment;
+
+    public CrossAlignment CrossAlignment
+    {
+        get => _crossAlignment;
+        set
+        {
+            if (value == _crossAlignment) return;
+            _crossAlignment = value;
+            BubbleMarkerDirty();
+        }
+    }
+    private CrossAlignment _crossAlignment;
 
     /// <summary>
     /// 修剪
     /// </summary>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="forcedWidth">父元素强制为子元素设定的宽度 (是否接受取决于子元素)</param>
-    /// <param name="forcedHeight">父元素强制为子元素设定的高度 (是否接受取决于子元素)</param>
+    /// <param name="container">父元素分配的空间</param>
+    /// <param name="assignWidth">父元素直接分配宽度</param>
+    /// <param name="assignHeight">父元素直接分配高度</param>
     /// <returns></returns>
-    protected virtual Size Trim(Size space, float? forcedWidth = null, float? forcedHeight = null)
+    protected virtual Size Trim(Size container, float? assignWidth = null, float? assignHeight = null)
     {
         // 被布局管理的元素, 始终不应该自行调用 Trim 方法.
         // 如果元素使用 绝对定位, 则无所谓.
 
-        // return Size.Zero;
+        #region  AssignSize
 
-        if (forcedWidth.HasValue)
+        if (assignWidth.HasValue)
         {
-            _outerBounds.Width = forcedWidth.Value;
-            _bounds.Width = forcedWidth.Value - Margin.Width;
-            _innerBounds.Width = forcedWidth.Value - Margin.Width - Padding.Width;
+            SetOuterBoundsWidth(assignWidth.Value);
         }
+        // else if (WidthUnit.Percent != 0 && container.Width != ContainerForMeasur.Width)
+        // {
+        //     switch (BoxSizing)
+        //     {
+        //         default:
+        //         case BoxSizing.BorderBox:
+        //             SetBoundsWidth(WidthUnit.GetValue(container.Width));
+        //             break;
+        //         case BoxSizing.ContentBox:
+        //             SetInnerBoundsWidth(WidthUnit.GetValue(container.Width));
+        //             break;
+        //     }
+        // }
 
-        if (forcedHeight.HasValue)
+        if (assignHeight.HasValue)
         {
-            _outerBounds.Height = forcedHeight.Value;
-            _bounds.Height = forcedHeight.Value - Margin.Height;
-            _innerBounds.Height = forcedHeight.Value - Margin.Height - Padding.Height;
+            SetOuterBoundsHeight(assignHeight.Value);
         }
+        // else if (HeightUnit.Percent != 0 && container.Height != ContainerForMeasur.Height)
+        // {
+        //     switch (BoxSizing)
+        //     {
+        //         default:
+        //         case BoxSizing.BorderBox:
+        //             SetBoundsHeight(HeightUnit.GetValue(container.Height));
+        //             break;
+        //         case BoxSizing.ContentBox:
+        //             SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
+        //             break;
+        //     }
+        // }
+
+        #endregion
 
         // 如果我现在要实现 Flexbox 的根据最大的子元素拉伸其余子元素的行为是不是就可以了
         switch (LayoutDirection)
@@ -262,29 +323,24 @@ public partial class Other
             // 横向排列
             case LayoutDirection.Row:
             {
-                var quantity = _children.Count;
-                var sumGap = Gap.X * (quantity - 1);
-                var room = _innerBounds.Width - sumGap;
+                var space = _innerBounds.Width - Gap.Width * (LayoutElements.Count - 1);
+                var sumWidth = LayoutElements.Sum(child => child._outerBounds.Width);
 
-                var sumWidth = _children.Sum(child => child._outerBounds.Width);
-
-                // 子元素占用空间超越了父元素的容积
-                // 对子元素宽度进行压缩
-                if (true || sumWidth + sumGap > _innerBounds.Width)
+                // 元素溢出父元素，对子元素宽度进行压缩
+                if (sumWidth > space)
                 {
-                    for (int i = 0; i < _children.Count; i++)
+                    var each = space / sumWidth;
+                    foreach (var child in LayoutElements)
                     {
-                        var child = _children[i];
-                        child.Trim(_innerBounds.Size, room * child._outerBounds.Width / sumWidth, _innerBounds.Height);
+                        child.Trim(_innerBounds.Size, each * child._outerBounds.Width, _innerBounds.Height);
                     }
                 }
                 // 否则仅改变子元素高度
                 else
                 {
-                    for (int i = 0; i < _children.Count; i++)
+                    foreach (var child in LayoutElements)
                     {
-                        var child = _children[i];
-                        child.Trim(_innerBounds.Size, forcedHeight: _innerBounds.Height);
+                        child.Trim(_innerBounds.Size, null, _innerBounds.Height);
                     }
                 }
                 break;
@@ -292,28 +348,23 @@ public partial class Other
             default:
             case LayoutDirection.Column:
             {
-                var quantity = _children.Count;
-                var sumGap = Gap.Y * (quantity - 1);
-                var room = _innerBounds.Height - sumGap;
+                var space = _innerBounds.Height - Gap.Height * (LayoutElements.Count - 1);
+                var sumHeight = LayoutElements.Sum(child => child._outerBounds.Height);
 
-                var sumHeight = _children.Sum(child => child._outerBounds.Height);
-
-                // 子元素占用空间超越了父元素的容积
-                // 对子元素高度进行压缩
-                if (true ||sumHeight + sumGap > _innerBounds.Height)
+                // 元素溢出父元素，对子元素高度进行压缩
+                if (sumHeight > space)
                 {
-                    for (int i = 0; i < _children.Count; i++)
+                    var each = space / sumHeight;
+                    foreach (var child in LayoutElements)
                     {
-                        var child = _children[i];
-                        child.Trim(_innerBounds.Size, _innerBounds.Width, room * child._outerBounds.Height / sumHeight);
+                        child.Trim(_innerBounds.Size, _innerBounds.Width, each * child._outerBounds.Height);
                     }
                 }
                 // 否则仅改变子元素宽度
                 else
                 {
-                    for (int i = 0; i < _children.Count; i++)
+                    foreach (var child in LayoutElements)
                     {
-                        var child = _children[i];
                         child.Trim(_innerBounds.Size, _innerBounds.Width);
                     }
                 }
@@ -321,88 +372,175 @@ public partial class Other
             }
         }
 
-        return new Size();
-    }
+        // FlexboxMeasure();
 
-    /// <summary>
-    /// 测量, 测量期间不会对元素进行任何限制
-    /// 测量的大小仅反应元素自身的预期, 并非最终大小
-    /// </summary>
-    protected virtual Size Measure(Size space)
-    {
-        var widthValue = WidthIsAuto ? 0f : WidthUnit.GetValue(space.Width);
-        var heightValue = HeightIsAuto ? 0f : HeightUnit.GetValue(space.Height);
-
-        if (WidthIsAuto && HeightIsAuto)
+        foreach (var child in FreeElements)
         {
-            _bounds.Size = Size.Zero;
-            _outerBounds.Size = Size.Zero;
-            _innerBounds.Size = Size.Zero;
-        }
-        else
-        {
-            CalculateBoxSize(new Size(widthValue, heightValue), out var box, out var outerBox, out var innerBox);
-            _bounds.Size = box;
-            _outerBounds.Size = outerBox;
-            _innerBounds.Size = innerBox;
-        }
-
-        if (_children.Count < 1) return _outerBounds.Size;
-
-        foreach (var child in _children)
-        {
-            child.Measure(_innerBounds.Size);
-        }
-
-        if (LayoutType == LayoutType.Flexbox)
-        {
-            switch (LayoutDirection)
-            {
-                // 这段是错的，有空修
-                case LayoutDirection.Row:
-                {
-                    if (WidthIsAuto)
-                    {
-                        widthValue = _children.Sum(child => child.OuterBounds.Width) + (_children.Count - 1) * Gap.X;
-                        _innerBounds.Width = widthValue;
-                        _bounds.Width = widthValue + Padding.Width;
-                        _outerBounds.Width = widthValue + Padding.Width + Margin.Width;
-                    }
-                    if (HeightIsAuto)
-                    {
-                        heightValue = _children.Max(child => child.OuterBounds.Height);
-                        _innerBounds.Height = heightValue;
-                        _bounds.Height = heightValue + Padding.Height;
-                        _outerBounds.Height = heightValue + Padding.Height + Margin.Height;
-                    }
-                    break;
-                }
-                default:
-                case LayoutDirection.Column:
-                {
-                    if (WidthIsAuto)
-                    {
-                        widthValue = _children.Max(child => child.OuterBounds.Width);
-                        _innerBounds.Width = widthValue;
-                        _bounds.Width = widthValue + Padding.Width;
-                        _outerBounds.Width = widthValue + Padding.Width + Margin.Width;
-                    }
-                    if (HeightIsAuto)
-                    {
-                        heightValue = _children.Sum(child => child.OuterBounds.Height) + (_children.Count - 1) * Gap.Y;
-                        _innerBounds.Height = heightValue;
-                        _bounds.Height = heightValue + Padding.Height;
-                        _outerBounds.Height = heightValue + Padding.Height + Margin.Height;
-                    }
-                    break;
-                }
-            }
+            child.Trim(_innerBounds.Size);
         }
 
         return _outerBounds.Size;
     }
 
-    public readonly Margin Border = new();
+    protected Size ContainerForMeasur;
+
+    /// <summary>
+    /// 测量: 测量期间不会对元素进行任何限制
+    /// 测量结果: 仅反应元素自身的预期, 并非最终大小
+    /// </summary>
+    protected virtual Size Measure(Size container)
+    {
+        Classify(); // 分类
+
+        #region Set Bounds
+
+        if (!WidthIsAuto)
+        {
+            switch (BoxSizing)
+            {
+                default:
+                case BoxSizing.BorderBox:
+                    SetBoundsWidth(WidthUnit.GetValue(container.Width));
+                    break;
+                case BoxSizing.ContentBox:
+                    SetInnerBoundsWidth(WidthUnit.GetValue(container.Width));
+                    break;
+            }
+        }
+
+        if (!HeightIsAuto)
+        {
+            switch (BoxSizing)
+            {
+                default:
+                case BoxSizing.BorderBox:
+                    SetBoundsHeight(HeightUnit.GetValue(container.Height));
+                    break;
+                case BoxSizing.ContentBox:
+                    SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
+                    break;
+            }
+        }
+
+        if (LayoutElements.Count > 0)
+        {
+            var subcontainer = new Size(WidthIsAuto ? 0 : _innerBounds.Width, HeightIsAuto ? 0 : _innerBounds.Height);
+            foreach (var child in LayoutElements) // 布局元素
+            {
+                child.Measure(subcontainer);
+            }
+        }
+        else
+        {
+            switch (BoxSizing)
+            {
+                default:
+                case BoxSizing.BorderBox:
+                    SetBoundsHeight(HeightUnit.GetValue(container.Height));
+                    break;
+                case BoxSizing.ContentBox:
+                    SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
+                    break;
+            }
+        }
+
+        #endregion
+
+        if (LayoutElements.Count < 1) goto end;
+
+        // 无需测量 绝对定位元素, 因为它们不会影响父元素大小
+        FlexboxMeasure();
+
+    end:
+        ContainerForMeasur = container;
+        return _outerBounds.Size;
+    }
+
+    protected void FlexboxMeasure()
+    {
+        if (LayoutType is not LayoutType.Flexbox) return;
+
+        switch (LayoutDirection)
+        {
+            case LayoutDirection.Row:
+                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Sum(e => e._outerBounds.Width) + (LayoutElements.Count - 1) * Gap.Width);
+                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Max(e => e._outerBounds.Height));
+                break;
+            default:
+            case LayoutDirection.Column:
+                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Max(e => e._outerBounds.Width));
+                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Sum(e => e._outerBounds.Height) + (LayoutElements.Count - 1) * Gap.Height);
+                break;
+        }
+    }
+
+    #region SetBoundsSize
+
+    protected void SetOuterBoundsWidth(float width)
+    {
+        _outerBounds.Width = width;
+        _bounds.Width = width - Margin.Width;
+        _innerBounds.Width = _bounds.Width - Padding.Width - Border.Width;
+    }
+
+    protected void SetOuterBoundsHeight(float height)
+    {
+        _outerBounds.Height = height;
+        _bounds.Height = height - Margin.Height;
+        _innerBounds.Height = _bounds.Height - Padding.Height - Border.Height;
+    }
+
+    protected void SetBoundsWidth(float width)
+    {
+        _innerBounds.Width = width;
+        _bounds.Width = width + Padding.Width;
+        _outerBounds.Width = width + Padding.Width + Margin.Width;
+    }
+
+    protected void SetBoundsHeight(float height)
+    {
+        _innerBounds.Height = height;
+        _bounds.Height = height + Padding.Height;
+        _outerBounds.Height = height + Padding.Height + Margin.Height;
+    }
+
+    protected void SetInnerBoundsWidth(float width)
+    {
+        _innerBounds.Width = width;
+        _bounds.Width = width + Padding.Width;
+        _outerBounds.Width = width + Padding.Width + Margin.Width;
+    }
+
+    protected void SetInnerBoundsHeight(float height)
+    {
+        _innerBounds.Height = height;
+        _bounds.Height = height + Padding.Height;
+        _outerBounds.Height = height + Padding.Height + Margin.Height;
+    }
+
+    #endregion
+
+    protected virtual void CalculateSizeWhenAuto()
+    {
+        // 不换行情况
+        switch (LayoutDirection)
+        {
+            case LayoutDirection.Row:
+            {
+                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Sum(child => child._outerBounds.Width) + (LayoutElements.Count - 1) * Gap.Width);
+                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Max(child => child._outerBounds.Height));
+                break;
+            }
+            default:
+            case LayoutDirection.Column:
+            {
+                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Max(child => child._outerBounds.Width));
+                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Sum(child => child._outerBounds.Height) + (LayoutElements.Count - 1) * Gap.Height);
+                break;
+            }
+        }
+    }
+
     protected void Arrange()
     {
         switch (LayoutDirection)
@@ -411,12 +549,11 @@ public partial class Other
             case LayoutDirection.Row:
             {
                 float leftOffset = 0f;
-                for (int i = 0; i < _children.Count; i++)
+                foreach (Other layoutElement in LayoutElements)
                 {
-                    _children[i].LayoutOffset = new Vector2(leftOffset, 0);
-                    _children[i].Arrange();
-                    leftOffset += Gap.X;
-                    leftOffset += _children[i]._outerBounds.Width;
+                    layoutElement.SetPositionInLayout(leftOffset, 0);
+                    leftOffset += Gap.Width;
+                    leftOffset += layoutElement._outerBounds.Width;
                 }
                 break;
             }
@@ -425,15 +562,19 @@ public partial class Other
             case LayoutDirection.Column:
             {
                 float topOffset = 0f;
-                for (int i = 0; i < _children.Count; i++)
+                foreach (Other layoutElement in LayoutElements)
                 {
-                    _children[i].LayoutOffset = new Vector2(0, topOffset);
-                    _children[i].Arrange();
-                    topOffset += Gap.Y;
-                    topOffset += _children[i]._outerBounds.Height;
+                    layoutElement.SetPositionInLayout(0, topOffset);
+                    topOffset += Gap.Height;
+                    topOffset += layoutElement._outerBounds.Height;
                 }
                 break;
             }
+        }
+
+        foreach (var child in _children)
+        {
+            child.Arrange();
         }
 
         IsLayoutDirty = false;

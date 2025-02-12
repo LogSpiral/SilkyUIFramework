@@ -5,13 +5,18 @@ public enum Positioning
     Relative,
     Absolute,
     Sticky,
+    Fixed,
 }
 
 [Flags]
 public enum StickyType
 {
-    Left = 0,
-    Top = 1 << 0,
-    Right = 1 << 1,
-    Bottom = 1 << 2,
+    Left = 1 << 0,
+    Top = 1 << 1,
+    Right = 1 << 2,
+    Bottom = 1 << 3,
+    LeftTop = Left | Top,
+    RightTop = Right | Top,
+    LeftBottom = Left | Bottom,
+    RightBottom = Right | Bottom,
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\tModLoader.targets"/>
+    <Import Project="..\tModLoader.targets" />
     <PropertyGroup>
         <AssemblyName>SilkyUIFramework</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -8,12 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Solaestas.tModLoader.ModBuilder" Version="1.6.1"/>
+        <PackageReference Include="Solaestas.tModLoader.ModBuilder" Version="1.6.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)"/>
-        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)"/>
+        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true"
+            ModPath="%(Identity)" />
+        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true"
+            ModPath="%(Identity)" />
     </ItemGroup>
 
 </Project>

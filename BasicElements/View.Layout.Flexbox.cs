@@ -29,7 +29,9 @@ public enum CrossAlignment
     Center,
 
     /// <summary> 总体靠下 </summary>
-    End
+    End,
+    /// <summary> 拉伸 </summary>
+    Stretch,
 }
 
 public partial class View

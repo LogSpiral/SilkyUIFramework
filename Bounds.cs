@@ -58,6 +58,18 @@ public struct Bounds
         }
     }
 
+    public void SetPosition(float x, float y)
+    {
+        _x = x;
+        _y = y;
+    }
+
+    public void SetSize(float width, float height)
+    {
+        _width = width;
+        _height = height;
+    }
+
     public readonly Vector2 Center => new(_x + _width / 2f, _y + _height / 2f);
     public readonly Vector2 LeftBottom => new(_x, _y + _height);
     public readonly Vector2 RightBottom => new(_x + _width, _y + _height);

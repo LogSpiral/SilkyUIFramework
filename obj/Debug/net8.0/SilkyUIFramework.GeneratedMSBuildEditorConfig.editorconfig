@@ -47,6 +47,10 @@ build_metadata.AdditionalFiles.ModPath = Assets\Images\PreviewBorder.png
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = icon.png
 
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/ColorBlock.fx]
+build_metadata.AdditionalFiles.Pack = false
+build_metadata.AdditionalFiles.ModPath = Graphics2D\ColorBlock.fx
+
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/Mask.fx]
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.ModPath = Graphics2D\Mask.fx
@@ -58,6 +62,10 @@ build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFGraphics.fx
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/SDFRectangle.fx]
 build_metadata.AdditionalFiles.Pack = false
 build_metadata.AdditionalFiles.ModPath = Graphics2D\SDFRectangle.fx
+
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/ColorBlock.xnb]
+build_metadata.AdditionalFiles.Pack = true
+build_metadata.AdditionalFiles.ModPath = Graphics2D\ColorBlock.xnb
 
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/Mask.xnb]
 build_metadata.AdditionalFiles.Pack = true

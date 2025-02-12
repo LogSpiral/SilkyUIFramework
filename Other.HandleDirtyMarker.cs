@@ -1,4 +1,4 @@
-using SilkyUIFramework.Core;
+﻿using SilkyUIFramework.Core;
 
 namespace SilkyUIFramework;
 
@@ -15,7 +15,7 @@ public partial class Other
     {
         IsLayoutDirty = true;
 
-        if (Positioning is Positioning.Absolute || !(Parent is { } parent)) return;
+        if (Parent is not { } parent) return;
 
         parent.BubbleMarkerDirty();
     }
@@ -27,8 +27,9 @@ public partial class Other
     {
         if (IsLayoutDirty)
         {
-            Measure(Parent?._innerBounds.Size ?? Main.graphics.graphicsDevice.Viewport.Bounds.Size());
-            Trim(Parent?._innerBounds.Size ?? Main.graphics.graphicsDevice.Viewport.Bounds.Size());
+            var container = Parent is null ? GetViewportSize() : Parent._innerBounds.Size;
+            Measure(container);
+            Trim(container);
             Arrange();
         }
 
@@ -45,7 +46,7 @@ public partial class Other
     {
         if (IsPositionDirty)
         {
-            ApplyPosition(Parent?._innerBounds ?? Main.graphics.graphicsDevice.Viewport.Bounds, Parent?.ScrollOffset ?? Vector2.Zero);
+            ApplyPosition();
         }
 
         foreach (var child in _children)
