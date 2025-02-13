@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "A7OBh1mcoSU=",
+  "dgSpecHash": "o7OkvNEClH4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\48766\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\SilkyUIFramework\\SilkyUIFramework.csproj",
+  "projectFilePath": "c:\\Users\\48766\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\SilkyUIFramework\\SilkyUIFramework.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\48766\\.nuget\\packages\\bepinex.assemblypublicizer.msbuild\\0.4.1\\bepinex.assemblypublicizer.msbuild.0.4.1.nupkg.sha512",
     "C:\\Users\\48766\\.nuget\\packages\\solaestas.tmodloader.modbuilder\\1.6.1\\solaestas.tmodloader.modbuilder.1.6.1.nupkg.sha512",

@@ -5,9 +5,36 @@
 /// </summary>
 public partial class Other
 {
+    public bool OverflowHidden { get; set; }
+
+    /// <summary>
+    /// 无效化: 交互事件, 更新, 绘制, 布局
+    /// </summary>
+    public bool Invalidate
+    {
+        get => _invalidate;
+        set
+        {
+            if (_invalidate == value) return;
+            _invalidate = value;
+            BubbleMarkerDirty();
+        }
+    }
+    private bool _invalidate;
+
+    #region Parent Children
+    /// <summary>
+    /// 父元素
+    /// </summary>
     public Other Parent { get; protected set; }
+
+    /// <summary>
+    /// 子元素
+    /// </summary>
     protected readonly List<Other> _children = [];
     public IReadOnlyList<Other> Children => _children;
+
+    #endregion
 
     #region Append Remove RemoveChild
 
@@ -99,35 +126,22 @@ public partial class Other
 
     #endregion
 
-    /// <summary>
-    /// 无效化元素: 无法触发事件, 无法更新, 无法绘制, 无法参与布局
-    /// </summary>
-    public bool Invalidate
-    {
-        get => _invalidate;
-        set
-        {
-            if (_invalidate == value) return;
-            _invalidate = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private bool _invalidate;
+    #region Classify
 
     /// <summary>
     /// 自由元素, 不受布局约束
     /// </summary>
-    public readonly List<Other> FreeElements = [];
+    protected List<Other> FreeElements { get; private set; } = [];
 
     /// <summary>
     /// 布局元素, 受布局约束
     /// </summary>
-    public readonly List<Other> LayoutElements = [];
+    protected List<Other> LayoutElements { get; private set; } = [];
 
     /// <summary>
     /// 元素分类
     /// </summary>
-    public void Classify()
+    protected void Classify()
     {
         FreeElements.Clear();
         LayoutElements.Clear();
@@ -147,7 +161,7 @@ public partial class Other
         }
     }
 
-    public bool OverflowHidden { get; set; }
+    #endregion
 
     public Other GetElementAt(Vector2 position)
     {
@@ -173,20 +187,4 @@ public partial class Other
     }
 
     public bool ContainsPoint(Vector2 point) => _bounds.Contains(point);
-}
-
-public enum TrackDirection { Horizontal, Vertical }
-
-/// 布局轨道
-public class LayoutTrack
-{
-    private readonly List<Other> _elements;
-    public IReadOnlyList<Other> Elements => _elements;
-    public int Count => _elements.Count;
-    public TrackDirection Direction { get; set; }
-
-    public float Left;
-    public float Top;
-    public float Width;
-    public float Height;
 }
