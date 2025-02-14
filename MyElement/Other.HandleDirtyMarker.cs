@@ -1,6 +1,4 @@
-﻿using SilkyUIFramework.Core;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 public partial class Other
 {

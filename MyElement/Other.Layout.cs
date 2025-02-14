@@ -5,7 +5,7 @@ namespace SilkyUIFramework;
 
 public enum LayoutType
 {
-    Flexbox, Grid, Custom, None,
+    Flexbox, Custom, None,
 }
 
 /// <summary>

@@ -7,21 +7,6 @@ public partial class Other
 {
     public bool OverflowHidden { get; set; }
 
-    /// <summary>
-    /// 无效化: 交互事件, 更新, 绘制, 布局
-    /// </summary>
-    public bool Invalidate
-    {
-        get => _invalidate;
-        set
-        {
-            if (_invalidate == value) return;
-            _invalidate = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private bool _invalidate;
-
     #region Parent Children
     /// <summary>
     /// 父元素
@@ -86,21 +71,7 @@ public partial class Other
 
     #endregion
 
-    #region bounds
-
-    protected Bounds _bounds;
-    public Bounds Bounds => _bounds;
-
-    protected Bounds _innerBounds;
-    public Bounds InnerBounds => _innerBounds;
-
-    protected Bounds _outerBounds;
-    public Bounds OuterBounds => _outerBounds;
-
-    #endregion
-
     #region HandleUpdate
-
     public event Action<GameTime> OnUpdate;
 
     public void HandleUpdate(GameTime gameTime)
@@ -108,11 +79,6 @@ public partial class Other
         OnUpdate?.Invoke(gameTime);
         Update(gameTime);
         HandleChildrenUpdate(gameTime);
-    }
-
-    public virtual void Update(GameTime gameTime)
-    {
-
     }
 
     protected virtual void HandleChildrenUpdate(GameTime gameTime)
