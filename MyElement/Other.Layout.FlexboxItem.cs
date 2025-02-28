@@ -9,7 +9,7 @@ public partial class Other : IFlexboxItem
         {
             if (value == _flexGrow) return;
             _flexGrow = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private float _flexGrow;
@@ -21,7 +21,7 @@ public partial class Other : IFlexboxItem
         {
             if (value == _flexShrink) return;
             _flexShrink = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private float _flexShrink;

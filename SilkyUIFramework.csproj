@@ -12,10 +12,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true"
-            ModPath="%(Identity)" />
-        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true"
-            ModPath="%(Identity)" />
+        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
+        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
     </ItemGroup>
+
+    <!-- <ItemGroup>
+        <ProjectReference Include="..\AutoDirtyGenerator\AutoDirtyGenerator.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false" />
+    </ItemGroup> -->
 
 </Project>

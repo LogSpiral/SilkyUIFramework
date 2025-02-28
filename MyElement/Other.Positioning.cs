@@ -1,6 +1,4 @@
-﻿using System.Security.Permissions;
-using Microsoft.CodeAnalysis;
-using SilkyUIFramework.Core;
+﻿using SilkyUIFramework.Core;
 
 namespace SilkyUIFramework;
 
@@ -13,7 +11,7 @@ public partial class Other
         {
             if (value == _leftUnit) return;
             _leftUnit = value;
-            IsPositionDirty = true;
+            PositionDirty = true;
         }
     }
     private Unit _leftUnit;
@@ -25,7 +23,7 @@ public partial class Other
         {
             if (value == _topUnit) return;
             _topUnit = value;
-            IsPositionDirty = true;
+            PositionDirty = true;
         }
     }
     private Unit _topUnit;
@@ -37,7 +35,7 @@ public partial class Other
         {
             if (value == _positioning) return;
             _positioning = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private Positioning _positioning;
@@ -45,43 +43,17 @@ public partial class Other
     /// <summary>
     /// 由父元素控制, 不应直接修改
     /// </summary>
-    protected Vector2 PositionInLayout
-    {
-        get => _positionInLayout;
-        set
-        {
-            SetPositionInLayout(value);
-        }
-    }
-    private Vector2 _positionInLayout;
+    protected Vector2 LayoutPosition => _layoutPosition;
+    private Vector2 _layoutPosition;
 
-    protected void SetPositionInLayout(Vector2 position)
+    protected void SetLayoutPosition(Vector2 position) => SetLayoutPosition(position.X, position.Y);
+    protected void SetLayoutPosition(float? x = null, float? y = null)
     {
-        if (position == _positionInLayout) return;
-        _positionInLayout = position;
-        IsPositionDirty = true;
-    }
+        if ((!x.HasValue || x.Value == _layoutPosition.X) && (!y.HasValue || y.Value == _layoutPosition.Y)) return;
 
-    protected void SetPositionInLayout(float? x = null, float? y = null)
-    {
-        if (x.HasValue && x.Value != _positionInLayout.X)
-        {
-            if (y.HasValue && y.Value != _positionInLayout.Y)
-            {
-                _positionInLayout.X = x.Value;
-                _positionInLayout.Y = y.Value;
-            }
-            else
-            {
-                _positionInLayout.X = x.Value;
-            }
-            IsPositionDirty = true;
-        }
-        else if (y.HasValue && y.Value != _positionInLayout.Y)
-        {
-            _positionInLayout.Y = y.Value;
-            IsPositionDirty = true;
-        }
+        _layoutPosition.X = x.Value;
+        _layoutPosition.Y = y.Value;
+        PositionDirty = true;
     }
 
     /// <summary>
@@ -94,7 +66,7 @@ public partial class Other
         {
             if (value == _dragOffset) return;
             _dragOffset = value;
-            IsPositionDirty = true;
+            PositionDirty = true;
         }
     }
     private Vector2 _dragOffset;
@@ -109,7 +81,7 @@ public partial class Other
         {
             if (value == _scrollOffset) return;
             _scrollOffset = value;
-            IsPositionDirty = true;
+            PositionDirty = true;
         }
     }
     private Vector2 _scrollOffset;
@@ -122,7 +94,7 @@ public partial class Other
             if (value == _stickyType) return;
             _stickyType = value;
             if (Positioning == Positioning.Sticky)
-                IsPositionDirty = true;
+                PositionDirty = true;
         }
     }
     private StickyType _stickyType;
@@ -138,10 +110,14 @@ public partial class Other
             if (value == _sticky) return;
             _sticky = value;
             if (Positioning == Positioning.Sticky)
-                IsPositionDirty = true;
+                PositionDirty = true;
         }
     }
     private Vector4 _sticky;
+
+    public void SetSticky(StickyType stickyType, float? left = null, float? top = null, float? right = null, float? bottom = null)
+    {
+    }
 
     public static Size GetViewportSize()
     {
@@ -177,8 +153,8 @@ public partial class Other
                 Bounds container = Parent is null ? new Bounds(Vector2.Zero, GetViewportSize()) : Parent._innerBounds;
 
                 var scroll = Parent?.ScrollOffset ?? Vector2.Zero;
-                _outerBounds.X = container.X + scroll.X + LeftUnit.GetValue(container.Width) + PositionInLayout.X + DragOffset.X;
-                _outerBounds.Y = container.Y + scroll.Y + TopUnit.GetValue(container.Height) + PositionInLayout.Y + DragOffset.Y;
+                _outerBounds.X = container.X + scroll.X + LeftUnit.GetValue(container.Width) + LayoutPosition.X + DragOffset.X;
+                _outerBounds.Y = container.Y + scroll.Y + TopUnit.GetValue(container.Height) + LayoutPosition.Y + DragOffset.Y;
                 HandleStickyPositioning(container);
                 break;
             }
@@ -189,7 +165,7 @@ public partial class Other
 
         ApplyChildrenPosition();
 
-        IsPositionDirty = false;
+        PositionDirty = false;
     }
 
     protected virtual void ApplyChildrenPosition()

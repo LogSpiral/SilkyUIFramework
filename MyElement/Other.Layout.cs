@@ -22,18 +22,20 @@ public partial class Other
         {
             if (value == _layoutType) return;
             _layoutType = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private LayoutType _layoutType;
 
     public void AutoWidth(bool auto = true) => WidthIsAuto = auto;
     public void AutoHeight(bool auto = true) => HeightIsAuto = auto;
-    public void AutoSize(bool auto = true)
+    public void AutoSize(bool autoWidth = true, bool autoHeight = true)
     {
-        _widthIsAuto = auto;
-        _heightIsAuto = auto;
-        BubbleMarkerDirty();
+        if (autoWidth == WidthIsAuto && autoHeight == HeightIsAuto) return;
+
+        _widthIsAuto = autoWidth;
+        _heightIsAuto = autoHeight;
+        MarkLayoutDirty();
     }
 
     public bool WidthIsAuto
@@ -43,7 +45,7 @@ public partial class Other
         {
             if (value == _widthIsAuto) return;
             _widthIsAuto = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private bool _widthIsAuto;
@@ -54,10 +56,36 @@ public partial class Other
         {
             if (value == _heightIsAuto) return;
             _heightIsAuto = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private bool _heightIsAuto;
+
+    public void SetMinSize(float minWidthPixel, float minHeightPixel, float? minWidthPercent = null, float? minHeightPercent = null)
+    {
+        if (minWidthPixel == _minWidthUnit.Pixels && (!minWidthPercent.HasValue || minWidthPercent.Value == _minWidthUnit.Percent) &&
+            minHeightPixel == _minHeightUnit.Pixels && (!minHeightPercent.HasValue || minHeightPercent.Value == _minHeightUnit.Percent))
+        {
+            return;
+        }
+
+        _minWidthUnit.Set(minWidthPixel, minWidthPercent);
+        _minHeightUnit.Set(minHeightPixel, minHeightPercent);
+        MarkLayoutDirty();
+    }
+
+    public void SetMaxSize(float maxWidthPixel, float maxHeightPixel, float? maxWidthPercent = null, float? maxHeightPercent = null)
+    {
+        if (maxWidthPixel == _maxWidthUnit.Pixels && (!maxWidthPercent.HasValue || maxWidthPercent.Value == _maxWidthUnit.Percent) &&
+            maxHeightPixel == _maxHeightUnit.Pixels && (!maxHeightPercent.HasValue || maxHeightPercent.Value == _maxHeightUnit.Percent))
+        {
+            return;
+        }
+
+        _maxWidthUnit.Set(maxWidthPixel, maxWidthPercent);
+        _maxHeightUnit.Set(maxHeightPixel, maxHeightPercent);
+        MarkLayoutDirty();
+    }
 
     public void SetSize(float widthPixel, float heightPixel, float? widthPercent = null, float? heightPercent = null)
     {
@@ -69,7 +97,7 @@ public partial class Other
 
         _widthUnit.Set(widthPixel, widthPercent);
         _heightUnit.Set(heightPixel, heightPercent);
-        BubbleMarkerDirty();
+        MarkLayoutDirty();
     }
 
     public void SetWidth(float pixel, float? percent = null)
@@ -80,7 +108,7 @@ public partial class Other
         }
 
         _widthUnit.Set(pixel, percent);
-        BubbleMarkerDirty();
+        MarkLayoutDirty();
     }
 
     public void SetHeight(float pixel, float? percent = null)
@@ -91,7 +119,7 @@ public partial class Other
         }
 
         _heightUnit.Set(pixel, percent);
-        BubbleMarkerDirty();
+        MarkLayoutDirty();
     }
 
     public void SetLeft(float pixel, float? percent = null)
@@ -102,7 +130,7 @@ public partial class Other
         }
 
         _leftUnit.Set(pixel, percent);
-        IsPositionDirty = true;
+        PositionDirty = true;
     }
 
     public void SetTop(float pixel, float? percent = null)
@@ -113,56 +141,8 @@ public partial class Other
         }
 
         _topUnit.Set(pixel, percent);
-        IsPositionDirty = true;
+        PositionDirty = true;
     }
-
-    public Unit WidthUnit
-    {
-        get => _widthUnit;
-        set
-        {
-            if (value == _widthUnit) return;
-            _widthUnit = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private Unit _widthUnit;
-
-    public Unit HeightUnit
-    {
-        get => _heightUnit;
-        set
-        {
-            if (value == _heightUnit) return;
-            _heightUnit = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private Unit _heightUnit;
-
-    public Unit MinHeightUnit
-    {
-        get => _minHeightUnit;
-        set
-        {
-            if (value == _minHeightUnit) return;
-            _minHeightUnit = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private Unit _minHeightUnit;
-
-    public Unit MaxHeightUnit
-    {
-        get => _maxHeightUnit;
-        set
-        {
-            if (value == _maxHeightUnit) return;
-            _maxHeightUnit = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private Unit _maxHeightUnit;
 
     public Size Gap
     {
@@ -171,7 +151,7 @@ public partial class Other
         {
             if (value == _gap) return;
             _gap = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private Size _gap;
@@ -183,7 +163,7 @@ public partial class Other
         {
             if (value == _layoutDirection) return;
             _layoutDirection = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private LayoutDirection _layoutDirection;
@@ -195,7 +175,7 @@ public partial class Other
         {
             if (value == _boxSizing) return;
             _boxSizing = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private BoxSizing _boxSizing;
@@ -207,8 +187,8 @@ public partial class Other
         {
             if (value == _margin) return;
             _margin = value;
-            BubbleMarkerDirty();
-            IsPositionDirty = true;
+            MarkLayoutDirty();
+            PositionDirty = true;
         }
     }
     private Margin _margin;
@@ -220,8 +200,8 @@ public partial class Other
         {
             if (value == _border) return;
             _border = value;
-            BubbleMarkerDirty();
-            IsPositionDirty = true;
+            MarkLayoutDirty();
+            PositionDirty = true;
         }
     }
     private Margin _border;
@@ -233,37 +213,13 @@ public partial class Other
         {
             if (value == _padding) return;
             _padding = value;
-            BubbleMarkerDirty();
-            IsPositionDirty = true;
+            MarkLayoutDirty();
+            PositionDirty = true;
         }
     }
     private Margin _padding;
 
     #endregion
-
-    public MainAlignment MainAlignment
-    {
-        get => _mainAlignment;
-        set
-        {
-            if (value == _mainAlignment) return;
-            _mainAlignment = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private MainAlignment _mainAlignment;
-
-    public CrossAlignment CrossAlignment
-    {
-        get => _crossAlignment;
-        set
-        {
-            if (value == _crossAlignment) return;
-            _crossAlignment = value;
-            BubbleMarkerDirty();
-        }
-    }
-    private CrossAlignment _crossAlignment;
 
     /// <summary>
     /// 修剪
@@ -274,46 +230,24 @@ public partial class Other
     /// <returns></returns>
     protected virtual Size Trim(Size container, float? assignWidth = null, float? assignHeight = null)
     {
-        // 被布局管理的元素, 始终不应该自行调用 Trim 方法.
-        // 如果元素使用 绝对定位, 则无所谓.
 
-        #region  AssignSize
+        // 暂且让 assign 优先级大于 min max (因为考虑 min max 写起来麻烦)
+        #region AssignSize
+
+        if (_containerForMeasure != container)
+            UpdateConstraints(container);
 
         if (assignWidth.HasValue)
         {
             SetOuterBoundsWidth(assignWidth.Value);
         }
-        // else if (WidthUnit.Percent != 0 && container.Width != ContainerForMeasur.Width)
-        // {
-        //     switch (BoxSizing)
-        //     {
-        //         default:
-        //         case BoxSizing.BorderBox:
-        //             SetBoundsWidth(WidthUnit.GetValue(container.Width));
-        //             break;
-        //         case BoxSizing.ContentBox:
-        //             SetInnerBoundsWidth(WidthUnit.GetValue(container.Width));
-        //             break;
-        //     }
-        // }
+        else if (!WidthIsAuto) UpdateBoundsWidth(container.Width);
 
         if (assignHeight.HasValue)
         {
             SetOuterBoundsHeight(assignHeight.Value);
         }
-        // else if (HeightUnit.Percent != 0 && container.Height != ContainerForMeasur.Height)
-        // {
-        //     switch (BoxSizing)
-        //     {
-        //         default:
-        //         case BoxSizing.BorderBox:
-        //             SetBoundsHeight(HeightUnit.GetValue(container.Height));
-        //             break;
-        //         case BoxSizing.ContentBox:
-        //             SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
-        //             break;
-        //     }
-        // }
+        else if (!HeightIsAuto) UpdateBoundsHeight(container.Height);
 
         #endregion
 
@@ -327,7 +261,7 @@ public partial class Other
                 var sumWidth = LayoutElements.Sum(child => child._outerBounds.Width);
 
                 // 元素溢出父元素，对子元素宽度进行压缩
-                if (sumWidth > space)
+                if (true || sumWidth > space)
                 {
                     var each = space / sumWidth;
                     foreach (var child in LayoutElements)
@@ -352,7 +286,7 @@ public partial class Other
                 var sumHeight = LayoutElements.Sum(child => child._outerBounds.Height);
 
                 // 元素溢出父元素，对子元素高度进行压缩
-                if (sumHeight > space)
+                if (true || sumHeight > space)
                 {
                     var each = space / sumHeight;
                     foreach (var child in LayoutElements)
@@ -382,7 +316,7 @@ public partial class Other
         return _outerBounds.Size;
     }
 
-    protected Size ContainerForMeasur;
+    protected Size LastContainer;
 
     /// <summary>
     /// 测量: 测量期间不会对元素进行任何限制
@@ -394,33 +328,11 @@ public partial class Other
 
         #region Set Bounds
 
-        if (!WidthIsAuto)
-        {
-            switch (BoxSizing)
-            {
-                default:
-                case BoxSizing.BorderBox:
-                    SetBoundsWidth(WidthUnit.GetValue(container.Width));
-                    break;
-                case BoxSizing.ContentBox:
-                    SetInnerBoundsWidth(WidthUnit.GetValue(container.Width));
-                    break;
-            }
-        }
+        UpdateConstraints(container);
+        _containerForMeasure = container;
 
-        if (!HeightIsAuto)
-        {
-            switch (BoxSizing)
-            {
-                default:
-                case BoxSizing.BorderBox:
-                    SetBoundsHeight(HeightUnit.GetValue(container.Height));
-                    break;
-                case BoxSizing.ContentBox:
-                    SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
-                    break;
-            }
-        }
+        if (!WidthIsAuto) UpdateBoundsWidth(container.Width);
+        if (!HeightIsAuto) UpdateBoundsHeight(container.Height);
 
         if (LayoutElements.Count > 0)
         {
@@ -430,46 +342,44 @@ public partial class Other
                 child.Measure(subcontainer);
             }
         }
-        else
-        {
-            switch (BoxSizing)
-            {
-                default:
-                case BoxSizing.BorderBox:
-                    SetBoundsHeight(HeightUnit.GetValue(container.Height));
-                    break;
-                case BoxSizing.ContentBox:
-                    SetInnerBoundsHeight(HeightUnit.GetValue(container.Height));
-                    break;
-            }
-        }
 
         #endregion
 
-        if (LayoutElements.Count < 1) goto end;
+        if (LayoutElements.Count > 0)
+        {
+            FlexboxMeasureContent();
+        }
 
-        // 无需测量 绝对定位元素, 因为它们不会影响父元素大小
-        FlexboxMeasure();
-
-    end:
-        ContainerForMeasur = container;
+        LastContainer = container;
         return _outerBounds.Size;
     }
 
-    protected void FlexboxMeasure()
+    protected void FlexboxMeasureContent()
     {
         if (LayoutType is not LayoutType.Flexbox) return;
 
         switch (LayoutDirection)
         {
             case LayoutDirection.Row:
-                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Sum(e => e._outerBounds.Width) + (LayoutElements.Count - 1) * Gap.Width);
-                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Max(e => e._outerBounds.Height));
+                if (WidthIsAuto)
+                {
+                    SetBoundsWidth(LayoutElements.Sum(e => e._outerBounds.Width) + (LayoutElements.Count - 1) * Gap.Width);
+                }
+                if (HeightIsAuto)
+                {
+                    SetBoundsHeight(LayoutElements.Max(e => e._outerBounds.Height));
+                }
                 break;
             default:
             case LayoutDirection.Column:
-                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Max(e => e._outerBounds.Width));
-                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Sum(e => e._outerBounds.Height) + (LayoutElements.Count - 1) * Gap.Height);
+                if (WidthIsAuto)
+                {
+                    SetBoundsWidth(LayoutElements.Max(e => e._outerBounds.Width));
+                }
+                if (HeightIsAuto)
+                {
+                    SetBoundsHeight(LayoutElements.Sum(e => e._outerBounds.Height) + (LayoutElements.Count - 1) * Gap.Height);
+                }
                 break;
         }
     }
@@ -478,68 +388,47 @@ public partial class Other
 
     protected void SetOuterBoundsWidth(float width)
     {
-        _outerBounds.Width = width;
-        _bounds.Width = width - Margin.Width;
-        _innerBounds.Width = _bounds.Width - Padding.Width - Border.Width;
+        _outerBounds.Width = Math.Max(0, width);
+        _bounds.Width = Math.Max(0, width - Margin.Width);
+        _innerBounds.Width = Math.Max(0, _bounds.Width - Padding.Width - Border.Width);
     }
 
     protected void SetOuterBoundsHeight(float height)
     {
-        _outerBounds.Height = height;
-        _bounds.Height = height - Margin.Height;
-        _innerBounds.Height = _bounds.Height - Padding.Height - Border.Height;
+        _outerBounds.Height = Math.Max(0, height);
+        _bounds.Height = Math.Max(0, height - Margin.Height);
+        _innerBounds.Height = Math.Max(0, _bounds.Height - Padding.Height - Border.Height);
     }
 
     protected void SetBoundsWidth(float width)
     {
-        _innerBounds.Width = width;
-        _bounds.Width = width + Padding.Width;
-        _outerBounds.Width = width + Padding.Width + Margin.Width;
+        _innerBounds.Width = Math.Max(0, width);
+        _bounds.Width = Math.Max(0, width + Padding.Width);
+        _outerBounds.Width = Math.Max(0, width + Padding.Width + Margin.Width);
     }
 
     protected void SetBoundsHeight(float height)
     {
-        _innerBounds.Height = height;
-        _bounds.Height = height + Padding.Height;
-        _outerBounds.Height = height + Padding.Height + Margin.Height;
+        _innerBounds.Height = Math.Max(0, height);
+        _bounds.Height = Math.Max(0, height + Padding.Height);
+        _outerBounds.Height = Math.Max(0, height + Padding.Height + Margin.Height);
     }
 
     protected void SetInnerBoundsWidth(float width)
     {
-        _innerBounds.Width = width;
-        _bounds.Width = width + Padding.Width;
-        _outerBounds.Width = width + Padding.Width + Margin.Width;
+        _innerBounds.Width = Math.Max(0, width);
+        _bounds.Width = Math.Max(0, width + Padding.Width);
+        _outerBounds.Width = Math.Max(0, width + Padding.Width + Margin.Width);
     }
 
     protected void SetInnerBoundsHeight(float height)
     {
-        _innerBounds.Height = height;
-        _bounds.Height = height + Padding.Height;
-        _outerBounds.Height = height + Padding.Height + Margin.Height;
+        _innerBounds.Height = Math.Max(0, height);
+        _bounds.Height = Math.Max(0, height + Padding.Height);
+        _outerBounds.Height = Math.Max(0, height + Padding.Height + Margin.Height);
     }
 
     #endregion
-
-    protected virtual void CalculateSizeWhenAuto()
-    {
-        // 不换行情况
-        switch (LayoutDirection)
-        {
-            case LayoutDirection.Row:
-            {
-                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Sum(child => child._outerBounds.Width) + (LayoutElements.Count - 1) * Gap.Width);
-                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Max(child => child._outerBounds.Height));
-                break;
-            }
-            default:
-            case LayoutDirection.Column:
-            {
-                if (WidthIsAuto) SetBoundsWidth(LayoutElements.Max(child => child._outerBounds.Width));
-                if (HeightIsAuto) SetBoundsHeight(LayoutElements.Sum(child => child._outerBounds.Height) + (LayoutElements.Count - 1) * Gap.Height);
-                break;
-            }
-        }
-    }
 
     protected void Arrange()
     {
@@ -551,7 +440,7 @@ public partial class Other
                 float leftOffset = 0f;
                 foreach (Other layoutElement in LayoutElements)
                 {
-                    layoutElement.SetPositionInLayout(leftOffset, 0);
+                    layoutElement.SetLayoutPosition(leftOffset, 0);
                     leftOffset += Gap.Width;
                     leftOffset += layoutElement._outerBounds.Width;
                 }
@@ -564,7 +453,7 @@ public partial class Other
                 float topOffset = 0f;
                 foreach (Other layoutElement in LayoutElements)
                 {
-                    layoutElement.SetPositionInLayout(0, topOffset);
+                    layoutElement.SetLayoutPosition(0, topOffset);
                     topOffset += Gap.Height;
                     topOffset += layoutElement._outerBounds.Height;
                 }
@@ -577,6 +466,6 @@ public partial class Other
             child.Arrange();
         }
 
-        IsLayoutDirty = false;
+        LayoutDirty = false;
     }
 }

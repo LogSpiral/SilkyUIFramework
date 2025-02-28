@@ -7,6 +7,7 @@ namespace SilkyUIFramework.BasicElements;
 
 public class SUIText : View
 {
+    public static readonly Vector2[] ShadowOffsets = [-Vector2.UnitX, Vector2.UnitX, -Vector2.UnitY, Vector2.UnitY];
     public static float DeathTextOffset { get; internal set; }
     public static float MouseTextOffset { get; internal set; }
 
@@ -223,8 +224,6 @@ public class SUIText : View
 
         return 0f;
     }
-
-    protected static readonly Vector2[] ShadowOffsets = [-Vector2.UnitX, Vector2.UnitX, -Vector2.UnitY, Vector2.UnitY];
 
     protected static void DrawColorCodedStringShadow(SpriteBatch spriteBatch, DynamicSpriteFont font,
         List<TextSnippet> snippets, Vector2 position, Color baseColor, float rotation, Vector2 origin,

@@ -12,7 +12,7 @@ public partial class Other : IView
         {
             if (_invalidate == value) return;
             _invalidate = value;
-            BubbleMarkerDirty();
+            MarkLayoutDirty();
         }
     }
     private bool _invalidate;
@@ -29,5 +29,53 @@ public partial class Other : IView
     public virtual void Update(GameTime gameTime)
     {
 
+    }
+    public event Action<GameTime, SpriteBatch> DrawAction;
+
+    public void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        DrawAction?.Invoke(gameTime, spriteBatch);
+        Draw(gameTime, spriteBatch);
+        DrawSelf(gameTime, spriteBatch);
+        DrawChildren(gameTime, spriteBatch);
+    }
+
+    public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+
+    }
+
+    public Color BackgroundColor = Color.White * 0.25f;
+
+    /// <summary>
+    /// 先看效果，随便画画
+    /// </summary>
+    public virtual void DrawSelf(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        var position = _bounds.Position;
+        var size = _bounds.Size;
+        var color = BackgroundColor;
+
+        // OtherSystem.Vertices.AddRange([
+        //     new(position, color),
+        //     new(position.X + size.Width, position.Y, color),
+        //     new(position.X, position.Y + size.Height, color),
+        //     new(position.X, position.Y + size.Height, color),
+        //     new(position.X + size.Width, position.Y, color),
+        //     new(position + size, color)
+        // ]);
+    }
+
+    public static void DrawBox(SpriteBatch spriteBatch, Vector2 position, Vector2 size, Color color)
+    {
+        spriteBatch.Draw(TextureAssets.MagicPixel.Value, position, new(0, 0, 1, 1), color, 0f, Vector2.Zero, size, 0, 0f);
+    }
+
+    public virtual void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        foreach (var child in _children)
+        {
+            child.HandleDraw(gameTime, spriteBatch);
+        }
     }
 }

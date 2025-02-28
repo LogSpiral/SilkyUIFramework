@@ -5,7 +5,7 @@ public partial class View
     #region Flexbox 属性
 
     /// <summary> 是否换行 </summary>
-    public bool FlexWrap { get; set; } = true;
+    public bool FlexWrap { get; set; } = false;
 
     /// <summary>
     /// 填充剩余空间 (最后计算)

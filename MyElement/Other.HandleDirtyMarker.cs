@@ -2,20 +2,18 @@
 
 public partial class Other
 {
-    public bool IsLayoutDirty { get; set; } = true;
-
-    public bool IsPositionDirty { get; set; } = true;
+    public bool LayoutDirty { get; protected set; } = true;
+    public bool PositionDirty { get; protected set; } = true;
 
     /// <summary>
-    /// 冒泡标记脏
+    /// 标记脏
     /// </summary>
-    public void BubbleMarkerDirty()
+    public void MarkLayoutDirty()
     {
-        IsLayoutDirty = true;
+        if (LayoutDirty) return;
 
-        if (Parent is not { } parent) return;
-
-        parent.BubbleMarkerDirty();
+        LayoutDirty = true;
+        Parent?.MarkLayoutDirty();
     }
 
     /// <summary>
@@ -23,7 +21,7 @@ public partial class Other
     /// </summary>
     public void LayoutDirtyCheck()
     {
-        if (IsLayoutDirty)
+        if (LayoutDirty)
         {
             var container = Parent is null ? GetViewportSize() : Parent._innerBounds.Size;
             Measure(container);
@@ -42,7 +40,7 @@ public partial class Other
     /// </summary>
     public void PositionDirtyCheck()
     {
-        if (IsPositionDirty)
+        if (PositionDirty)
         {
             ApplyPosition();
         }

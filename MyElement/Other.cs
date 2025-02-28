@@ -1,4 +1,7 @@
-﻿namespace SilkyUIFramework;
+﻿using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
+
+namespace SilkyUIFramework;
 
 /// <summary>
 /// 似乎在密谋着什么，再等等...
@@ -7,7 +10,8 @@ public partial class Other
 {
     public bool OverflowHidden { get; set; }
 
-    #region Parent Children
+    #region Parent Children Properties
+
     /// <summary>
     /// 父元素
     /// </summary>
@@ -28,8 +32,8 @@ public partial class Other
         child.Remove();
         _children.Add(child);
         child.Parent = this;
-        BubbleMarkerDirty();
-        IsPositionDirty = true;
+        MarkLayoutDirty();
+        PositionDirty = true;
     }
 
     public virtual void AppendChildren(params Other[] children)
@@ -41,8 +45,8 @@ public partial class Other
             child.Parent = this;
         }
 
-        BubbleMarkerDirty();
-        IsPositionDirty = true;
+        MarkLayoutDirty();
+        PositionDirty = true;
     }
 
     public virtual void Remove()
@@ -54,8 +58,8 @@ public partial class Other
     {
         _children.Remove(child);
         child.Parent = null;
-        BubbleMarkerDirty();
-        IsPositionDirty = true;
+        MarkLayoutDirty();
+        PositionDirty = true;
     }
 
     public virtual void RemoveChildren()
@@ -65,8 +69,8 @@ public partial class Other
             _children.Remove(child);
             child.Parent = null;
         }
-        BubbleMarkerDirty();
-        IsPositionDirty = true;
+        MarkLayoutDirty();
+        PositionDirty = true;
     }
 
     #endregion
@@ -78,10 +82,10 @@ public partial class Other
     {
         OnUpdate?.Invoke(gameTime);
         Update(gameTime);
-        HandleChildrenUpdate(gameTime);
+        UpdateChildren(gameTime);
     }
 
-    protected virtual void HandleChildrenUpdate(GameTime gameTime)
+    protected virtual void UpdateChildren(GameTime gameTime)
     {
         foreach (var child in _children.ToArray())
         {
@@ -128,6 +132,29 @@ public partial class Other
     }
 
     #endregion
+
+    public void HandleUpdateStatus(GameTime gameTime)
+    {
+        UpdateStatus(gameTime);
+        UpdateChildrenStatus(gameTime);
+    }
+
+    /// <summary>
+    /// 可以用作动画相关的更新 (最早调用)
+    /// </summary>
+    public virtual void UpdateStatus(GameTime gameTime)
+    {
+
+    }
+
+    public virtual void UpdateChildrenStatus(GameTime gameTime)
+    {
+        foreach (var child in _children)
+        {
+            if (_invalidate) continue;
+            child.HandleUpdateStatus(gameTime);
+        }
+    }
 
     public Other GetElementAt(Vector2 position)
     {

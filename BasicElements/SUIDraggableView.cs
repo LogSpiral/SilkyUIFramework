@@ -16,8 +16,8 @@ public class SUIDraggableView : View
         Draggable = draggable;
 
         Border = 2;
-        BorderColor = new Color(18, 18, 38) * 0.75f;
-        BgColor = new Color(63, 65, 151) * 0.75f;
+        BorderColor = SUIColor.Border * 0.75f;
+        BgColor = SUIColor.Background * 0.75f;
         CornerRadius = new Vector4(12);
 
         RoundedRectangle.ShadowColor = new Color(18, 18, 38) * 0.1f;

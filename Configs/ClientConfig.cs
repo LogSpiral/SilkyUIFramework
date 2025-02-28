@@ -9,17 +9,19 @@ public class ClientConfig : ModConfig
 
     public override ConfigScope Mode => ConfigScope.ClientSide;
 
-    [DefaultValue(7f)]
+    [DefaultValue(5.5f)]
     [Range(0, 10f)]
     [Slider]
     [Increment(0.5f)]
-    public float DeathTextOffset;
+    [CustomModConfigItem(typeof(MouseTextOffsetPreview))]
+    public float MouseTextOffset;
 
-    [DefaultValue(16f)]
-    [Range(0, 20f)]
+    [DefaultValue(15.5f)]
+    [Range(0, 25f)]
     [Slider]
     [Increment(0.5f)]
-    public float MouseTextOffset;
+    [CustomModConfigItem(typeof(DeathTextOffsetPreview))]
+    public float DeathTextOffset;
 
     public override void OnChanged()
     {

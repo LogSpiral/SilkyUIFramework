@@ -2,13 +2,13 @@
 
 ### Flexbox Container
 
-| 属性                    | 类型         | 作用               |
-| ----------------------- | ------------ | ------------------ |
-| `FlexDirection`         | `row,column` | 主轴方向           |
-| `FlexWrap`              | `boolean`    | 换行               |
-| `MainAlignment`         | `enum`       | 主轴对齐方式       |
-| `CrossAlignment`        | `enum`       | 交叉轴单行对齐方式 |
-| `CrossContentAlignment` | `enum`       | 交叉轴多行对其方式 |
+| 属性                    | 类型           | 作用               |
+| ----------------------- | -------------- | ------------------ |
+| `FlexDirection`         | `row` `column` | 主轴方向           |
+| `FlexWrap`              | `boolean`      | 换行               |
+| `MainAlignment`         | `enum`         | 主轴对齐方式       |
+| `CrossAlignment`        | `enum`         | 交叉轴单行对齐方式 |
+| `CrossContentAlignment` | `enum`         | 交叉轴多行对其方式 |
 
 ### Flexbox Item
 

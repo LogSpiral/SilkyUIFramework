@@ -43,6 +43,7 @@ public class SUIItemSlot : View
     public float ItemScale { get; set; } = 1f;
     public Color ItemColor { get; set; } = Color.White;
     public Vector2 ItemOffset { get; set; } = Vector2.Zero;
+    public Vector2 ItemAlign { get; set; } = new(0.5f);
 
     public SUIItemSlot()
     {
@@ -203,7 +204,7 @@ public class SUIItemSlot : View
             Main.HoverItem = Item.Clone();
         }
 
-        DrawItemIcon(spriteBatch, Item, Color.White, _dimensions.Position() + ItemOffset + _dimensions.Size() / 2f, ItemIconSizeLimit, ItemScale);
+        DrawItemIcon(spriteBatch, Item, Color.White, _dimensions.Position() + ItemOffset + _dimensions.Size() * ItemAlign, ItemIconSizeLimit, ItemScale, ItemAlign);
 
         // 绘制物品堆叠数字
         if (AlwaysDisplayItemStack || (DisplayItemStack && Item.stack > 1))
@@ -212,16 +213,25 @@ public class SUIItemSlot : View
         }
     }
 
+    public string StackFormat { get; set; } = "{0}";
+    public Vector2 StackAlign { get; set; } = new(0.18f, 0.9f);
+
     public void DrawItemStack(SpriteBatch spriteBatch)
     {
         var font = FontAssets.ItemStack.Value;
-        Vector2 textSize = font.MeasureString(Item.stack.ToString()) * 0.75f * ItemScale;
-        Vector2 position = _dimensions.Position() + new Vector2(_dimensions.Width * 0.18f, (_dimensions.Height - textSize.Y) * 0.9f);
-        spriteBatch.DrawString(font, $"{Item.stack}", position, Color.White, 0f, Vector2.Zero, 0.75f, 0f, 1f);
+        var stack = string.Format(StackFormat, Item.stack);
+        Vector2 textSize = font.MeasureString(stack) * 0.75f * ItemScale;
+        Vector2 position = _dimensions.Position() + (_dimensions.Size() - textSize) * StackAlign;
+
+        foreach (var offset in SUIText.ShadowOffsets)
+        {
+            spriteBatch.DrawString(font, stack, position + offset * 2f, Color.Black, 0f, Vector2.Zero, 0.75f, 0f, 1f);
+        }
+        spriteBatch.DrawString(font, stack, position, Color.White, 0f, Vector2.Zero, 0.75f, 0f, 1f);
     }
 
     public static void DrawItemIcon(SpriteBatch spriteBatch, Item item, Color color, Vector2 center,
-        float sizeLimit = 32f, float sizeScale = 1f)
+        float sizeLimit = 32f, float sizeScale = 1f, Vector2? iconAlign = null)
     {
         Main.instance.LoadItem(item.type);
         Texture2D texture2D = TextureAssets.Item[item.type].Value;
@@ -230,7 +240,7 @@ public class SUIItemSlot : View
         sizeScale *= (frame.Width > sizeLimit || frame.Height > sizeLimit)
             ? frame.Width > frame.Height ? sizeLimit / frame.Width : sizeLimit / frame.Height
             : 1f;
-        Vector2 origin = frame.Size() / 2f;
+        Vector2 origin = frame.Size() * (iconAlign ?? new Vector2(0.5f));
 
         if (ItemLoader.PreDrawInInventory(item, spriteBatch, center, frame, item.GetAlpha(color),
                 item.GetColor(color), origin, sizeScale))
