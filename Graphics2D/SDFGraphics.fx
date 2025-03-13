@@ -7,6 +7,7 @@ float4 uBackgroundColor;
 float2 uStart;
 float2 uEnd;
 float uLineWidth;
+float2 uSmoothstepRange; // 过渡范围（原uTransition，更名以提高可读性）
 
 struct VSInput
 {
@@ -32,7 +33,7 @@ float4 Cross(float2 coords : TEXCOORD0) : COLOR0
 {
     float2 p = abs(coords - uSizeOver2);
     float d = length(p - min(p.x + p.y, uSizeOver2) * 0.5) - uRound;
-    return lerp(lerp(uBackgroundColor, uBorderColor, smoothstep(-1, 0.5, d + uBorder)), 0, smoothstep(-1, 0.5, d));
+    return lerp(lerp(uBackgroundColor, uBorderColor, smoothstep(uSmoothstepRange.x, uSmoothstepRange.y, d + uBorder)), 0, smoothstep(uSmoothstepRange.x, uSmoothstepRange.y, d));
 }
 
 float4 HasBorderLine(float2 coords : TEXCOORD0) : COLOR0

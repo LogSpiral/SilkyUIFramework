@@ -9,8 +9,8 @@ public enum AnimationTimerStaus
 {
     ForwardUpdating,
     ReverseUpdating,
-    ForwardUpdateCompleted,
-    ReverseUpdateCompleted
+    ForwardCompleted,
+    ReverseCompleted
 }
 
 #endregion
@@ -38,9 +38,9 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// <summary>
     /// 进度
     /// </summary>
-    public float Schedule => Timer / TimerMax;
+    public float Schedule { get; private set; }
 
-    public AnimationTimerStaus Status = AnimationTimerStaus.ReverseUpdateCompleted;
+    public AnimationTimerStaus Status = AnimationTimerStaus.ReverseCompleted;
 
     /// <summary>
     /// 在正向更新完成时回调
@@ -52,19 +52,22 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// </summary>
     public event Action OnReverseUpdateCompleted;
 
-    #region Member Properties
+    #region IsComplete Updating
+
+    public bool IsComplete => Status is AnimationTimerStaus.ForwardCompleted or AnimationTimerStaus.ReverseCompleted;
+    public bool IsUpdating => Status is AnimationTimerStaus.ForwardUpdating or AnimationTimerStaus.ReverseUpdating;
 
     public bool IsForward =>
-        Status is AnimationTimerStaus.ForwardUpdating or AnimationTimerStaus.ForwardUpdateCompleted;
+        Status is AnimationTimerStaus.ForwardUpdating or AnimationTimerStaus.ForwardCompleted;
 
-    public bool ForwardUpdating => Status is AnimationTimerStaus.ForwardUpdating;
-    public bool ForwardUpdateCompleted => Status is AnimationTimerStaus.ForwardUpdateCompleted;
+    public bool IsForwardUpdating => Status is AnimationTimerStaus.ForwardUpdating;
+    public bool IsForwardCompleted => Status is AnimationTimerStaus.ForwardCompleted;
 
     public bool IsReverse =>
-        Status is AnimationTimerStaus.ReverseUpdating or AnimationTimerStaus.ReverseUpdateCompleted;
+        Status is AnimationTimerStaus.ReverseUpdating or AnimationTimerStaus.ReverseCompleted;
 
-    public bool ReverseUpdating => Status is AnimationTimerStaus.ReverseUpdating;
-    public bool ReverseUpdateCompleted => Status is AnimationTimerStaus.ReverseUpdateCompleted;
+    public bool IsReverseUpdating => Status is AnimationTimerStaus.ReverseUpdating;
+    public bool IsReverseCompleted => Status is AnimationTimerStaus.ReverseCompleted;
 
     #endregion
 
@@ -110,7 +113,7 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     public void ImmediateReverseUpdateCompleted()
     {
         Timer = 0;
-        Status = AnimationTimerStaus.ReverseUpdateCompleted;
+        Status = AnimationTimerStaus.ReverseCompleted;
         OnReverseUpdateCompleted?.Invoke();
     }
 
@@ -120,44 +123,46 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     public void ImmediateForwardUpdateCompleted()
     {
         Timer = TimerMax;
-        Status = AnimationTimerStaus.ForwardUpdateCompleted;
+        Status = AnimationTimerStaus.ForwardCompleted;
         OnForwardUpdateCompleted?.Invoke();
     }
 
     #endregion
 
-    /// <summary>
-    /// 更新
-    /// </summary>
-    public virtual void Update(float speedFactor = 1f)
+    public void Update(GameTime gameTime)
     {
+        var speedFactor = Main.FrameSkipMode == Terraria.Enums.FrameSkipMode.Subtle ? 1f :
+            (float)gameTime.ElapsedGameTime.TotalSeconds * 60f;
         switch (Status)
         {
             case AnimationTimerStaus.ForwardUpdating:
-
+            {
                 Timer += (TimerMax - Timer) / Speed * speedFactor;
 
                 if (TimerMax - Timer < TimerMax * 0.0001f)
                 {
                     Timer = TimerMax;
-                    Status = AnimationTimerStaus.ForwardUpdateCompleted;
+                    Status = AnimationTimerStaus.ForwardCompleted;
                     OnForwardUpdateCompleted?.Invoke();
                 }
 
                 break;
+            }
             case AnimationTimerStaus.ReverseUpdating:
-
+            {
                 Timer -= Timer / Speed * speedFactor;
 
                 if (Timer < TimerMax * 0.0001f)
                 {
                     Timer = 0;
-                    Status = AnimationTimerStaus.ReverseUpdateCompleted;
+                    Status = AnimationTimerStaus.ReverseCompleted;
                     OnReverseUpdateCompleted?.Invoke();
                 }
 
                 break;
+            }
         }
+        Schedule = Timer / TimerMax;
     }
 
     #region Lerp Methods

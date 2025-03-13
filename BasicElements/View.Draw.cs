@@ -193,6 +193,6 @@ public partial class View
             HoverTimer.StartReverseUpdate();
         }
 
-        HoverTimer.Update((float)gameTime.ElapsedGameTime.TotalSeconds * 60f);
+        HoverTimer.Update(gameTime);
     }
 }

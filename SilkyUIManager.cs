@@ -1,17 +1,10 @@
-﻿using SilkyUIFramework.BasicElements;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 public class SilkyUIManager
 {
     public static SilkyUIManager Instance { get; } = new();
 
     private SilkyUIManager() { }
-
-    /// <summary>
-    /// 鼠标位置
-    /// </summary>
-    public static Vector2 MouseScreen => new(Main.mouseX, Main.mouseY);
 
     #region Fields and Propertices
 
@@ -26,32 +19,19 @@ public class SilkyUIManager
     public List<SilkyUI> CurrentSilkyUIs { get; private set; }
 
     /// <summary>
-    /// 鼠标焦点元素
+    /// 鼠标悬浮元素
     /// </summary>
-    public UIElement MouseHoverTarget { get; set; }
-
-    private UIElement _mouseFocusTarget;
-
-    public UIElement MouseFocusTarget
-    {
-        get => _mouseFocusTarget;
-        set => _mouseFocusTarget = value;
-    }
-
-    /// <summary>
-    /// 当前鼠标焦点下是否有元素
-    /// </summary>
-    public bool HasMouseHoverElement => MouseHoverTarget is not null;
+    protected UIElement MouseHoverTarget { get; set; }
 
     /// <summary>
     /// <see cref="UserInterface"/> 实例绑定的 <see cref="BasicBody"/> <see cref="Type"/>
     /// </summary>
-    public Dictionary<SilkyUI, Type> BasicBodyTypes { get; } = [];
+    public Dictionary<SilkyUI, Type> BasicBodyMappingTable { get; } = [];
 
     /// <summary>
-    /// <see cref="UserInterface"/> 实例绑定的 <see cref="BasicBody"/> <see cref="AutoloadUIAttribute"/>
+    /// <see cref="UserInterface"/> 实例绑定的 <see cref="BasicBody"/> <see cref="RegisterUIAttribute"/>
     /// </summary>
-    public Dictionary<SilkyUI, AutoloadUIAttribute> BasicBodyTypesAutoloadInfo { get; } = [];
+    public Dictionary<SilkyUI, RegisterUIAttribute> RegisterUIMappingTable { get; } = [];
 
     /// <summary>
     /// 界面层顺序
@@ -66,21 +46,18 @@ public class SilkyUIManager
 
     #endregion
 
-    public void RegisterUI(Type basicBodyType, AutoloadUIAttribute autoloadUIAttribute)
+    public void RegisterUI(Type basicBodyType, RegisterUIAttribute registerUIAttribute)
     {
         var silkyUI = new SilkyUI();
 
-        BasicBodyTypes[silkyUI] = basicBodyType;
-        BasicBodyTypesAutoloadInfo[silkyUI] = autoloadUIAttribute;
+        BasicBodyMappingTable[silkyUI] = basicBodyType;
+        RegisterUIMappingTable[silkyUI] = registerUIAttribute;
 
-        if (SilkyUILayerNodes.TryGetValue(autoloadUIAttribute.LayerNode, out var silkyUIs))
+        if (SilkyUILayerNodes.TryGetValue(registerUIAttribute.LayerNode, out var silkyUIs))
             silkyUIs.Add(silkyUI);
-        else SilkyUILayerNodes[autoloadUIAttribute.LayerNode] = [silkyUI];
+        else SilkyUILayerNodes[registerUIAttribute.LayerNode] = [silkyUI];
     }
 
-    /// <summary>
-    /// 移动当前 UserInterface 到顶层
-    /// </summary>
     public void CurrentUserInterfaceMoveToTop()
     {
         if (CurrentSilkyUIs.Remove(CurrentSilkyUI))
@@ -89,12 +66,15 @@ public class SilkyUIManager
         }
     }
 
+    protected UIElement MouseFocusTarget { get; set; }
+
     /// <summary>
     /// 更新 UI
     /// </summary>
     public void UpdateUI(GameTime gameTime)
     {
         MouseHoverTarget = null;
+        MouseFocusTarget = null;
 
         // 它是绘制顺序, 所以事件处理要倒序
         foreach (var layerNode in _interfaceLayerOrders.Where(SilkyUILayerNodes.ContainsKey).Reverse())
@@ -105,7 +85,7 @@ public class SilkyUIManager
                 CurrentSilkyUIs = silkyUIs;
 
                 var order = silkyUIs.OrderBy(value =>
-                    BasicBodyTypesAutoloadInfo[value].Priority).ToList();
+                    RegisterUIMappingTable[value].Priority).ToList();
                 silkyUIs.Clear();
                 silkyUIs.AddRange(order);
 
@@ -114,7 +94,20 @@ public class SilkyUIManager
                 {
                     var silkyUI = silkyUIs[i];
                     CurrentSilkyUI = silkyUI;
-                    silkyUI?.Update(gameTime);
+                    if (silkyUI is not null)
+                    {
+                        if (silkyUI.Update(gameTime, MouseHoverTarget != null, MouseFocusTarget != null))
+                        {
+                            if (silkyUI.MouseHoverTarget != null)
+                            {
+                                MouseHoverTarget = silkyUI.MouseHoverTarget;
+                            }
+                            if (silkyUI.MouseFocusTarget != null)
+                            {
+                                MouseFocusTarget = silkyUI.MouseFocusTarget;
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception)
@@ -160,7 +153,7 @@ public class SilkyUIManager
             // 遍历当前 UI 向节点插入
             foreach (var silkyUI in silkyUIs)
             {
-                if (!BasicBodyTypesAutoloadInfo.TryGetValue(silkyUI, out var autoload)) continue;
+                if (!RegisterUIMappingTable.TryGetValue(silkyUI, out var autoload)) continue;
 
                 var silkyUILayer = new SilkyUILayer(
                     silkyUI, autoload.Name,

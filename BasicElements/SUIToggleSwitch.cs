@@ -54,7 +54,7 @@ public class SUIToggleSwitch : View
     protected override void UpdateAnimationTimer(GameTime gameTime)
     {
         base.UpdateAnimationTimer(gameTime);
-        SwitchTimer.Update((float)gameTime.ElapsedGameTime.TotalSeconds * 60f);
+        SwitchTimer.Update(gameTime);
     }
 
     public override void DrawSelf(SpriteBatch spriteBatch)

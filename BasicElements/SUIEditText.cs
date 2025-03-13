@@ -1,6 +1,8 @@
 ﻿using System.Net.Mime;
 using System.Xml;
 using Microsoft.Xna.Framework.Input;
+using ReLogic.Localization.IME;
+using ReLogic.OS;
 using SilkyUIFramework.Core;
 using Terraria.GameContent.UI.Chat;
 using Terraria.UI.Chat;
@@ -12,22 +14,16 @@ public class SUIEditText : SUIText
     private float _cursorFlashTimer;
 
     public bool CanDrawCursor { get; set; }
-    public Color CursorFlashColor;
+
+    public Color CursorColor = Color.White;
+    public Color CursorFlashColor { get; set; }
 
     public SUIEditText()
     {
+        OccupyPlayerInput = true;
         CursorSnippet = new CursorSnippet(this);
         DragIgnore = false;
     }
-
-    public override void LeftMouseDown(UIMouseEvent evt)
-    {
-        IsEditing = true;
-        base.LeftMouseDown(evt);
-    }
-
-    public bool IsFocused =>
-        SilkyUIManager.Instance.MouseFocusTarget == this;
 
     public readonly CursorSnippet CursorSnippet;
 
@@ -35,42 +31,42 @@ public class SUIEditText : SUIText
     {
         var text = Text;
 
+        var beforeText = text[..CursorIndex];
+        var afterText = text[CursorIndex..];
+        var maxWidth = _innerDimensions.Width / TextScale;
+        var beforeSnippet =
+            TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(beforeText, TextColor));
+        var afterSnippet =
+            TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(afterText, TextColor));
+        beforeSnippet.Add(CursorSnippet);
+        beforeSnippet.AddRange(afterSnippet);
+
         // 是否换行
         if (WordWrap && SpecifyWidth)
         {
-            var beforeText = text[..CursorIndex];
-            var afterText = text.Substring(CursorIndex, text.Length - CursorIndex);
-            var maxWidth = _innerDimensions.Width / TextScale;
-            var beforeSnippet =
-                TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(beforeText, TextColor));
-            var afterSnippet =
-                TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(afterText, TextColor));
-            beforeSnippet.Add(CursorSnippet);
-            beforeSnippet.AddRange(afterSnippet);
             TextSnippetHelper.WordwrapString(beforeSnippet, FinalSnippets, TextColor, Font, maxWidth, MaxWordLength);
         }
         else
         {
             FinalSnippets.Clear();
-            FinalSnippets.AddRange(
-                TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(text, TextColor)));
+            FinalSnippets.AddRange(beforeSnippet);
         }
 
-        TextSize = ChatManager.GetStringSize(Font, FinalSnippets.ToArray(), new Vector2(1f));
+        TextSize = ChatManager.GetStringSize(Font, [.. FinalSnippets], new Vector2(1f));
         TextChanges = false;
     }
 
     protected override void DrawText(SpriteBatch spriteBatch, List<TextSnippet> textSnippets)
     {
         // 光标颜色
-        if (IsEditing && SilkyUIManager.Instance.MouseFocusTarget == this)
+        if (IsFocus)
         {
             const int cycle = 60;
             CursorFlashColor = _cursorFlashTimer switch
             {
-                < cycle => Color.White * (_cursorFlashTimer / cycle),
-                >= cycle => Color.White * (1 - (_cursorFlashTimer - cycle) / cycle),
-                _ => CursorFlashColor
+                < cycle => CursorColor * (_cursorFlashTimer / cycle),
+                >= cycle => CursorColor * (1 - (_cursorFlashTimer - cycle) / cycle),
+                _ => CursorColor
             };
 
             _cursorFlashTimer++;
@@ -81,21 +77,23 @@ public class SUIEditText : SUIText
         base.DrawText(spriteBatch, textSnippets);
     }
 
+    /// <summary>
+    /// 绘制文本阴影
+    /// </summary>
     protected override void DrawTextShadow(SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
     {
         CanDrawCursor = false;
         base.DrawTextShadow(spriteBatch, finalSnippets, textPos);
     }
 
+    /// <summary>
+    /// 绘制文本
+    /// </summary>
     protected override void DrawTextSelf(SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
     {
         CanDrawCursor = true;
         base.DrawTextSelf(spriteBatch, finalSnippets, textPos);
     }
-
-    public bool IsEditing { get; set; } = true;
-
-    public override bool OccupyPlayerInput => IsEditing;
 
     private int _cursorIndex;
 
@@ -112,7 +110,7 @@ public class SUIEditText : SUIText
 
     public event Action OnEnterKeyDown;
 
-    public override void HandlePlayerInput()
+    public override void HandlePlayerInput(bool inputMethodStatus)
     {
         if (Main.dedServ) return; // 服务器
         if (!Main.hasFocus) return; // 焦点不在游戏
@@ -120,13 +118,6 @@ public class SUIEditText : SUIText
         // 不能再获取了
         Main.oldInputText = Main.inputText;
         Main.inputText = Keyboard.GetState();
-
-        // 退出编辑
-        if (Main.inputText.IsKeyDown(Keys.Escape))
-        {
-            IsEditing = false;
-            return;
-        }
 
         var inputString = string.Empty;
         // 裁剪，复制，粘贴
@@ -156,7 +147,16 @@ public class SUIEditText : SUIText
         else if (Main.inputText.IsKeyDown(Keys.Enter))
             inputString = string.Empty;
 
-        UpdateBackSpace();
+        if (inputMethodStatus)
+        {
+            _longPressBackSpaceTimer = 0;
+        }
+        else
+        {
+            if (Main.inputText.IsKeyDown(Keys.Back) && !Main.oldInputText.IsKeyDown(Keys.Back))
+                DownBackspace();
+            LongPressBackSpace();
+        }
 
         InsertText(inputString);
 
@@ -168,7 +168,7 @@ public class SUIEditText : SUIText
     }
 
     private int _moveCursorTimer;
-    private int _backSpaceTimer;
+    private int _longPressBackSpaceTimer;
 
     /// <summary>
     /// 光标位置
@@ -204,32 +204,29 @@ public class SUIEditText : SUIText
     /// <summary>
     /// 长按删除
     /// </summary>
-    public void UpdateBackSpace()
+    public void LongPressBackSpace()
     {
         if (Main.inputText.IsKeyDown(Keys.Back) && Main.oldInputText.IsKeyDown(Keys.Back))
         {
-            switch (_backSpaceTimer)
+            switch (_longPressBackSpaceTimer)
             {
-                case 0:
-                    DownBackspace();
-                    break;
                 case >= 30 and < 60:
-                    if (_backSpaceTimer % 10 == 0) DownBackspace();
+                    if (_longPressBackSpaceTimer % 10 == 0) DownBackspace();
                     break;
                 case >= 60 and < 120:
-                    if (_backSpaceTimer % 5 == 0) DownBackspace();
+                    if (_longPressBackSpaceTimer % 5 == 0) DownBackspace();
                     break;
                 case >= 120 and < 180:
-                    if (_backSpaceTimer % 2 == 0) DownBackspace();
+                    if (_longPressBackSpaceTimer % 2 == 0) DownBackspace();
                     break;
                 case >= 180:
                     DownBackspace();
                     break;
             }
 
-            _backSpaceTimer = Math.Min(180, _backSpaceTimer + 1);
+            _longPressBackSpaceTimer++;
         }
-        else _backSpaceTimer = 0;
+        else _longPressBackSpaceTimer = 0;
     }
 
     /// 移动光标

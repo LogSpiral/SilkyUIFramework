@@ -2,23 +2,10 @@
 
 namespace SilkyUIFramework.BasicElements;
 
-/// <summary> 输入元素 </summary>
-public interface IInputElement
-{
-    /// <summary> 输入法位置 </summary>
-    Vector2 IMEPosition { get; }
-
-    /// <summary> 占用输入 </summary>
-    bool OccupyPlayerInput { get; }
-
-    /// <summary> 处理用户输入 </summary>
-    void HandlePlayerInput();
-}
-
 /// <summary>
 /// 所有 SilkyUI 元素的父类
 /// </summary>
-public partial class View : UIElement, IInputElement
+public partial class View : UIElement
 {
     public View()
     {
@@ -33,22 +20,22 @@ public partial class View : UIElement, IInputElement
         OnMiddleMouseUp += (_, _) => MiddleMousePressed = false;
     }
 
-    public virtual Vector2 IMEPosition => _dimensions.LeftBottom() + new Vector2(0f, 32f);
+    public virtual Vector2 InputMethodPosition => _dimensions.LeftBottom() + new Vector2(0f, 32f);
 
     public virtual bool OccupyPlayerInput { get; set; }
 
-    public virtual void HandlePlayerInput() { }
+    public virtual void HandlePlayerInput(bool inputMethodStatus) { }
 
     public virtual UIElement GetElementAtFromView(Vector2 point)
     {
         if (Invalidate) return null;
 
-        var children =
-            GetChildrenByZIndexSort().OfType<View>().Where(el => !el.IgnoresMouseInteraction).Reverse().ToArray();
-
         if (OverflowHidden && !ContainsPoint(point)) return null;
 
-        foreach (var child in children)
+        var children =
+            GetChildrenByZIndexSort().OfType<View>().Where(el => !el.IgnoresMouseInteraction);
+
+        foreach (var child in children.Reverse())
         {
             if (child.GetElementAt(point) is { } target) return target;
         }
@@ -82,5 +69,24 @@ public partial class View : UIElement, IInputElement
         Elements.Add(child);
         Recalculate();
         return this;
+    }
+
+
+    public event MouseEvent GotFocus;
+    public event MouseEvent LostFocus;
+
+    public bool IsFocus { get; set; }
+    public virtual void OnGotFocus(UIMouseEvent evt)
+    {
+        IsFocus = true;
+        GotFocus?.Invoke(evt, this);
+        (Parent as View)?.OnGotFocus(evt);
+    }
+
+    public virtual void OnLostFocus(UIMouseEvent evt)
+    {
+        IsFocus = false;
+        LostFocus?.Invoke(evt, this);
+        (Parent as View)?.OnLostFocus(evt);
     }
 }

@@ -16,19 +16,31 @@ public abstract class BasicBody : View
     public virtual bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// 无法选中
+    /// 可交互的 (default: true)
     /// </summary>
-    public virtual bool UnableToSelect => false;
-
-    /// <summary>
-    /// 元素能否交互 (可交互将阻挡下层元素交互)
-    /// </summary>
-    public virtual bool AreHoverTargetInteractive(UIElement hoverTarget) => hoverTarget != null && hoverTarget != this;
+    public virtual bool IsInteractable => true;
 
     public override void Update(GameTime gameTime)
     {
         CheckScreenSizeChanges();
         base.Update(gameTime);
+    }
+
+    public override UIElement GetElementAtFromView(Vector2 point)
+    {
+        if (Invalidate) return null;
+
+        if (OverflowHidden && !ContainsPoint(point)) return null;
+
+        var children =
+            GetChildrenByZIndexSort().OfType<View>().Where(el => !el.IgnoresMouseInteraction);
+
+        foreach (var child in children.Reverse())
+        {
+            if (child.GetElementAt(point) is { } target) return target;
+        }
+
+        return null;
     }
 
     public event Action<Vector2, Vector2> ScreenSizeChanges;

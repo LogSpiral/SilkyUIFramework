@@ -101,8 +101,7 @@ public class SUIScrollbar : View
         ScrollDirection = scrollDirection;
         TargetView = targetView;
 
-        OnUpdateAnimationTimer += gameTime =>
-            ScrollTimer.Update((float)gameTime.ElapsedGameTime.TotalSeconds * 60f);
+        OnUpdateAnimationTimer += ScrollTimer.Update;
     }
 
     #endregion

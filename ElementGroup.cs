@@ -9,8 +9,8 @@ public class ElementGroup(View view)
     private readonly List<ElementWrapper> _wrappers = [];
     public IReadOnlyList<ElementWrapper> Children => _wrappers;
     public int Count => _wrappers.Count;
-    public float Width { get; private set; }
-    public float Height { get; private set; }
+    public float Width { get; set; }
+    public float Height { get; set; }
 
     public void Append(View element) =>
         Append(element, element._outerDimensions.Width, element._outerDimensions.Height);

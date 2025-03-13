@@ -1,11 +1,16 @@
 namespace SilkyUIFramework;
 
-public struct Size(float width, float height)
+public readonly struct Size(float width, float height) : IEquatable<Size>
 {
-    public static Size Zero => new(0, 0);
+    public static readonly Size Zero = new(0, 0);
 
-    public float Width { get; set; } = width;
-    public float Height { get; set; } = height;
+    public float Width { get; } = width;
+    public float Height { get; } = height;
+
+    public Size With(float? pixels = null, float? percent = null)
+    {
+        return new Size(pixels ?? Width, percent ?? Height);
+    }
 
     public static implicit operator Size(Vector2 vector2)
     {
@@ -77,25 +82,13 @@ public struct Size(float width, float height)
         return new Size(size.Width / scale.Width, size.Height / scale.Height);
     }
 
-    public static bool operator ==(Size size1, Size size2)
-    {
-        return size1.Width == size2.Width && size1.Height == size2.Height;
-    }
+    public static bool operator ==(Size size1, Size size2) => size1.Equals(size2);
+    public static bool operator !=(Size size1, Size size2) => !size1.Equals(size2);
 
-    public static bool operator !=(Size size1, Size size2)
-    {
-        return size1.Width != size2.Width || size1.Height != size2.Height;
-    }
+    public readonly override bool Equals(object obj) => obj is Size size && Equals(size);
+    public readonly bool Equals(Size other) => Width.Equals(other.Width) && Height.Equals(other.Height);
 
-    public override readonly bool Equals(object obj)
-    {
-        return obj is Size size && this == size;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashCode.Combine(Width, Height);
-    }
+    public readonly override int GetHashCode() => HashCode.Combine(Width, Height);
 
     public static Size Min(Size size1, Size size2)
     {
@@ -109,6 +102,7 @@ public struct Size(float width, float height)
 
     public static Size Clamp(Size value, Size min, Size max)
     {
-        return new Size(MathHelper.Clamp(value.Width, min.Width, max.Width), MathHelper.Clamp(value.Height, min.Height, max.Height));
+        return new Size(MathHelper.Clamp(value.Width, min.Width, max.Width),
+            MathHelper.Clamp(value.Height, min.Height, max.Height));
     }
 }

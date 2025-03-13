@@ -5,18 +5,14 @@ sampler uImage0 : register(s0);  // 纹理采样器（虽然未使用，但保�
 
 cbuffer MatrixBuffer : register(b0)
 {
-    float4x4 uTransformMatrix;   // 顶点变换矩阵（需确保外部传入行主序）
-};
-
-cbuffer ShapeParams : register(b1)
-{
-    float4 uBackgroundColor;     // 背景色
-    float4 uBorderColor;         // 边框颜色
-    float4 uTransparencyColor;   // 透明色（替换硬编码的0）
-    float2 uSmoothstepRange;     // 过渡范围（原uTransition，更名以提高可读性）
-    float uBorder;               // 边框宽度
-    float uShadowSize;           // 阴影大小
-    float uInnerShrinkage;       // 内缩量（用于形状收缩）
+    float4x4 uTransformMatrix; // 顶点变换矩阵（需确保外部传入行主序）
+    float4 uBackgroundColor; // 背景色
+    float4 uBorderColor; // 边框颜色
+    float4 uTransparencyColor; // 透明色（替换硬编码的0）
+    float2 uSmoothstepRange; // 过渡范围（原uTransition，更名以提高可读性）
+    float uBorder; // 边框宽度
+    float uShadowSize; // 阴影大小
+    float uInnerShrinkage; // 内缩量（用于形状收缩）
 };
 
 struct VSInput
@@ -33,15 +29,6 @@ struct PSInput
     float Rounded : COLOR0;
 };
 
-float CalculateDistance(float2 q, float rounded)
-{
-    // 公式解释：
-    // 1. min(max(q.x, q.y), 0) -> 矩形内部区域的负距离
-    // 2. length(max(q, 0))     -> 矩形外部区域的正距离
-    // 3. - rounded             -> 圆角半径修正
-    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - rounded;
-}
-
 // --------------------------------
 // 顶点着色器（所有通道共用）
 // --------------------------------
@@ -52,6 +39,15 @@ PSInput VS_PCR(VSInput input)
     output.Coord = input.Coord;
     output.Rounded = input.Rounded;
     return output;
+}
+
+float CalculateDistance(float2 q, float rounded)
+{
+    // 公式解释：
+    // 1. min(max(q.x, q.y), 0) -> 矩形内部区域的负距离
+    // 2. length(max(q, 0))     -> 矩形外部区域的正距离
+    // 3. - rounded             -> 圆角半径修正
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - rounded;
 }
 
 /*float sdRoundedRectangle(float2 pos, float2 sizeOver2, float rounded)

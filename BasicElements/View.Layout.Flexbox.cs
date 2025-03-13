@@ -116,15 +116,35 @@ public partial class View
         }
     }
 
+    protected void StretchFlexItemGroupWidth()
+    {
+        if (ElementGroups.Count == 1 && ElementGroups[0] != null)
+        {
+            if (SpecifyWidth && _innerDimensions.Width > ElementGroups[0].Width)
+                ElementGroups[0].Width = _innerDimensions.Width;
+        }
+    }
+
+    protected void StretchFlexItemGroupHeight()
+    {
+        if (ElementGroups.Count == 1 && ElementGroups[0] != null)
+        {
+            if (SpecifyWidth && _innerDimensions.Height > ElementGroups[0].Height)
+                ElementGroups[0].Height = _innerDimensions.Height;
+        }
+    }
+
     protected virtual void ArrangeElementsByFlexbox()
     {
         switch (LayoutDirection)
         {
             default:
             case LayoutDirection.Row:
+                StretchFlexItemGroupHeight();
                 if (!SpecifyWidth)
                 {
                     var top = 0f;
+                    StretchFlexItemGroupHeight();
                     foreach (var elementGroup in ElementGroups)
                     {
                         elementGroup.Arrange(0f, top);
@@ -202,6 +222,7 @@ public partial class View
 
                 break;
             case LayoutDirection.Column:
+                StretchFlexItemGroupWidth();
                 if (!SpecifyHeight)
                 {
                     var left = 0f;

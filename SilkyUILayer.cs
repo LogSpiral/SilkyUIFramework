@@ -36,7 +36,7 @@ public class SilkyUILayer : GameInterfaceLayer
             null, null, null, null, null, transformMatrix);
 
         PreDraw?.Invoke();
-        SilkyUI.DrawUI();
+        SilkyUI.Draw();
         PostDraw?.Invoke();
         return true;
     }

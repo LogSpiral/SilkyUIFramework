@@ -2054,6 +2054,18 @@
             Whether or not the item using this drop rule will show in the Bestiary drops listing. This is typically less restrictive than the <see cref="M:Terraria.GameContent.ItemDropRules.IItemDropRuleCondition.CanDrop(Terraria.GameContent.ItemDropRules.DropAttemptInfo)"/> logic and usually only limits drop visibility for conditions that represent world state that can't change, such as the world difficulty or world evil choice. Most other conditions just return true, hinting to the player that the item could potentially drop even if the drop conditions aren't currently fully met.
             </summary>
         </member>
+        <member name="M:Terraria.GameContent.ItemDropRules.ItemDropDatabase.GetRulesForNPCID(System.Int32,System.Boolean)">
+            <summary>
+            Retrieves all the registered <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> for this specific NPC type.
+            </summary>
+            <param name="npcNetId"></param>
+            <param name="includeGlobalDrops">If true then global drop rules will also be retrieved</param>
+        </member>
+        <member name="M:Terraria.GameContent.ItemDropRules.ItemDropDatabase.GetRulesForItemID(System.Int32)">
+            <summary>
+            Retrieves all the registered <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> for this specific item type.
+            </summary>
+        </member>
         <member name="T:Terraria.GameContent.ItemDropRules.LeadingConditionRule">
             <summary>
             A drop rule that doesn't drop any items by itself, rather it contains just a <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRuleCondition"/>. Use <see cref="M:Terraria.GameContent.ItemDropRules.Chains.OnSuccess(Terraria.GameContent.ItemDropRules.IItemDropRule,Terraria.GameContent.ItemDropRules.IItemDropRule,System.Boolean)"/>, OnFailedConditions, or OnFailedRoll to attach other item drop rules to this rule. This can be useful for avoiding code repetition while writing logical item drop code.
@@ -4191,6 +4203,12 @@
             <br/> Defaults to <see langword="false"/>.
             </summary>
         </member>
+        <member name="F:Terraria.ID.MusicID.Sets.SkipsVolumeRemap">
+            <summary>
+            Skips Terraria's <see cref="M:Terraria.Audio.ASoundEffectBasedAudioTrack.ReMapVolumeToMatchXact(System.Single)"/> function to make music play at its intended volume.
+            <para/>This should be set in <see cref="M:Terraria.ModLoader.ModType.SetStaticDefaults"/>, preferably <see cref="T:Terraria.ModLoader.ModSystem"/>
+            </summary>
+        </member>
         <member name="T:Terraria.ID.NetmodeID">
             <summary>
             Correspond to <see cref="F:Terraria.Main.netMode"/> values.
@@ -5021,7 +5039,8 @@
         <member name="F:Terraria.ID.NPCID.Sets.CantTakeLunchMoney">
             <summary>
             If <see langword="true"/> for a given NPC type (<see cref="F:Terraria.NPC.type"/>), then that NPC cannot pick up dropped coins in Expert Mode.
-            <br/> Defaults to <see langword="false"/>.
+            <para/> Vanilla entries include mainly boss summons and other NPC that shouldn't be able to respawn naturally. See also <see cref="F:Terraria.ID.NPCID.Sets.RespawnEnemyID"/>.
+            <para/> Defaults to <see langword="false"/>.
             </summary>
         </member>
         <member name="F:Terraria.ID.NPCID.Sets.RespawnEnemyID">
@@ -5029,6 +5048,7 @@
             Associates an NPC type (<see cref="F:Terraria.NPC.type"/>) with the NPC type it respawns as from the coin loss system (<see cref="T:Terraria.GameContent.CoinLossRevengeSystem"/>).
             <br/> If an NPC type is not a key in this dictionary, then that NPC respawns as itself.
             <br/> If the value for an NPC type is <c>0</c>, then that NPC won't be cached (<see cref="M:Terraria.GameContent.CoinLossRevengeSystem.CacheEnemy(Terraria.NPC)"/>).
+            <para/> Some vanilla entries contain 0 values for special enemies that shouldn't respawn and other entries contain values indicating the "head" NPC of worm enemies to allow them to spawn the worm correctly. (Worm enemies currently don't work with the coin loss revenge system, however.) See also <see cref="F:Terraria.ID.NPCID.Sets.CantTakeLunchMoney"/>.
             </summary>
         </member>
         <member name="F:Terraria.ID.NPCID.Sets.TrailingMode">
@@ -7712,6 +7732,9 @@
             <br/> Defaults to <c>0</c>.
             </summary>
         </member>
+        <member name="F:Terraria.Item.manaIncrease">
+            <summary> <strong>Unused.</strong> </summary>
+        </member>
         <member name="F:Terraria.Item.buyOnce">
             <summary>
             Indicates that an item in a shop can only be bought once, meaning it is an item that has been sold to the NPC shop by the player.
@@ -8312,6 +8335,14 @@
             <param name="tileIDToPlace"></param>
             <param name="style"></param>
         </member>
+        <member name="M:Terraria.Item.CloneDefaults(System.Int32)">
+            <summary>
+            Call in <see cref="M:Terraria.ModLoader.ModItem.SetDefaults"/> to clone all the default item property values of an existing item. This is useful for prototyping or making a variant of an existing item. Note that other changes made to the cloned item, such as if another mod changes a weapon's damage, will be applied when using this approach. This may or may not be desired. 
+            <para/> When using this method make sure that any additional changes to item properties are on lines after this method is called, otherwise they will be overwritten. Some values cloned by this method might be undesired, such as equipment slot values like shoeSlot. <see href="https://github.com/tModLoader/tModLoader/blob/1.4.4/ExampleMod/Content/Items/Accessories/WaspNest.cs#L51">WaspNest.cs</see> shows how to cache and restore those values.
+            <para/> This will only clone the values, any additional logic such as shoot accuracy, recipes, accessory effects, use item logic, etc. will not be copied. The <see href="https://github.com/tModLoader/tModLoader/wiki/Advanced-Vanilla-Code-Adaption">Vanilla Code Adaption wiki page</see> teaches how to make a complete clone of an existing item.
+            </summary>
+            <param name="TypeToClone"></param>
+        </member>
         <member name="M:Terraria.Item.MechSpawn(System.Single,System.Single,System.Int32)">
             <summary>
             Use to check if a mechanism is allowed to spawn an Item of the provided type at the provided world coordinates. Checks nearby area to see if the <see href="https://terraria.wiki.gg/wiki/Statues#Spawn_limits">Spawn Limits</see> have been reached.
@@ -8367,7 +8398,8 @@
         </member>
         <member name="M:Terraria.Item.SetNameOverride(System.String)">
             <summary>
-            Overrides the value of <see cref="P:Terraria.Item.Name"/>.
+            Overrides the value of <see cref="P:Terraria.Item.Name"/> for this Item instance. This is used mainly to change the name shown on the item tooltip for recipe group ingredients to "Any RecipeGroupItemNameHere".
+            <para/> This does not change the actual name of this item when shown elsewhere as text, for example, so it is not a suitable way to permanently change an item name. To do that a <see href="https://github.com/tModLoader/tModLoader/wiki/Localization#overwriting-existing-terraria-keys">localization file entry</see> should be used instead.
             </summary>
             <param name="name">The new name of this <see cref="T:Terraria.Item"/>.</param>
         </member>
@@ -9259,6 +9291,12 @@
             <summary>
             The item type of the item icon to display at the bottom right corner of the NPC chat window. The Angler uses this functionality to display the fishing quest fish item, but it can be used to show any item. Assign during <see cref="M:Terraria.ModLoader.ModNPC.GetChat"/>. Defaults to 0.
             </summary>
+        </member>
+        <member name="F:Terraria.Main.anglerQuest">
+            <summary> The index of the current Angler Quest item within <see cref="F:Terraria.Main.anglerQuestItemNetIDs"/>. </summary>
+        </member>
+        <member name="F:Terraria.Main.anglerQuestItemNetIDs">
+            <summary> The Angler Quest item options. The current quest is contained in <see cref="F:Terraria.Main.anglerQuest"/>. </summary>
         </member>
         <member name="F:Terraria.Main.HoverItem">
             <summary>
@@ -13058,11 +13096,7 @@
             <returns>Return true to stop vanilla from calling OnKill on its own. Do this if you call OnKill yourself.</returns>
         </member>
         <member name="M:Terraria.ModLoader.GlobalNPC.PreKill(Terraria.NPC)">
-            <summary>
-            Allows you to determine whether or not NPC from doing anything on death (besides die). Return false to stop the NPC from doing anything special. Returns true by default.
-            </summary>
-            <param name="npc"></param>
-            <returns></returns>
+            <inheritdoc cref="M:Terraria.ModLoader.ModNPC.PreKill"/>
         </member>
         <member name="M:Terraria.ModLoader.GlobalNPC.OnKill(Terraria.NPC)">
             <summary>
@@ -13128,6 +13162,7 @@
         <member name="M:Terraria.ModLoader.GlobalNPC.ModifyHitPlayer(Terraria.NPC,Terraria.Player,Terraria.Player.HurtModifiers@)">
             <summary>
             Allows you to modify the damage, etc., that an NPC does to a player.
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="npc"></param>
             <param name="target"></param>
@@ -13161,6 +13196,7 @@
         <member name="M:Terraria.ModLoader.GlobalNPC.ModifyHitNPC(Terraria.NPC,Terraria.NPC,Terraria.NPC.HitModifiers@)">
             <summary>
             Allows you to modify the damage, knockback, etc., that an NPC does to a friendly NPC.
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="npc"></param>
             <param name="target"></param>
@@ -13198,8 +13234,9 @@
         </member>
         <member name="M:Terraria.ModLoader.GlobalNPC.ModifyHitByItem(Terraria.NPC,Terraria.Player,Terraria.Item,Terraria.NPC.HitModifiers@)">
             <summary>
-            Allows you to modify the damage, knockback, etc., that an NPC takes from a melee weapon. <br/>
-            Runs on the local client. <br/>
+            Allows you to modify the damage, knockback, etc., that an NPC takes from a melee weapon. 
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
+            <para/> Runs on the local client.
             </summary>
             <param name="npc"></param>
             <param name="player"></param>
@@ -13227,6 +13264,7 @@
         <member name="M:Terraria.ModLoader.GlobalNPC.ModifyHitByProjectile(Terraria.NPC,Terraria.Projectile,Terraria.NPC.HitModifiers@)">
             <summary>
             Allows you to modify the damage, knockback, etc., that an NPC takes from a projectile.
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="npc"></param>
             <param name="projectile"></param>
@@ -13244,6 +13282,7 @@
         <member name="M:Terraria.ModLoader.GlobalNPC.ModifyIncomingHit(Terraria.NPC,Terraria.NPC.HitModifiers@)">
             <summary>
             Allows you to use a custom damage formula for when an NPC takes damage from any source. For example, you can change the way defense works or use a different crit multiplier.
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="npc"></param>
             <param name="modifiers"></param>
@@ -14171,6 +14210,27 @@
             Can be used to adjust tile merge related things that are not possible to do in <see cref="M:Terraria.ModLoader.ModBlockType.SetStaticDefaults"/> due to timing.
             </summary>
         </member>
+        <member name="M:Terraria.ModLoader.GlobalTile.PreShakeTree(System.Int32,System.Int32,Terraria.Enums.TreeTypes)">
+            <summary>
+            This hook runs before <see cref="M:Terraria.ModLoader.GlobalTile.ShakeTree(System.Int32,System.Int32,Terraria.Enums.TreeTypes)"/> and is intended to be used to spawn bonus tree shaking drops and prevent existing drops using <see cref="F:Terraria.ModLoader.NPCLoader.blockLoot"/>.
+            <para/> The tile coordinates provided indicates the leafy top of the tree where entities should be spawned.
+            <para/> Runs on the server or singleplayer.
+            </summary>
+            <param name="x">The x tile coordinate of the tree.</param>
+            <param name="y">The y tile coordinate of the top of the tree.</param>
+            <param name="treeType">The type of tree that is being shaken. Modded trees will be <see cref="F:Terraria.Enums.TreeTypes.Custom"/> by default.</param>
+        </member>
+        <member name="M:Terraria.ModLoader.GlobalTile.ShakeTree(System.Int32,System.Int32,Terraria.Enums.TreeTypes)">
+            <summary>
+            This hook runs when any tree is shaken (See the <see href="https://terraria.wiki.gg/wiki/Trees#Shaking">Tree Shaking wiki page</see>). It is intended to be used to drop the primary item (or NPC). Use <see cref="M:Terraria.ModLoader.GlobalTile.PreShakeTree(System.Int32,System.Int32,Terraria.Enums.TreeTypes)"/> to implement bonus drops instead, since this method isn't guaranteed to be called if another mod rolls an item drop.
+            <para/> If a drop happens, return true to signify that a primary drop has been spawned and to prevent other mods and vanilla code from also attempting to drop the primary item. When spawning the drop be sure to use <see cref="T:Terraria.DataStructures.EntitySource_ShakeTree"/> as the source.
+            <para/> The tile coordinates provided indicates the leafy top of the tree where entities should be spawned.
+            <para/> Returns false by default. Runs on the server or singleplayer.
+            </summary>
+            <param name="x">The x tile coordinate of the tree.</param>
+            <param name="y">The y tile coordinate of the top of the tree.</param>
+            <param name="treeType">The type of tree that is being shaken. Modded trees will be <see cref="F:Terraria.Enums.TreeTypes.Custom"/> by default.</param>
+        </member>
         <member name="P:Terraria.ModLoader.GlobalType`1.StaticIndex">
             <summary>
             Index of this global in the list of all globals of the same type, in registration order
@@ -15067,7 +15127,19 @@
             </summary>
         </member>
         <member name="T:Terraria.ModLoader.ItemLoot">
-            <summary> This readonly struct is a simple shortcut to <see cref="T:Terraria.GameContent.ItemDropRules.ItemDropDatabase"/>'s methods. </summary>
+            <summary> Provides access to <see cref="T:Terraria.GameContent.ItemDropRules.ItemDropDatabase"/>'s methods specific to this item type. </summary>
+        </member>
+        <member name="M:Terraria.ModLoader.ItemLoot.Get(System.Boolean)">
+            <summary>
+            <inheritdoc cref="M:Terraria.GameContent.ItemDropRules.ItemDropDatabase.GetRulesForItemID(System.Int32)"/>
+            </summary>
+            <param name="includeGlobalDrops">Unused</param>
+        </member>
+        <member name="M:Terraria.ModLoader.ItemLoot.Remove(Terraria.GameContent.ItemDropRules.IItemDropRule)">
+            <summary>
+            Removes a specific <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> from this item type.
+            <para/> Note that <paramref name="entry"/> must be an existing <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> instance retrieved from <see cref="M:Terraria.ModLoader.ItemLoot.Get(System.Boolean)"/>, not a newly created instance.
+            </summary>
         </member>
         <member name="T:Terraria.ModLoader.PreJITFilter">
             <summary>
@@ -15171,6 +15243,11 @@
             This version number of this mod.
             </summary>
         </member>
+        <member name="P:Terraria.ModLoader.Mod.SourceFolder">
+            <summary>
+            The path to the source folder the mod was built from.
+            </summary>
+        </member>
         <member name="P:Terraria.ModLoader.Mod.ContentAutoloadingEnabled">
             <summary>
             Whether or not this mod will autoload content by default. Autoloading content means you do not need to manually add content through methods.
@@ -15189,6 +15266,11 @@
         <member name="P:Terraria.ModLoader.Mod.MusicAutoloadingEnabled">
             <summary>
             Whether or not this mod will automatically add music to the game. All supported audio files in a folder or subfolder of a folder named "Music" will be autoloaded as music.
+            </summary>
+        </member>
+        <member name="P:Terraria.ModLoader.Mod.MusicSkipsVolumeRemap">
+            <summary>
+            Whether or not all music loaded by this mod will automatically have <see cref="F:Terraria.ID.MusicID.Sets.SkipsVolumeRemap"/> set to true.
             </summary>
         </member>
         <member name="P:Terraria.ModLoader.Mod.BackgroundAutoloadingEnabled">
@@ -15989,6 +16071,9 @@
         <member name="P:Terraria.ModLoader.ModCommand.Description">
             <summary>A short description of this command.</summary>
         </member>
+        <member name="P:Terraria.ModLoader.ModCommand.IsCaseSensitive">
+            <summary>If false (default), the arguments to <see cref="M:Terraria.ModLoader.ModCommand.Action(Terraria.ModLoader.CommandCaller,System.String,System.String[])"/> will be provided as lowercase.</summary>
+        </member>
         <member name="M:Terraria.ModLoader.ModCommand.Action(Terraria.ModLoader.CommandCaller,System.String,System.String[])">
             <summary>The code that is executed when the command is triggered.</summary>
         </member>
@@ -16450,8 +16535,9 @@
         </member>
         <member name="M:Terraria.ModLoader.ModItem.SetDefaults">
             <summary>
-            This is where you set all your item's properties, such as width, damage, shootSpeed, defense, etc.
-            For those that are familiar with tAPI, this has the same function as .json files.
+            This is where you set all your item's properties, such as width, damage, shootSpeed, defense, etc. There are many properties that must be set for an item to do anything at all so it is best to consult examples, <see href="https://github.com/tModLoader/tModLoader/tree/stable/ExampleMod/Content/Items">such as those in ExampleMod</see>, to get an idea of what is required for the type of item you are making.
+            <para/> There are many useful methods such as <see cref="M:Terraria.Item.DefaultToPlaceableTile(System.Int32,System.Int32)"/> and <see cref="M:Terraria.Item.DefaultToRangedWeapon(System.Int32,System.Int32,System.Int32,System.Single,System.Boolean)"/> to easily set the variables needed for that type of item all at once.
+            <para/> The <see cref="M:Terraria.Item.CloneDefaults(System.Int32)"/> method can be used to clone the item defaults of an item.
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.ModItem.OnSpawn(Terraria.DataStructures.IEntitySource)">
@@ -17479,7 +17565,8 @@
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.ModLoader.GetMod(System.String)">
-            <summary> Gets the instance of the Mod with the specified name. This will throw an exception if the mod cannot be found. </summary>
+            <summary> Gets the instance of the Mod with the specified name. This will throw an exception if the mod cannot be found so it should only be used for mods known to be enabled, such as a strong mod dependency.
+            <para/> Use <see cref="M:Terraria.ModLoader.ModLoader.TryGetMod(System.String,Terraria.ModLoader.Mod@)"/> instead if the mod might not be enabled. </summary>
             <exception cref="T:System.Collections.Generic.KeyNotFoundException"/>
         </member>
         <member name="M:Terraria.ModLoader.ModLoader.TryGetMod(System.String,Terraria.ModLoader.Mod@)">
@@ -17927,7 +18014,9 @@
         </member>
         <member name="M:Terraria.ModLoader.ModNPC.PreKill">
             <summary>
-            Allows you to determine whether or not this NPC will do anything upon death (besides dying). Returns true by default.
+            Allows you to determine whether or not this NPC will do anything upon death (besides dying). This method can also be used to dynamically prevent specific item loot using <see cref="F:Terraria.ModLoader.NPCLoader.blockLoot"/>, but editing the drop rules themselves is usually the better approach.
+            <para/> Returning false will skip dropping loot, the <see cref="M:Terraria.ModLoader.NPCLoader.OnKill(Terraria.NPC)"/> methods, and logic setting boss flags (<see cref="M:Terraria.NPC.DoDeathEvents(Terraria.Player)"/>).
+            <para/> Returns true by default. 
             </summary>
             <returns></returns>
         </member>
@@ -17990,8 +18079,9 @@
         </member>
         <member name="M:Terraria.ModLoader.ModNPC.ModifyHitPlayer(Terraria.Player,Terraria.Player.HurtModifiers@)">
             <summary>
-            Allows you to modify the damage, etc., that this NPC does to a player. <br/>
-            Runs on the local client. <br/>
+            Allows you to modify the damage, etc., that this NPC does to a player. 
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
+            <para/> Runs on the local client.
             </summary>
             <param name="target"></param>
             <param name="modifiers"></param>
@@ -18020,8 +18110,9 @@
         </member>
         <member name="M:Terraria.ModLoader.ModNPC.ModifyHitNPC(Terraria.NPC,Terraria.NPC.HitModifiers@)">
             <summary>
-            Allows you to modify the damage, knockback, etc., that this NPC does to a friendly NPC. <br/>
-            Runs in single player or on the server. <br/>
+            Allows you to modify the damage, knockback, etc., that this NPC does to a friendly NPC. 
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
+            <para/> Runs in single player or on the server.
             </summary>
             <param name="target"></param>
             <param name="modifiers"></param>
@@ -18056,8 +18147,9 @@
         </member>
         <member name="M:Terraria.ModLoader.ModNPC.ModifyHitByItem(Terraria.Player,Terraria.Item,Terraria.NPC.HitModifiers@)">
             <summary>
-            Allows you to modify the damage, knockback, etc., that this NPC takes from a melee weapon. <br/>
-            Runs on the local client. <br/>
+            Allows you to modify the damage, knockback, etc., that this NPC takes from a melee weapon. 
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
+            <para/> Runs on the local client.
             </summary>
             <param name="player"></param>
             <param name="item"></param>
@@ -18083,6 +18175,7 @@
         <member name="M:Terraria.ModLoader.ModNPC.ModifyHitByProjectile(Terraria.Projectile,Terraria.NPC.HitModifiers@)">
             <summary>
             Allows you to modify the damage, knockback, etc., that this NPC takes from a projectile. This method is only called for the owner of the projectile, meaning that in multi-player, projectiles owned by a player call this method on that client, and projectiles owned by the server such as enemy projectiles call this method on the server.
+            <para/> This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="projectile"></param>
             <param name="modifiers"></param>
@@ -18098,6 +18191,7 @@
         <member name="M:Terraria.ModLoader.ModNPC.ModifyIncomingHit(Terraria.NPC.HitModifiers@)">
             <summary>
             Allows you to use a custom damage formula for when this NPC takes damage from any source. For example, you can change the way defense works or use a different crit multiplier.
+            This hook should be used ONLY to modify properties of the HitModifiers. Any extra side effects should occur in OnHit hooks instead.
             </summary>
             <param name="modifiers"></param>
         </member>
@@ -18445,7 +18539,8 @@
         </member>
         <member name="P:Terraria.ModLoader.ModTree.CountsAsTreeType">
             <summary>
-            Used mostly for vanilla tree shake loot tables
+            <br>Used mostly for vanilla tree shake loot tables</br>
+            <br>Defaults to <see cref="F:Terraria.Enums.TreeTypes.Custom"/>. Set to <see cref="F:Terraria.Enums.TreeTypes.None"/> to prevent the tree from being able to be shaken.</br>
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.ModTree.CreateDust">
@@ -18514,7 +18609,8 @@
         </member>
         <member name="P:Terraria.ModLoader.ModPalmTree.CountsAsTreeType">
             <summary>
-            Used mostly for vanilla tree shake loot tables
+            <br>Used mostly for vanilla tree shake loot tables</br>
+            <br>Defaults to <see cref="F:Terraria.Enums.TreeTypes.Custom"/>. Set to <see cref="F:Terraria.Enums.TreeTypes.None"/> to prevent the tree from being able to be shaken.</br>
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.ModPalmTree.CreateDust">
@@ -19392,6 +19488,8 @@
         <member name="M:Terraria.ModLoader.ModPlayer.PlayerDisconnect">
             <summary>
             Called when a player disconnects.
+            <para/> Called on the server when this player disconnects.
+            <para/> Called on other clients when this player disconnects.
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.ModPlayer.OnEnterWorld">
@@ -21719,7 +21817,7 @@
         </member>
         <member name="F:Terraria.ModLoader.NPCLoader.blockLoot">
             <summary>
-            Allows you to stop an NPC from dropping loot by adding item IDs to this list. This list will be cleared whenever NPCLoot ends. Useful for either removing an item or change the drop rate of an item in the NPC's loot table. To change the drop rate of an item, use the PreNPCLoot hook, spawn the item yourself, then add the item's ID to this list.
+            Allows you to stop an NPC from dropping specific loot by adding item IDs to this list. This list will be cleared whenever NPCLoot ends. Useful for dynamically removing an item in the NPC's loot table. To remove an item drop use the <see cref="M:Terraria.ModLoader.ModNPC.PreKill"/> hook to add the item's ID to this list. Editing the drop rules themselves is usually the better and more compatible approach, however.
             </summary>
         </member>
         <member name="M:Terraria.ModLoader.NPCLoader.GetNPC(System.Int32)">
@@ -21735,7 +21833,16 @@
             </summary>
         </member>
         <member name="T:Terraria.ModLoader.NPCLoot">
-            <summary> This readonly struct is a simple shortcut to <see cref="T:Terraria.GameContent.ItemDropRules.ItemDropDatabase"/>'s methods. </summary>
+            <summary> Provides access to <see cref="T:Terraria.GameContent.ItemDropRules.ItemDropDatabase"/>'s methods specific to this NPC type. </summary>
+        </member>
+        <member name="M:Terraria.ModLoader.NPCLoot.Get(System.Boolean)">
+            <inheritdoc cref="M:Terraria.GameContent.ItemDropRules.ItemDropDatabase.GetRulesForNPCID(System.Int32,System.Boolean)"/>
+        </member>
+        <member name="M:Terraria.ModLoader.NPCLoot.Remove(Terraria.GameContent.ItemDropRules.IItemDropRule)">
+            <summary>
+            Removes a specific <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> from this NPC type.
+            <para/> Note that <paramref name="entry"/> must be an existing <see cref="T:Terraria.GameContent.ItemDropRules.IItemDropRule"/> instance retrieved from <see cref="M:Terraria.ModLoader.NPCLoot.Get(System.Boolean)"/>, not a newly created instance.
+            </summary>
         </member>
         <member name="M:Terraria.ModLoader.AbstractNPCShop.FillShop(System.Collections.Generic.ICollection{Terraria.Item},Terraria.NPC)">
             <summary>
@@ -22123,11 +22230,20 @@
         </member>
         <member name="M:Terraria.ModLoader.RecipeLoader.ConsumeItem(Terraria.Recipe,System.Int32,System.Int32@)">
             <summary>
-            Allows to edit the amount of item the player uses in a recipe.
+            Allows to edit the amount of item the player uses in a recipe. Also used to decide the amount a shimmer transformation returns
             </summary>
             <param name="recipe">The recipe used for the craft.</param>
             <param name="type">Type of the ingredient.</param>
             <param name="amount">Modifiable amount of the item consumed.</param>
+        </member>
+        <member name="M:Terraria.ModLoader.RecipeLoader.ConsumeIngredient(Terraria.Recipe,System.Int32,System.Int32@,System.Boolean)">
+            <summary>
+            Allows to edit the amount of item the player uses in a recipe. Also used to decide the amount a shimmer transformation returns
+            </summary>
+            <param name="recipe">The recipe used for the craft.</param>
+            <param name="type">Type of the ingredient.</param>
+            <param name="amount">Modifiable amount of the item consumed.</param>
+            <param name="isDecrafting">If the operation takes place during shimmer decrafting.</param>
         </member>
         <member name="F:Terraria.ModLoader.ResourceOverlayDrawContext.snapshot">
             <summary>
@@ -23050,6 +23166,11 @@
         <member name="F:Terraria.NPC.value">
             <summary>
             How many copper coins the NPC will drop when killed (100 copper coins = 1 silver coin etc.).
+            </summary>
+        </member>
+        <member name="F:Terraria.NPC.extraValue">
+            <summary>
+            The coin value of dropped coins this NPC has picked up. The <see href="https://terraria.wiki.gg/wiki/Coin_pickup_in_Expert_Mode">Coin pickup in Expert Mode wiki page has more details.</see> See also <see cref="F:Terraria.ID.NPCID.Sets.RespawnEnemyID"/> and <see cref="F:Terraria.ID.NPCID.Sets.CantTakeLunchMoney"/>.
             </summary>
         </member>
         <member name="F:Terraria.NPC.dontTakeDamage">
@@ -26069,7 +26190,7 @@
         <member name="F:Terraria.Projectile.hide">
             <summary>
             Projectile is not drawn normally. Held projectiles (<see cref="F:Terraria.Player.heldProj"/>) and projectiles specified to be drawn at specific layers (<see cref="M:Terraria.ModLoader.ModProjectile.DrawBehind(System.Int32,System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32})"/>)  use this.
-            <para/> Be default this will also influence the lighting of this projectile to match the players lighting, as if it were a held projectile. Projectiles that are not held by the player should set <see cref="F:Terraria.ID.ProjectileID.Sets.DontAttachHideToAlpha"/> to true in SetStaticDefaults: <c>ProjectileID.Sets.DontAttachHideToAlpha[Type] = true;</c>
+            <para/> By default this will also influence the lighting of this projectile to match the players lighting, as if it were a held projectile. Projectiles that are not held by the player should set <see cref="F:Terraria.ID.ProjectileID.Sets.DontAttachHideToAlpha"/> to true in SetStaticDefaults: <c>ProjectileID.Sets.DontAttachHideToAlpha[Type] = true;</c>
             <para/> Defaults to <see langword="false"/>.
             </summary>
         </member>
@@ -26326,8 +26447,13 @@
             Recipes should be edited only in <see cref="M:Terraria.ModLoader.ModSystem.PostAddRecipes"/>.
             </summary>
         </member>
-        <member name="F:Terraria.Recipe.ConsumptionRules.Alchemy">
-            <summary> Gives 1/3 chance for every ingredient to not be consumed, if used at an alchemy table. (!) This behavior is already automatically given to all items that can be made at a placed bottle tile. </summary>
+        <member name="F:Terraria.Recipe.IngredientQuantityRules.Alchemy">
+            <summary> Gives 1/3 chance for every ingredient to not be consumed, if used at an alchemy table. (!) This behaviour is already automatically given to all items that can be made at a placed bottle tile. </summary>
+        </member>
+        <member name="T:Terraria.Recipe.IngredientQuantityCallback">
+            <summary>
+            Called for both <see cref="M:Terraria.Recipe.Create"/> and <see cref="M:Terraria.Item.GetShimmered"/>, using <paramref name="isDecrafting"/> = <see langword="true"/> to denote a shimmer operation
+            </summary>
         </member>
         <member name="P:Terraria.Recipe.RecipeIndex">
             <summary>
@@ -26337,6 +26463,11 @@
         <member name="P:Terraria.Recipe.Disabled">
             <summary>
             Any recipe with this flag won't be shown in game.
+            </summary>
+        </member>
+        <member name="P:Terraria.Recipe.DecraftDisabled">
+            <summary>
+            Any recipe with this flag won't be decrafted in shimmer.
             </summary>
         </member>
         <member name="M:Terraria.Recipe.AddIngredient(System.Int32,System.Int32)">
@@ -26476,6 +26607,11 @@
             </summary>
         </member>
         <member name="M:Terraria.Recipe.AddConsumeItemCallback(Terraria.Recipe.ConsumeItemCallback)">
+            <summary>
+            Sets a callback that allows you to determine how many of a certain ingredient is consumed when this recipe is used. Return the number of ingredients that will actually be consumed. By default returns numRequired.
+            </summary>
+        </member>
+        <member name="M:Terraria.Recipe.AddConsumeIngredientCallback(Terraria.Recipe.IngredientQuantityCallback)">
             <summary>
             Sets a callback that allows you to determine how many of a certain ingredient is consumed when this recipe is used. Return the number of ingredients that will actually be consumed. By default returns numRequired.
             </summary>
@@ -27262,6 +27398,14 @@
             <para/> Both values can be set for more complex logic. <c>uiElement.Width.Set(-10, 0.5f);</c> sets the width to 50% of the available space minus 10 pixels. This would leave room between 2 buttons filling a space. <c>uiElement.Height.Set(-100, 1f);</c> would fill the full height of the space but leave 100 pixels at the bottom empty.
             </summary>
         </member>
+        <member name="M:Terraria.UI.StyleDimension.Set(System.Single,System.Single)">
+            <summary>
+            Sets the values for this StyleDimension.
+            <para/> <b>StyleDimension documentation:</b><br/><inheritdoc cref="T:Terraria.UI.StyleDimension"/>
+            </summary>
+            <param name="pixels"></param>
+            <param name="precent"></param>
+        </member>
         <member name="T:Terraria.UI.UIElement">
             <summary>
             A UI element, the building blocks of a user interface. Commonly used elements include <see cref="T:Terraria.GameContent.UI.Elements.UIPanel"/>, <see cref="T:Terraria.GameContent.UI.Elements.UIImage"/>, <see cref="T:Terraria.GameContent.UI.Elements.UIList"/>, <see cref="T:Terraria.GameContent.UI.Elements.UIScrollbar"/>, <see cref="T:Terraria.GameContent.UI.Elements.UITextPanel`1"/>, and <see cref="T:Terraria.GameContent.UI.Elements.UIText"/>. 
@@ -27931,6 +28075,9 @@ itemFoundData.CopyTo(itemsFound, 0);
             <param name="plr"></param>
             <param name="style"></param>
             <returns></returns>
+        </member>
+        <member name="M:Terraria.WorldGen.GetTreeBottom(System.Int32,System.Int32,System.Int32@,System.Int32@)">
+            <summary> If given a tree tile coordinate, will output the coordinates of the tree tile at the bottom of the tree. </summary>
         </member>
         <member name="M:Terraria.WorldGen.KillTile(System.Int32,System.Int32,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
