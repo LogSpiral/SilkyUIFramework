@@ -11,22 +11,23 @@ public class ViewGroupSystem : ModSystem
         Root.SetWidth(0f, 1f);
         Root.SetHeight(0f, 1f);
 
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 4; i++)
         {
             var col = new ViewGroup
             {
                 AutomaticHeight = true,
             };
             col.SetWidth(100f);
-            col.SetGap(2, 2);
+            col.SetGap(4, 4);
+            col.Padding = new(4f);
             col.LayoutDirection = LayoutDirection.Column;
             Root.AppendChild(col);
 
-            for (var e = 0; e < 20; e++)
+            for (var e = 0; e < 4; e++)
             {
-                var block = new ViewGroup();
-                block.SetWidth(20f);
-                block.SetHeight(20f);
+                var block = new UIView();
+                block.SetWidth(100f);
+                block.SetHeight(50f);
                 col.AppendChild(block);
             }
         }
@@ -34,26 +35,58 @@ public class ViewGroupSystem : ModSystem
 
     public override void UpdateUI(GameTime gameTime)
     {
-        Root.SetGap(2f, 2f);
-        Root.BoxSizing = BoxSizing.BorderBox;
+        Root.BoxSizing = BoxSizing.Content;
         Root.Padding = new Margin(4f);
         Root.LayoutDirection = LayoutDirection.Row;
+        Root.SetGap(4f, 4f);
 
-        Root.SetLeft(0f, 0.25f);
-        Root.SetTop(0f, 0.25f);
+        // 子元素
+        var groups = Root.ReadOnlyChildren.OfType<ViewGroup>().ToArray();
+
+        for (var i = 0; i < groups.Length; i++)
+        {
+            var col = groups[i];
+            col.FlexGrow = 0f;
+            col.FlexShrink = 1f;
+            col.CrossAlignment = CrossAlignment.Stretch;
+            if (i == 0)
+            {
+                col.FlexGrow = 0f;
+                col.FlexShrink = 1f;
+                col.AutomaticWidth = true;
+                col.SetWidth(200f);
+            }
+            else
+            {
+                col.AutomaticWidth = true;
+                col.AutomaticHeight = true;
+            }
+            col.SetGap(4, 4);
+            col.Padding = new Margin(4f);
+
+            foreach (var item in col.ReadOnlyChildren)
+            {
+                item.FlexGrow = 1f;
+                item.FlexShrink = 1f;
+                item.SetWidth(200f);
+                item.SetHeight(100f);
+            }
+        }
 
         Root.Positioning = Positioning.Relative;
-        Root.SetLeft(Main.rand.NextFloat(0.001f), 0.25f);
-        Root.SetWidth(Main.rand.NextFloat(0.001f), 0.5f);
-        Root.SetMaxWidth(1000f);
+        Root.SetLeft(Main.rand.NextFloat(0.001f), 0f, 0.5f);
+        Root.SetTop(0f, 0f, 0.5f);
+
+        Root.SetWidth(Main.rand.NextFloat(0.001f), 0.25f);
         Root.SetHeight(0f, 0.5f);
-        Root.AutomaticWidth = true;
+
+        Root.AutomaticWidth = false;
         Root.AutomaticHeight = true;
 
         // 更新 UI 的各种状态，比如动画
         Root.HandleUpdateStatus(gameTime);
-        // 布局脏标记检测
-        Root.UpdateLayout();
+        // Bounds and Layout
+        Root.UpdateBounds();
         // 位置脏标记检测
         Root.UpdatePosition();
         // UI 中的普通更新

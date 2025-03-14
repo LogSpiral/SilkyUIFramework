@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+
 namespace SilkyUIFramework;
 
 public readonly struct Margin(float left, float top, float right, float bottom) : IEquatable<Margin>
@@ -9,8 +11,8 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
     public float Right { get; } = right;
     public float Bottom { get; } = bottom;
 
-    public float Width => Left + Right;
-    public float Height => Top + Bottom;
+    public float Horizontal => Left + Right;
+    public float Vertical => Top + Bottom;
 
     public Margin With(float? left, float? top, float? right, float? bottom) =>
         new(left ?? Left, top ?? Top, right ?? Right, bottom ?? Bottom);
@@ -31,4 +33,9 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
         Left.Equals(other.Left) && Top.Equals(other.Top) && Right.Equals(other.Right) && Bottom.Equals(other.Bottom);
 
     public override int GetHashCode() => HashCode.Combine(Left, Top, Right, Bottom);
+
+    public override string ToString()
+    {
+        return $"{nameof(Left)}: {Left}, {nameof(Top)}: {Top}, {nameof(Right)}: {Right}, {nameof(Bottom)}: {Bottom}";
+    }
 }

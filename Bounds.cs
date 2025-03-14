@@ -110,6 +110,6 @@ public struct Bounds
 
     public override readonly string ToString()
     {
-        return $"X: {_x}, Y: {_y}, Width: {_width}, Height: {_height}";
+        return $"Bounds: {_x}, {_y}, {_width}, {_height}";
     }
 }

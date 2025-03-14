@@ -1,4 +1,4 @@
-using SilkyUIFramework.MyElement;
+﻿using SilkyUIFramework.MyElement;
 
 namespace SilkyUIFramework;
 
@@ -17,6 +17,9 @@ public partial class ViewGroup
 
     private bool _flexWrap;
 
+    /// <summary>
+    /// 如果主轴方向上容器大小为自适应, 则不换行
+    /// </summary>
     public bool MustWrap => LayoutDirection == LayoutDirection.Column ? !AutomaticHeight : !AutomaticWidth;
 
     public FlexDirection FlexDirection
@@ -79,30 +82,30 @@ public partial class ViewGroup
     private void WrapChildren()
     {
         _flexboxAxes.Clear();
-        if (!_flexWrap || !MustWrap || LayoutElements.Count <= 0) return;
+        if (LayoutElements.Count <= 0) return;
 
         switch (LayoutDirection)
         {
             default:
             case LayoutDirection.Row:
             {
-                WrapElements(InnerBounds.Width, Gap.Width,
-                    LayoutElements.Select(el =>
+                WrapElements((FlexWrap && MustWrap) ? InnerBounds.Width : MaxInnerWidth, Gap.Width,
+                    [.. LayoutElements.Select(el =>
                     {
-                        var bounds = el.GetOuterBounds();
+                        var bounds = el.OuterBounds;
                         return (el, bounds.Width, bounds.Height);
-                    }).ToArray());
+                    })]);
 
                 return;
             }
             case LayoutDirection.Column:
             {
-                WrapElements(InnerBounds.Height, Gap.Height,
-                    LayoutElements.Select(el =>
+                WrapElements((FlexWrap && MustWrap) ? InnerBounds.Height : MaxInnerHeight, Gap.Height,
+                    [.. LayoutElements.Select(el =>
                     {
-                        var bounds = el.GetOuterBounds();
+                        var bounds = el.OuterBounds;
                         return (el, bounds.Height, bounds.Width);
-                    }).ToArray());
+                    })]);
 
                 return;
             }
@@ -112,8 +115,7 @@ public partial class ViewGroup
     private void WrapElements(float maxSize, float gap,
         (UIView Element, float MainAxisSize, float CrossAxisSize)[] items)
     {
-        var isRow = LayoutDirection == LayoutDirection.Row;
-        var track = new FlexboxAxis(isRow, items[0].Element)
+        var flexboxAxis = new FlexboxAxis(items[0].Element)
         {
             MainAxisSize = items[0].MainAxisSize,
             CrossAxisSize = items[0].CrossAxisSize
@@ -121,31 +123,29 @@ public partial class ViewGroup
 
         for (var i = 1; i < items.Length; i++)
         {
-            var item = items[i];
-            track.MainAxisSize = item.MainAxisSize + gap;
-            track.CrossAxisSize = MathHelper.Max(track.CrossAxisSize, item.CrossAxisSize);
+            var (element, mainAxisSize, crossAxisSize) = items[i];
+            flexboxAxis.MainAxisSize += mainAxisSize + gap;
+            flexboxAxis.CrossAxisSize = MathHelper.Max(flexboxAxis.CrossAxisSize, crossAxisSize);
 
-            if (track.MainAxisSize > maxSize)
+            if (flexboxAxis.MainAxisSize > maxSize)
             {
-                _flexboxAxes.Add(track);
-                track = new FlexboxAxis(isRow, item.Element)
+                _flexboxAxes.Add(flexboxAxis);
+                flexboxAxis = new FlexboxAxis(element)
                 {
-                    MainAxisSize = item.MainAxisSize,
-                    CrossAxisSize = item.CrossAxisSize
+                    MainAxisSize = mainAxisSize,
+                    CrossAxisSize = crossAxisSize
                 };
                 continue;
             }
 
-            track.Elements.Add(item.Element);
+            flexboxAxis.Elements.Add(element);
         }
 
-        if (track.Elements.Count > 0) _flexboxAxes.Add(track);
+        if (flexboxAxis.Elements.Count > 0) _flexboxAxes.Add(flexboxAxis);
     }
 
-    private Size FlexboxMeasure()
+    private Size MeasureAxes()
     {
-        if (!_flexWrap || !MustWrap) return FlexboxMeasure(LayoutElements);
-
         switch (LayoutDirection)
         {
             default:
@@ -154,10 +154,10 @@ public partial class ViewGroup
                 var width = 0f;
                 var height = 0f;
 
-                foreach (var track in _flexboxAxes)
+                foreach (var axis in _flexboxAxes)
                 {
-                    width = Math.Max(width, track.MainAxisSize);
-                    height += track.CrossAxisSize;
+                    width = Math.Max(width, axis.MainAxisSize);
+                    height += axis.CrossAxisSize;
                 }
 
                 height += (_flexboxAxes.Count - 1) * Gap.Height;
@@ -169,10 +169,10 @@ public partial class ViewGroup
                 var width = 0f;
                 var height = 0f;
 
-                foreach (var track in _flexboxAxes)
+                foreach (var axis in _flexboxAxes)
                 {
-                    width += track.CrossAxisSize;
-                    height = Math.Max(height, track.MainAxisSize);
+                    width += axis.CrossAxisSize;
+                    height = Math.Max(height, axis.MainAxisSize);
                 }
 
                 width += (_flexboxAxes.Count - 1) * Gap.Width;
@@ -196,7 +196,7 @@ public partial class ViewGroup
             {
                 var width = 0f;
                 var height = 0f;
-                foreach (var size in elements.Select(el => el.GetOuterBounds().Size))
+                foreach (var size in elements.Select(el => el.OuterBounds.Size))
                 {
                     width += size.Width;
                     height = Math.Max(height, size.Height);
@@ -210,7 +210,7 @@ public partial class ViewGroup
             {
                 var width = 0f;
                 var height = 0f;
-                foreach (var size in elements.Select(el => el.GetOuterBounds().Size))
+                foreach (var size in elements.Select(el => el.OuterBounds.Size))
                 {
                     width = Math.Max(width, size.Width);
                     height += size.Height;
@@ -223,5 +223,41 @@ public partial class ViewGroup
         }
     }
 
-    public void FlexboxLayout() { }
+    public void FlexboxLayout()
+    {
+        switch (LayoutDirection)
+        {
+            default:
+            case LayoutDirection.Row:
+            {
+                var top = 0f;
+                foreach (var axis in _flexboxAxes)
+                {
+                    var left = 0f;
+                    foreach (var element in axis.Elements)
+                    {
+                        element.SetLayoutOffset(left, top);
+                        left += element.OuterBounds.Width + Gap.Width;
+                    }
+                    top += axis.CrossAxisSize;
+                }
+                break;
+            }
+            case LayoutDirection.Column:
+            {
+                var left = 0f;
+                foreach (var axis in _flexboxAxes)
+                {
+                    var top = 0f;
+                    foreach (var element in axis.Elements)
+                    {
+                        element.SetLayoutOffset(left, top);
+                        top += element.OuterBounds.Height + Gap.Height;
+                    }
+                    left += axis.CrossAxisSize;
+                }
+                break;
+            }
+        }
+    }
 }

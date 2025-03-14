@@ -21,7 +21,7 @@ public partial class View
 {
 
     /// <summary> 盒子模型计算方式 </summary>
-    public BoxSizing BoxSizing { get; set; } = BoxSizing.BorderBox;
+    public BoxSizing BoxSizing { get; set; } = BoxSizing.Border;
 
     /// <summary> 元素定位 </summary>
     public Positioning Positioning { get; set; } = Positioning.Relative;
@@ -202,10 +202,10 @@ public partial class View
     {
         return BoxSizing switch
         {
-            BoxSizing.BorderBox => new Vector2(
+            BoxSizing.Border => new Vector2(
                 width + this.HMargin(),
                 height + this.VMargin()),
-            BoxSizing.ContentBox => new Vector2(
+            BoxSizing.Content => new Vector2(
                 width + this.HPadding() + this.HMargin() + Border * 2f,
                 height + this.VPadding() + this.VMargin() + Border * 2f),
             _ => new Vector2(

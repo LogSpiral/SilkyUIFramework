@@ -7,9 +7,9 @@ public readonly struct Size(float width, float height) : IEquatable<Size>
     public float Width { get; } = width;
     public float Height { get; } = height;
 
-    public Size With(float? pixels = null, float? percent = null)
+    public Size With(float? width = null, float? height = null)
     {
-        return new Size(pixels ?? Width, percent ?? Height);
+        return new Size(width ?? Width, height ?? Height);
     }
 
     public static implicit operator Size(Vector2 vector2)
@@ -105,4 +105,6 @@ public readonly struct Size(float width, float height) : IEquatable<Size>
         return new Size(MathHelper.Clamp(value.Width, min.Width, max.Width),
             MathHelper.Clamp(value.Height, min.Height, max.Height));
     }
+
+    public override string ToString() => $"{Width}x{Height}";
 }

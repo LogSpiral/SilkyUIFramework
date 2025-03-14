@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Security.Cryptography.X509Certificates;
+using Microsoft.CodeAnalysis;
 using SilkyUIFramework.Core;
 using SilkyUIFramework.MyElement;
 
@@ -58,7 +59,7 @@ public partial class ViewGroup
 
     private Size _gap;
 
-    public void SetGap(float? width, float? height)
+    public void SetGap(float? width = null, float? height = null)
     {
         if (width.Equals(Gap.Width) && height.Equals(Gap.Height)) return;
         _gap = _gap.With(width, height);
@@ -81,15 +82,19 @@ public partial class ViewGroup
             child.Measure(innerSize);
         }
 
-        if (LayoutType != LayoutType.Flexbox) return OuterBounds.Size;
-        WrapChildren();
-        if (!AutomaticWidth && !AutomaticHeight) return OuterBounds.Size;
+        if (LayoutType != LayoutType.Flexbox)
+            return OuterBounds.Size;
 
-        var content = FlexboxMeasure();
+        WrapChildren();
+
+        if (!AutomaticWidth && !AutomaticHeight)
+            return OuterBounds.Size;
+
+        var contentSize = MeasureAxes();
 
         // 需要考虑约束
-        if (AutomaticWidth) SetInnerBoundsWidth(MathHelper.Clamp(content.Width, MinInnerWidth, MaxInnerWidth));
-        if (AutomaticHeight) SetInnerBoundsHeight(MathHelper.Clamp(content.Height, MinInnerHeight, MaxInnerHeight));
+        if (AutomaticWidth) SetInnerBoundsWidth(MathHelper.Clamp(contentSize.Width, MinInnerWidth, MaxInnerWidth));
+        if (AutomaticHeight) SetInnerBoundsHeight(MathHelper.Clamp(contentSize.Height, MinInnerHeight, MaxInnerHeight));
 
         return OuterBounds.Size;
     }
@@ -97,10 +102,114 @@ public partial class ViewGroup
     public override Size Trim(Size container, float? assignWidth = null, float? assignHeight = null)
     {
         base.Trim(container, assignWidth, assignHeight);
+        var size = InnerBounds.Size;
+
+        if (LayoutType != LayoutType.Flexbox)
+        {
+            foreach (var child in Children.Where(el => !el.Invalid))
+            {
+                child.Trim(size);
+            }
+
+            return OuterBounds.Size;
+        }
+
+        switch (LayoutDirection)
+        {
+            default:
+            case LayoutDirection.Row:
+            {
+                foreach (var axis in _flexboxAxes)
+                {
+                    float? assign = null;
+                    if (CrossAlignment == CrossAlignment.Stretch) assign = size.Height;
+
+                    var remainingWidth = size.Width - axis.MainAxisSize;
+
+                    if (remainingWidth > 0)
+                    {
+                        var grow = axis.CalculateGrow();
+                        // goto
+                        if (grow == 0) goto DirectTrim;
+
+                        var each = remainingWidth / grow;
+
+                        foreach (var element in axis.Elements)
+                        {
+                            element.Trim(size, element.OuterBounds.Width + each * element.FlexGrow, assign);
+                        }
+                    }
+                    else
+                    {
+                        var shrink = axis.CalculateShrink();
+                        // goto
+                        if (shrink == 0) goto DirectTrim;
+
+                        var each = remainingWidth / shrink;
+                        foreach (var element in axis.Elements)
+                        {
+                            element.Trim(size, element.OuterBounds.Width + each * element.FlexShrink, assign);
+                        }
+                    }
+
+                    // 多种情况下都不需要 assignWidth
+                    DirectTrim:
+                    foreach (var element in axis.Elements)
+                    {
+                        element.Trim(size, assignHeight: assign);
+                    }
+                }
+
+                break;
+            }
+            case LayoutDirection.Column:
+            {
+                foreach (var axis in _flexboxAxes)
+                {
+                    float? assign = null;
+                    if (CrossAlignment == CrossAlignment.Stretch) assign = size.Width;
+
+                    var remainingHeight = size.Height - axis.MainAxisSize;
+
+                    if (remainingHeight > 0)
+                    {
+                        var grow = axis.CalculateGrow();
+                        if (grow == 0) goto DirectTrim;
+
+                        var each = remainingHeight / grow;
+
+                        foreach (var element in axis.Elements)
+                        {
+                            element.Trim(size, assign, element.OuterBounds.Height + each * element.FlexGrow);
+                        }
+                    }
+                    else
+                    {
+                        var shrink = axis.CalculateShrink();
+                        if (shrink == 0) goto DirectTrim;
+
+                        var each = remainingHeight / shrink;
+                        foreach (var element in axis.Elements)
+                        {
+                            element.Trim(size, assign, element.OuterBounds.Height + each * element.FlexShrink);
+                        }
+                    }
+
+                    // 多种情况下都不需要 assignWidth
+                    DirectTrim:
+                    foreach (var element in axis.Elements)
+                    {
+                        element.Trim(size, assign);
+                    }
+                }
+
+                break;
+            }
+        }
 
         foreach (var child in FreeElements)
         {
-            child.Trim(InnerBounds.Size);
+            child.Trim(size);
         }
 
         return OuterBounds.Size;
