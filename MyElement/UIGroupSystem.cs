@@ -2,7 +2,7 @@
 
 namespace SilkyUIFramework.MyElement;
 
-public class ViewGroupSystem : ModSystem
+public class UIGroupSystem : ModSystem
 {
     private readonly ViewGroup Root = new();
 
@@ -36,39 +36,49 @@ public class ViewGroupSystem : ModSystem
     public override void UpdateUI(GameTime gameTime)
     {
         Root.BoxSizing = BoxSizing.Content;
-        Root.Padding = new Margin(4f);
+        Root.Padding = new Margin(10f);
         Root.LayoutDirection = LayoutDirection.Row;
-        Root.SetGap(4f, 4f);
+        Root.SetGap(10f, 10f);
+        Root.CrossAlignment = CrossAlignment.Stretch;
+        Root.CrossContentAlignment = CrossContentAlignment.Stretch;
 
         // 子元素
         var groups = Root.ReadOnlyChildren.OfType<ViewGroup>().ToArray();
 
         for (var i = 0; i < groups.Length; i++)
         {
-            var col = groups[i];
-            col.FlexGrow = 0f;
-            col.FlexShrink = 1f;
-            col.CrossAlignment = CrossAlignment.Stretch;
+            var column = groups[i];
+            column.FlexGrow = 1f;
+            column.FlexShrink = 1f;
+            column.CrossAlignment = CrossAlignment.Start;
             if (i == 0)
             {
-                col.FlexGrow = 0f;
-                col.FlexShrink = 1f;
-                col.AutomaticWidth = true;
-                col.SetWidth(200f);
+                column.FlexWrap = true;
+                column.LayoutDirection = LayoutDirection.Row;
+                column.MainAlignment = MainAlignment.Center;
+                column.CrossAlignment = CrossAlignment.Start;
+                column.CrossContentAlignment = CrossContentAlignment.Center;
+                column.FlexGrow = 1f;
+                column.FlexShrink = 1f;
+                column.AutomaticWidth = false;
+                column.AutomaticHeight = true;
+                column.SetWidth(300f);
+                column.SetHeight(800f);
+                column.SetMaxHeight(100000f);
             }
             else
             {
-                col.AutomaticWidth = true;
-                col.AutomaticHeight = true;
+                column.AutomaticWidth = true;
+                column.AutomaticHeight = true;
             }
-            col.SetGap(4, 4);
-            col.Padding = new Margin(4f);
+            column.SetGap(10f, 10f);
+            column.Padding = new Margin(10f);
 
-            foreach (var item in col.ReadOnlyChildren)
+            foreach (var item in column.ReadOnlyChildren)
             {
-                item.FlexGrow = 1f;
+                item.FlexGrow = 0f;
                 item.FlexShrink = 1f;
-                item.SetWidth(200f);
+                item.SetWidth(100f);
                 item.SetHeight(100f);
             }
         }
@@ -77,10 +87,10 @@ public class ViewGroupSystem : ModSystem
         Root.SetLeft(Main.rand.NextFloat(0.001f), 0f, 0.5f);
         Root.SetTop(0f, 0f, 0.5f);
 
-        Root.SetWidth(Main.rand.NextFloat(0.001f), 0.25f);
+        Root.SetWidth(Main.rand.NextFloat(0.001f), 0.5f);
         Root.SetHeight(0f, 0.5f);
 
-        Root.AutomaticWidth = false;
+        Root.AutomaticWidth = true;
         Root.AutomaticHeight = true;
 
         // 更新 UI 的各种状态，比如动画
@@ -93,12 +103,10 @@ public class ViewGroupSystem : ModSystem
         Root.HandleUpdate(gameTime);
     }
 
-    public static readonly List<ColorBlockVertextType> Vertices = [];
-
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
     {
-        var OtherLayer = new OtherLayer(Root, "other ui", InterfaceScaleType.UI);
-        layers.Insert(0, OtherLayer);
+        var otherLayer = new OtherLayer(Root, "other ui", InterfaceScaleType.UI);
+        layers.Insert(0, otherLayer);
     }
 }
 
@@ -107,37 +115,10 @@ public class OtherLayer(ViewGroup rootElement, string name, InterfaceScaleType s
 {
     public readonly ViewGroup RootElement = rootElement;
 
-    public int _lastViewportWidth = 0;
-    public int _lastViewportHeight = 0;
-
-    public Matrix Matrix { get; private set; }
-
     public override bool DrawSelf()
     {
-        ViewGroupSystem.Vertices.Clear();
-
         RootElement.HandleDraw(Main.gameTimeCache, Main.spriteBatch);
-
-        var device = Main.graphics.GraphicsDevice;
-
-        if (device.Viewport.Width != _lastViewportWidth || device.Viewport.Height != _lastViewportHeight)
-        {
-            Matrix = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width / 2, device.Viewport.Height / 2, 0, 0,
-                1);
-
-            _lastViewportWidth = device.Viewport.Width;
-            _lastViewportHeight = device.Viewport.Height;
-        }
-
-        var effect = ModAsset.ColorBlock.Value;
-        effect.Parameters["MatrixTransform"].SetValue(Matrix);
-        effect.CurrentTechnique.Passes[0].Apply();
-
-        _vertices = [.. ViewGroupSystem.Vertices];
-        device.DrawUserPrimitives(PrimitiveType.TriangleList, _vertices, 0, _vertices.Length / 3);
 
         return true;
     }
-
-    private ColorBlockVertextType[] _vertices = null;
 }

@@ -9,14 +9,19 @@ public partial class ViewGroup : UIView
 {
     public bool OverflowHidden { get; set; }
 
-    protected readonly List<UIView> Children = [];
+    protected List<UIView> Children { get; } = [];
+    public IEnumerable<UIView> GetValidChildren() => Children.Where(el => !el.Invalid);
     public IReadOnlyList<UIView> ReadOnlyChildren => Children;
 
+    /// <summary>
+    /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutChildren"/>)
+    /// </summary>
     public override void CleanupDirtyMark()
     {
         base.CleanupDirtyMark();
 
-        foreach (var child in Children)
+        // 仅针对
+        foreach (var child in LayoutChildren)
         {
             child.CleanupDirtyMark();
         }
@@ -35,13 +40,14 @@ public partial class ViewGroup : UIView
 
     public virtual void RemoveChild(UIView child)
     {
-        Children.Remove(child);
+        if (!Children.Remove(child)) return;
+
         child.Parent = null;
         MarkDirty();
         PositionDirty = true;
     }
 
-    public virtual void RemoveChildren()
+    public virtual void RemoveAllChildren()
     {
         foreach (var child in Children)
         {
@@ -65,7 +71,7 @@ public partial class ViewGroup : UIView
 
     protected virtual void UpdateChildren(GameTime gameTime)
     {
-        foreach (var child in Children.Where(_ => !Invalid)) child.HandleUpdate(gameTime);
+        foreach (var child in GetValidChildren()) child.HandleUpdate(gameTime);
     }
 
     public override void HandleUpdateStatus(GameTime gameTime)
@@ -76,7 +82,7 @@ public partial class ViewGroup : UIView
 
     protected virtual void UpdateChildrenStatus(GameTime gameTime)
     {
-        foreach (var child in Children.Where(_ => !Invalid))
+        foreach (var child in GetValidChildren())
         {
             child.HandleUpdateStatus(gameTime);
         }
@@ -90,28 +96,31 @@ public partial class ViewGroup : UIView
 
     public virtual void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        foreach (var child in Children) child.HandleDraw(gameTime, spriteBatch);
+        foreach (var child in GetValidChildren())
+        {
+            child.HandleDraw(gameTime, spriteBatch);
+        }
     }
 
     #endregion
 
-    protected readonly List<UIView> FreeElements = [];
-    protected readonly List<UIView> LayoutElements = [];
+    protected readonly List<UIView> FreeChildren = [];
+    protected readonly List<UIView> LayoutChildren = [];
 
-    protected void Classify()
+    protected void ClassifyElements()
     {
-        FreeElements.Clear();
-        LayoutElements.Clear();
+        FreeChildren.Clear();
+        LayoutChildren.Clear();
 
-        foreach (var child in Children.Where(_ => !Invalid))
+        foreach (var child in GetValidChildren())
         {
-            if (Positioning is Core.Positioning.Absolute or Core.Positioning.Fixed)
+            if (Positioning.IsFree())
             {
-                FreeElements.Add(child);
+                FreeChildren.Add(child);
             }
             else
             {
-                LayoutElements.Add(child);
+                LayoutChildren.Add(child);
             }
         }
     }
@@ -120,10 +129,12 @@ public partial class ViewGroup : UIView
     {
         if (Invalid) return null;
 
+        // 开启溢出隐藏后必须检测当前元素是否包含点
         if (OverflowHidden)
         {
             if (!ContainsPoint(position)) return null;
-            foreach (var child in Children)
+
+            foreach (var child in GetValidChildren())
             {
                 if (child.GetElementAt(position) is { } target) return target;
             }
@@ -131,7 +142,7 @@ public partial class ViewGroup : UIView
             return this;
         }
 
-        foreach (var child in Children)
+        foreach (var child in GetValidChildren())
         {
             if (child.GetElementAt(position) is { } target) return target;
         }

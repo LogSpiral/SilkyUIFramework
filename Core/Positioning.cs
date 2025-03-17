@@ -2,11 +2,11 @@
 
 public enum Positioning
 {
-    Static,
     Relative,
     Absolute,
     Sticky,
     Fixed,
+    Static,
 }
 
 [Flags]

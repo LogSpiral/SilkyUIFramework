@@ -4,7 +4,7 @@ namespace SilkyUIFramework;
 
 public partial class ViewGroup
 {
-    protected internal void OnChildDirty()
+    protected internal virtual void OnChildDirty()
     {
         if (IsDirty) return;
         if (AutomaticWidth || AutomaticHeight)
@@ -20,15 +20,15 @@ public partial class ViewGroup
     {
         if (IsDirty)
         {
-            var container = (Parent is null || Positioning is Core.Positioning.Fixed) ? DeviceHelper.GetViewportSizeByUIScale() : Parent.InnerBounds.Size;
+            var container = (Parent is null || Positioning.IsFree()) ? DeviceHelper.GetViewportSizeByUIScale() : Parent.InnerBounds.Size;
             Measure(container);
             Trim(container);
-            Layout();
+            ApplyLayout();
 
             CleanupDirtyMark();
         }
 
-        foreach (var child in Children)
+        foreach (var child in GetValidChildren())
         {
             child.UpdateBounds();
         }
@@ -38,7 +38,7 @@ public partial class ViewGroup
     {
         base.UpdatePosition();
 
-        foreach (var child in Children)
+        foreach (var child in GetValidChildren())
         {
             child.UpdatePosition();
         }
@@ -48,7 +48,7 @@ public partial class ViewGroup
     {
         base.RecalculatePosition();
 
-        foreach (var child in Children)
+        foreach (var child in LayoutChildren)
         {
             child.RecalculatePosition();
         }
