@@ -43,28 +43,28 @@ public class UIGroupSystem : ModSystem
         Root.CrossContentAlignment = CrossContentAlignment.Stretch;
 
         // 子元素
-        var groups = Root.ReadOnlyChildren.OfType<ViewGroup>().ToArray();
+        var groups = Root.ReadOnlyChildren.OfType<ViewGroup>().ToList();
 
-        for (var i = 0; i < groups.Length; i++)
+        for (var i = 0; i < groups.Count; i++)
         {
             var column = groups[i];
             column.FlexGrow = 1f;
             column.FlexShrink = 1f;
             column.CrossAlignment = CrossAlignment.Start;
+            column.MainAlignment = MainAlignment.Start;
             if (i == 0)
             {
                 column.FlexWrap = true;
-                column.LayoutDirection = LayoutDirection.Row;
+                column.LayoutDirection = LayoutDirection.Column;
                 column.MainAlignment = MainAlignment.Center;
-                column.CrossAlignment = CrossAlignment.Start;
-                column.CrossContentAlignment = CrossContentAlignment.Center;
+                column.CrossAlignment = CrossAlignment.Stretch;
+                column.CrossContentAlignment = CrossContentAlignment.Stretch;
                 column.FlexGrow = 1f;
                 column.FlexShrink = 1f;
                 column.AutomaticWidth = false;
-                column.AutomaticHeight = true;
+                column.AutomaticHeight = false;
                 column.SetWidth(300f);
                 column.SetHeight(800f);
-                column.SetMaxHeight(100000f);
             }
             else
             {
@@ -76,7 +76,7 @@ public class UIGroupSystem : ModSystem
 
             foreach (var item in column.ReadOnlyChildren)
             {
-                item.FlexGrow = 0f;
+                item.FlexGrow = 1f;
                 item.FlexShrink = 1f;
                 item.SetWidth(100f);
                 item.SetHeight(100f);

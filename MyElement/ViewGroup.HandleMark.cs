@@ -20,7 +20,7 @@ public partial class ViewGroup
     {
         if (IsDirty)
         {
-            var container = (Parent is null || Positioning.IsFree()) ? DeviceHelper.GetViewportSizeByUIScale() : Parent.InnerBounds.Size;
+            var container = GetContainer();
             Measure(container);
             Trim(container);
             ApplyLayout();

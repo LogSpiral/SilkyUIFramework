@@ -132,13 +132,24 @@ public partial class UIView
 
     #endregion
 
+    protected Size GetContainer()
+    {
+        var parent = Parent;
+        if (parent != null)
+        {
+            var width = parent.AutomaticWidth ? 0 : parent.InnerBounds.Width;
+            var height = parent.AutomaticHeight ? 0 : parent.InnerBounds.Height;
+            return new Size(width, height);
+        }
+
+        return DeviceHelper.GetViewportSizeByUIScale();
+    }
+
     public virtual void UpdateBounds()
     {
         if (IsDirty)
         {
-            var container = (Parent is null || Positioning.IsFree())
-                ? DeviceHelper.GetViewportSizeByUIScale()
-                : Parent.InnerBounds.Size;
+            var container = GetContainer();
             Measure(container);
             Trim(container);
             CleanupDirtyMark();
