@@ -5,13 +5,13 @@ namespace SilkyUIFramework;
 /// <summary>
 /// 似乎在密谋着什么，再等等...
 /// </summary>
-public partial class ViewGroup : UIView
+public partial class UIElementGroup : UIView
 {
     public bool OverflowHidden { get; set; }
 
-    protected List<UIView> Children { get; } = [];
-    public IEnumerable<UIView> GetValidChildren() => Children.Where(el => !el.Invalid);
-    public IReadOnlyList<UIView> ReadOnlyChildren => Children;
+    protected List<UIView> Elements { get; } = [];
+    public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
+    public IReadOnlyList<UIView> Children => Elements;
 
     /// <summary>
     /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutChildren"/>)
@@ -32,7 +32,7 @@ public partial class ViewGroup : UIView
     public virtual void AppendChild(UIView child)
     {
         child.Remove();
-        Children.Add(child);
+        Elements.Add(child);
         child.Parent = this;
         MarkDirty();
         PositionDirty = true;
@@ -40,7 +40,7 @@ public partial class ViewGroup : UIView
 
     public virtual void RemoveChild(UIView child)
     {
-        if (!Children.Remove(child)) return;
+        if (!Elements.Remove(child)) return;
 
         child.Parent = null;
         MarkDirty();
@@ -49,12 +49,12 @@ public partial class ViewGroup : UIView
 
     public virtual void RemoveAllChildren()
     {
-        foreach (var child in Children)
+        foreach (var child in Elements)
         {
             child.Parent = null;
         }
 
-        Children.Clear();
+        Elements.Clear();
         MarkDirty();
         PositionDirty = true;
     }
@@ -114,7 +114,7 @@ public partial class ViewGroup : UIView
 
         foreach (var child in GetValidChildren())
         {
-            if (Positioning.IsFree())
+            if (child.Positioning.IsFree())
             {
                 FreeChildren.Add(child);
             }
@@ -125,29 +125,34 @@ public partial class ViewGroup : UIView
         }
     }
 
-    public override UIView GetElementAt(Vector2 position)
+    public override UIView GetElementAt(Vector2 mousePosition)
     {
         if (Invalid) return null;
 
-        // 开启溢出隐藏后必须检测当前元素是否包含点
+        // 开启溢出隐藏后, 需要先检查自身是否包含点
         if (OverflowHidden)
         {
-            if (!ContainsPoint(position)) return null;
+            if (!ContainsPoint(mousePosition)) return null;
 
             foreach (var child in GetValidChildren())
             {
-                if (child.GetElementAt(position) is { } target) return target;
+                var target = child.GetElementAt(mousePosition);
+                if (target != null) return target;
             }
 
-            return this;
+            return IgnoreMouseInteraction ? null : this;
         }
 
         foreach (var child in GetValidChildren())
         {
-            if (child.GetElementAt(position) is { } target) return target;
+            if (child.GetElementAt(mousePosition) is { } target) return target;
         }
 
-        return ContainsPoint(position) ? this : null;
+        // 忽略鼠标交互
+        if (IgnoreMouseInteraction) return null;
+
+        // 元素包含点
+        return ContainsPoint(mousePosition) ? this : null;
     }
 
     public Vector2 ScrollOffset

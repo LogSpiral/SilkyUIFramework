@@ -2,9 +2,9 @@
 
 namespace SilkyUIFramework.MyElement;
 
-public class UIGroupSystem : ModSystem
+public class UIElementGroupSystem : ModSystem
 {
-    private readonly ViewGroup Root = new();
+    private readonly UIElementGroup Root = new();
 
     public override void Load()
     {
@@ -13,7 +13,7 @@ public class UIGroupSystem : ModSystem
 
         for (var i = 0; i < 4; i++)
         {
-            var col = new ViewGroup
+            var col = new UIElementGroup
             {
                 AutomaticHeight = true,
             };
@@ -43,9 +43,9 @@ public class UIGroupSystem : ModSystem
         Root.CrossContentAlignment = CrossContentAlignment.Stretch;
 
         // 子元素
-        var groups = Root.ReadOnlyChildren.OfType<ViewGroup>().ToList();
+        var groups = Root.Children.OfType<UIElementGroup>().ToArray();
 
-        for (var i = 0; i < groups.Count; i++)
+        for (var i = 0; i < groups.Length; i++)
         {
             var column = groups[i];
             column.FlexGrow = 1f;
@@ -54,10 +54,10 @@ public class UIGroupSystem : ModSystem
             column.MainAlignment = MainAlignment.Start;
             if (i == 0)
             {
-                column.FlexWrap = true;
+                column.FlexWrap = false;
                 column.LayoutDirection = LayoutDirection.Column;
                 column.MainAlignment = MainAlignment.Center;
-                column.CrossAlignment = CrossAlignment.Stretch;
+                column.CrossAlignment = CrossAlignment.Center;
                 column.CrossContentAlignment = CrossContentAlignment.Stretch;
                 column.FlexGrow = 1f;
                 column.FlexShrink = 1f;
@@ -71,15 +71,32 @@ public class UIGroupSystem : ModSystem
                 column.AutomaticWidth = true;
                 column.AutomaticHeight = true;
             }
+
             column.SetGap(10f, 10f);
             column.Padding = new Margin(10f);
 
-            foreach (var item in column.ReadOnlyChildren)
+            for (int i1 = 0; i1 < column.Children.Count; i1++)
             {
-                item.FlexGrow = 1f;
-                item.FlexShrink = 1f;
-                item.SetWidth(100f);
-                item.SetHeight(100f);
+                var item = column.Children[i1];
+                if (i1 == 0)
+                {
+                    item.Positioning = Positioning.Static;
+                    item.FlexGrow = 0f;
+                    item.FlexShrink = 0f;
+                    item.SetWidth(100f);
+                    item.SetHeight(100f);
+                    item.SetMinWidth(100f);
+                    item.SetMaxHeight(100f);
+                    item.SetMaxWidth(100f);
+                }
+                else
+                {
+                    item.FlexGrow = 0f;
+                    item.FlexShrink = 0f;
+                    item.SetWidth(100f);
+                    item.SetHeight(100f);
+                    item.SetMinWidth(10f);
+                }
             }
         }
 
@@ -105,20 +122,17 @@ public class UIGroupSystem : ModSystem
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
     {
-        var otherLayer = new OtherLayer(Root, "other ui", InterfaceScaleType.UI);
-        layers.Insert(0, otherLayer);
+        layers.Insert(0, new OtherLayer(Root, "TEST UI", InterfaceScaleType.UI));
     }
 }
 
-public class OtherLayer(ViewGroup rootElement, string name, InterfaceScaleType scaleType)
-    : GameInterfaceLayer(name, scaleType)
+public class OtherLayer(UIElementGroup root, string name, InterfaceScaleType scaleType) : GameInterfaceLayer(name, scaleType)
 {
-    public readonly ViewGroup RootElement = rootElement;
+    public readonly UIElementGroup Root = root;
 
     public override bool DrawSelf()
     {
-        RootElement.HandleDraw(Main.gameTimeCache, Main.spriteBatch);
-
+        Root.HandleDraw(Main.gameTimeCache, Main.spriteBatch);
         return true;
     }
 }

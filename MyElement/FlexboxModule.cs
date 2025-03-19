@@ -1,4 +1,5 @@
 using SilkyUIFramework.MyElement;
+using Terraria;
 
 namespace SilkyUIFramework;
 
@@ -59,198 +60,265 @@ public enum CrossContentAlignment
 
 public static class FlexboxModule
 {
-    public static void WrapElements(this List<AxisTrack> flexboxAxes, float maxMainAxisSize, float gap,
-        List<UIView> elements, Func<UIView, float> mainAxis, Func<UIView, float> crossAxis)
+    public static void WrapRow(this List<UIView> elements, List<FlexLine> flexLines, float maxMainAxisSize, float gap)
     {
-        flexboxAxes.Clear();
-        var axis = new AxisTrack(elements[0], mainAxis(elements[0]), crossAxis(elements[0]));
+        flexLines.Clear();
+        var element = elements[0];
+        var flexLine = new FlexLine(element, element.OuterBounds.Width, element.OuterBounds.Height);
 
         for (var i = 1; i < elements.Count; i++)
         {
-            var element = elements[i];
+            element = elements[i];
 
-            var mainAxisSize = mainAxis(element);
-            var crossAxisSize = crossAxis(element);
+            var mainAxisSize = element.OuterBounds.Width;
+            var crossAxisSize = element.OuterBounds.Height;
 
-            if (axis.MainSize + mainAxisSize + gap > maxMainAxisSize)
+            if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
             {
-                flexboxAxes.Add(axis);
-                axis = new AxisTrack(element, mainAxisSize, crossAxisSize);
+                flexLines.Add(flexLine);
+                flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
                 continue;
             }
 
-            axis.Elements.Add(element);
-            axis.MainSize += mainAxisSize + gap;
-            axis.CrossSize = MathF.Max(axis.CrossSize, crossAxisSize);
+            flexLine.Elements.Add(element);
+            flexLine.MainSize += mainAxisSize + gap;
+            flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
         }
 
-        flexboxAxes.Add(axis);
+        flexLines.Add(flexLine);
     }
 
-    public static void Measure(this List<AxisTrack> flexboxAxes, float gap, out float mainAxisSize,
+    public static void WrapColumn(this List<UIView> elements, List<FlexLine> flexLines, float maxMainAxisSize, float gap)
+    {
+        flexLines.Clear();
+        var element = elements[0];
+        var flexLine = new FlexLine(element, element.OuterBounds.Height, element.OuterBounds.Width);
+
+        for (var i = 1; i < elements.Count; i++)
+        {
+            element = elements[i];
+
+            var mainAxisSize = element.OuterBounds.Height;
+            var crossAxisSize = element.OuterBounds.Width;
+
+            if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
+            {
+                flexLines.Add(flexLine);
+                flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
+                continue;
+            }
+
+            flexLine.Elements.Add(element);
+            flexLine.MainSize += mainAxisSize + gap;
+            flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
+        }
+
+        flexLines.Add(flexLine);
+    }
+
+    public static void Measure(this List<FlexLine> flexLines, float gap, out float mainAxisSize,
         out float crossAxisSize)
     {
         mainAxisSize = 0f;
         crossAxisSize = 0f;
 
-        foreach (var axis in flexboxAxes)
+        foreach (var flexLine in flexLines)
         {
-            mainAxisSize = Math.Max(mainAxisSize, axis.MainSize);
-            crossAxisSize += axis.CrossSize;
+            mainAxisSize = Math.Max(mainAxisSize, flexLine.MainSize);
+            crossAxisSize += flexLine.CrossSize;
         }
 
-        crossAxisSize += (flexboxAxes.Count - 1) * gap;
+        crossAxisSize += (flexLines.Count - 1) * gap;
     }
 
-    public static void ProcessRowAxisTracks(this List<AxisTrack> axisTracks, CrossAlignment crossAlignment, Size innerSize, float gap)
+    public static void ProcessFlexLinesByRow(this List<FlexLine> flexLines, CrossAlignment crossAlignment, Size space, Size innerSize, float gap)
     {
-        var crossStretch = crossAlignment == CrossAlignment.Stretch;
-
-        foreach (var axisTrack in axisTracks)
+        // 交叉轴拉伸
+        if (crossAlignment == CrossAlignment.Stretch)
         {
-            float? assignValue = crossStretch ? axisTrack.AvailableCrossSpace : null;
-            var remaining = innerSize.Width - axisTrack.MainSize;
+            foreach (FlexLine flexLine in flexLines)
+            {
+                foreach (var el in flexLine.Elements.Where(
+                    el => el.AutomaticHeight && flexLine.AvailableCrossSpace > el.OuterBounds.Height))
+                {
+                    el.SpecifyHeight(Math.Min(el.MaxOuterHeight, flexLine.AvailableCrossSpace));
+                }
+            }
+        }
 
+        // 主轴 grow 或 shrink
+        foreach (var flexLine in flexLines)
+        {
+            var remaining = innerSize.Width - flexLine.MainSize;
             switch (remaining)
             {
-                case 0:
-                    axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerHeight: assignValue));
-                    break;
+                case 0: break;
+                // remaining > 0
                 case > 0:
                 {
-                    var grow = axisTrack.CalculateTotalGrow();
-                    if (grow == 0)
+                    var sortedElements = flexLine.Elements
+                        .Where(el => el.FlexGrow > 0)
+                        .Select(el => new { Element = el, AvailableGrowth = el.MaxOuterWidth - el.OuterBounds.Width })
+                        .OrderBy(item => item.AvailableGrowth)
+                        .ToList();
+                    var totalGrow = sortedElements.Sum(el => el.Element.FlexGrow);
+
+                    foreach (var item in sortedElements)
                     {
-                        axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerHeight: assignValue));
-                        break;
+                        if (totalGrow <= 0)
+                            break;
+
+                        var each = remaining / totalGrow;
+                        var alloc = Math.Min(item.AvailableGrowth, each * item.Element.FlexGrow);
+
+                        item.Element.SpecifyWidth(item.Element.OuterBounds.Width + alloc);
+
+                        remaining -= alloc;
+                        totalGrow -= item.Element.FlexGrow;
                     }
 
-                    var each = remaining / grow;
-                    foreach (var element in axisTrack.Elements)
-                    {
-                        element.Trim(innerSize, element.OuterBounds.Width + each * element.FlexGrow, assignValue);
-                    }
-
-                    axisTrack.MainSize = axisTrack.Elements.Sum(el => el.OuterBounds.Width) + axisTrack.CalculateTotalGap(gap);
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.CalculateTotalGap(gap);
 
                     break;
                 }
+                // remaining < 0
                 default:
                 {
-                    var shrink = axisTrack.CalculateTotalShrink();
-                    if (shrink == 0)
+                    var sortedElements = flexLine.Elements
+                        .Where(el => el.FlexShrink > 0)
+                        .Select(el => new { Element = el, AvailableShrink = el.MinOuterWidth - el.OuterBounds.Width })
+                        .OrderByDescending(item => item.AvailableShrink)
+                        .ToList();
+                    var totalShrink = sortedElements.Sum(el => el.Element.FlexShrink);
+
+                    foreach (var item in sortedElements)
                     {
-                        axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerHeight: assignValue));
-                        break;
+                        if (totalShrink <= 0 || remaining >= 0) break;
+
+                        var each = remaining / totalShrink;
+                        var alloc = Math.Max(item.AvailableShrink, each * item.Element.FlexShrink);
+
+                        item.Element.SpecifyWidth(item.Element.OuterBounds.Width + alloc);
+
+                        remaining -= alloc;
+                        totalShrink -= item.Element.FlexShrink;
                     }
 
-                    var each = remaining / shrink;
-                    foreach (var element in axisTrack.Elements)
-                    {
-                        var newWidth = element.OuterBounds.Width + each * element.FlexShrink;
-                        element.Trim(innerSize, newWidth, assignValue);
-                    }
-
-                    axisTrack.MainSize = axisTrack.Elements.Sum(el => el.OuterBounds.Width) + axisTrack.CalculateTotalGap(gap);
-
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.CalculateTotalGap(gap);
                     break;
                 }
             }
         }
     }
 
-    /// <summary>
-    /// 处理每个轴轨道中子元素的 FlexGrow 和 FlexShrink 逻辑
-    /// </summary>
-    public static void ProcessColumnAxisTracks(this List<AxisTrack> axisTracks, CrossAlignment crossAlignment, Size innerSize, float gap)
+    public static void ProcessFlexLinesByColumn(this List<FlexLine> flexLines, CrossAlignment crossAlignment, Size space, Size innerSize, float gap)
     {
-        var crossStretch = crossAlignment == CrossAlignment.Stretch;
-
-        foreach (var axisTrack in axisTracks)
+        if (crossAlignment == CrossAlignment.Stretch)
         {
-            float? assignValue = crossStretch ? axisTrack.AvailableCrossSpace : null;
-            var remaining = innerSize.Height - axisTrack.MainSize;
+            foreach (FlexLine flexLine in flexLines)
+            {
+                foreach (var el in flexLine.Elements.Where(
+                    el => el.AutomaticWidth && flexLine.AvailableCrossSpace > el.OuterBounds.Width))
+                {
+                    el.SpecifyWidth(Math.Min(el.MaxOuterWidth, flexLine.AvailableCrossSpace));
+                }
+            }
+        }
 
+        // 主轴 grow 或 shrink
+        foreach (var flexLine in flexLines)
+        {
+            var remaining = innerSize.Height - flexLine.MainSize;
             switch (remaining)
             {
-                case 0:
-                    axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerWidth: assignValue));
-                    break;
+                case 0: break;
+                // remaining > 0
                 case > 0:
                 {
-                    var grow = axisTrack.CalculateTotalGrow();
-                    if (grow == 0)
+                    var sortedElements = flexLine.Elements
+                        .Where(el => el.FlexGrow > 0)
+                        .Select(el => new { Element = el, AvailableGrowth = el.MaxOuterHeight - el.OuterBounds.Height })
+                        .OrderBy(item => item.AvailableGrowth)
+                        .ToList();
+                    var totalGrow = sortedElements.Sum(el => el.Element.FlexGrow);
+
+                    foreach (var item in sortedElements)
                     {
-                        axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerWidth: assignValue));
-                        break;
+                        if (totalGrow <= 0)
+                            break;
+
+                        var each = remaining / totalGrow;
+                        var alloc = Math.Min(item.AvailableGrowth, each * item.Element.FlexGrow);
+
+                        item.Element.SpecifyHeight(item.Element.OuterBounds.Height + alloc);
+
+                        remaining -= alloc;
+                        totalGrow -= item.Element.FlexGrow;
                     }
 
-                    var each = remaining / grow;
-                    foreach (var element in axisTrack.Elements)
-                    {
-                        var newHeight = element.OuterBounds.Height + each * element.FlexGrow;
-                        element.Trim(innerSize, assignValue, newHeight);
-                    }
-
-                    axisTrack.MainSize = axisTrack.Elements.Sum(el => el.OuterBounds.Height) + axisTrack.CalculateTotalGap(gap);
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.CalculateTotalGap(gap);
 
                     break;
                 }
+                // remaining < 0
                 default:
                 {
-                    var shrink = axisTrack.CalculateTotalShrink();
-                    if (shrink == 0)
+                    var sortedElements = flexLine.Elements
+                        .Where(el => el.FlexShrink > 0)
+                        .Select(el => new { Element = el, AvailableShrink = el.MinOuterHeight - el.OuterBounds.Height })
+                        .OrderByDescending(item => item.AvailableShrink)
+                        .ToList();
+                    var totalShrink = sortedElements.Sum(el => el.Element.FlexShrink);
+
+                    foreach (var item in sortedElements)
                     {
-                        axisTrack.Elements.ForEach(el => el.Trim(innerSize, outerWidth: assignValue));
-                        return;
+                        if (totalShrink <= 0 || remaining >= 0) break;
+
+                        var each = remaining / totalShrink;
+                        var alloc = Math.Max(item.AvailableShrink, each * item.Element.FlexShrink);
+
+                        item.Element.SpecifyHeight(item.Element.OuterBounds.Height + alloc);
+
+                        remaining -= alloc;
+                        totalShrink -= item.Element.FlexShrink;
                     }
 
-                    var each = remaining / shrink;
-                    foreach (var element in axisTrack.Elements)
-                    {
-                        var newHeight = element.OuterBounds.Height + each * element.FlexShrink;
-                        element.Trim(innerSize, assignValue, newHeight);
-                    }
-
-                    axisTrack.MainSize = axisTrack.Elements.Sum(el => el.OuterBounds.Height) + axisTrack.CalculateTotalGap(gap);
-
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.CalculateTotalGap(gap);
                     break;
                 }
             }
         }
     }
 
-    public static void AdjustAxisTracksCrossAxisSize(this List<AxisTrack> axisTracks,
+    public static void AdjustFlexLinesCrossAxisSize(this List<FlexLine> flexLines,
         CrossContentAlignment crossContentAlignment, float crossAxisSpace, float crossGap)
     {
-        foreach (var axisTrack in axisTracks)
+        foreach (var flexLine in flexLines)
         {
-            axisTrack.AvailableCrossSpace = axisTrack.CrossSize;
+            flexLine.AvailableCrossSpace = flexLine.CrossSize;
         }
 
         if (crossContentAlignment != CrossContentAlignment.Stretch) return;
 
-        var remaining = crossAxisSpace - axisTracks.CalculateCrossSize(crossGap);
+        var remaining = crossAxisSpace - flexLines.CalculateCrossSize(crossGap);
         if (remaining <= 0) return;
 
-        var each = remaining / axisTracks.Count;
-        foreach (var axisTrack in axisTracks)
+        var each = remaining / flexLines.Count;
+        foreach (var flexLine in flexLines)
         {
-            axisTrack.AvailableCrossSpace += each;
+            flexLine.AvailableCrossSpace += each;
         }
     }
 
-    public static float CalculateCrossAxisContent(this List<AxisTrack> flexboxAxes) =>
-        flexboxAxes.Sum(axis => axis.CrossSize);
+    public static float CalculateCrossAxisContent(this List<FlexLine> flexLines) => flexLines.Sum(flexLine => flexLine.CrossSize);
 
-    public static float CalculateCrossGap(this List<AxisTrack> flexboxAxes, float gap) => (flexboxAxes.Count - 1) * gap;
+    public static float CalculateCrossGap(this List<FlexLine> flexLines, float gap) => (flexLines.Count - 1) * gap;
 
-    public static float CalculateCrossSize(this List<AxisTrack> flexboxAxes, float gap) =>
-        flexboxAxes.CalculateCrossAxisContent() + flexboxAxes.CalculateCrossGap(gap);
+    public static float CalculateCrossSize(this List<FlexLine> flexLines, float gap) =>
+        flexLines.CalculateCrossAxisContent() + flexLines.CalculateCrossGap(gap);
 
-    public static void CalculateCrossContentAlignment(this List<AxisTrack> axisTracks,
-        CrossContentAlignment crossContentAlignment, float containerSize, float gapSize, out float startOffset,
-        out float crossGap)
+    public static void CalculateCrossContentAlignment(this List<FlexLine> flexLines,
+        CrossContentAlignment crossContentAlignment, float containerSize, float gapSize, out float startOffset, out float crossGap)
     {
         switch (crossContentAlignment)
         {
@@ -265,39 +333,39 @@ public static class FlexboxModule
             case CrossContentAlignment.Center:
             {
                 crossGap = gapSize;
-                var crossContentSize = axisTracks.CalculateCrossAxisContent() + axisTracks.CalculateCrossGap(gapSize);
+                var crossContentSize = flexLines.CalculateCrossAxisContent() + flexLines.CalculateCrossGap(gapSize);
                 startOffset = (containerSize - crossContentSize) / 2f;
                 return;
             }
             case CrossContentAlignment.End:
             {
                 crossGap = gapSize;
-                var crossContentSize = axisTracks.CalculateCrossAxisContent() + axisTracks.CalculateCrossGap(gapSize);
+                var crossContentSize = flexLines.CalculateCrossAxisContent() + flexLines.CalculateCrossGap(gapSize);
                 startOffset = containerSize - crossContentSize;
                 return;
             }
             case CrossContentAlignment.SpaceEvenly:
             {
-                var crossContentSize = axisTracks.CalculateCrossAxisContent();
-                crossGap = (containerSize - crossContentSize) / (axisTracks.Count + 1);
+                var crossContentSize = flexLines.CalculateCrossAxisContent();
+                crossGap = (containerSize - crossContentSize) / (flexLines.Count + 1);
                 startOffset = crossGap;
                 return;
             }
             case CrossContentAlignment.SpaceBetween:
             {
-                var crossContentSize = axisTracks.CalculateCrossAxisContent();
-                crossGap = (axisTracks.Count > 1) ? (containerSize - crossContentSize) / (axisTracks.Count - 1) : 0f;
+                var crossContentSize = flexLines.CalculateCrossAxisContent();
+                crossGap = (flexLines.Count > 1) ? (containerSize - crossContentSize) / (flexLines.Count - 1) : 0f;
                 startOffset = 0f;
                 return;
             }
         }
     }
 
-    public static void CalculateMainAlignment(this AxisTrack axisTrack,
+    public static void CalculateMainAlignment(this FlexLine flexLine,
         float availableMainSize, float baseGap, MainAlignment mainAlignment, out float mainStartOffset,
         out float adjustedGap)
     {
-        int elementCount = axisTrack.Elements.Count;
+        int elementCount = flexLine.Elements.Count;
         if (elementCount == 0)
         {
             mainStartOffset = 0f;
@@ -315,23 +383,23 @@ public static class FlexboxModule
                 adjustedGap = baseGap;
                 break;
             case MainAlignment.Center:
-                mainStartOffset = (availableMainSize - axisTrack.MainSize) / 2f;
+                mainStartOffset = (availableMainSize - flexLine.MainSize) / 2f;
                 adjustedGap = baseGap;
                 break;
             case MainAlignment.End:
-                mainStartOffset = availableMainSize - axisTrack.MainSize;
+                mainStartOffset = availableMainSize - flexLine.MainSize;
                 adjustedGap = baseGap;
                 break;
             case MainAlignment.SpaceEvenly:
             {
-                var totalContentWithoutGaps = axisTrack.MainSize - totalBaseGap;
+                var totalContentWithoutGaps = flexLine.MainSize - totalBaseGap;
                 adjustedGap = (availableMainSize - totalContentWithoutGaps) / (elementCount + 1);
                 mainStartOffset = adjustedGap;
                 break;
             }
             case MainAlignment.SpaceBetween:
             {
-                var totalContentWithoutGaps = axisTrack.MainSize - totalBaseGap;
+                var totalContentWithoutGaps = flexLine.MainSize - totalBaseGap;
                 if (elementCount > 1)
                 {
                     adjustedGap = (availableMainSize - totalContentWithoutGaps) / (elementCount - 1);

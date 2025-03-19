@@ -2,15 +2,10 @@
 
 namespace SilkyUIFramework.UserInterfaces;
 
-// [AutoloadUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
+//[RegisterUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
 public class ExampleUI : BasicBody
 {
     public SUIDraggableView MainPanel { get; private set; }
-
-    private static readonly int[] RoshanBadges =
-    [
-        1, 4, 6, 7, 10, 489, 490, 491, 2998, 1, 4, 6, 7, 10, 489, 490, 491, 2998,
-    ];
 
     public override void OnInitialize()
     {

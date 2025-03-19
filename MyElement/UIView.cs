@@ -10,7 +10,10 @@ public static class PositioningExtensions
 
 public partial class UIView
 {
-    #region Invalid DirtyMark
+    #region IgnoreMouseInteraction Invalid DirtyMark
+
+    /// <summary> 忽略鼠标交互 </summary>
+    public bool IgnoreMouseInteraction { get; set; }
 
     public bool Invalid
     {
@@ -40,15 +43,19 @@ public partial class UIView
 
     #region Parent Remove() ContainsPoint() GetElementAt()
 
-    public ViewGroup Parent { get; protected internal set; }
+    public UIElementGroup Parent { get; protected internal set; }
 
     public virtual void Remove() => Parent?.RemoveChild(this);
 
     public virtual bool ContainsPoint(Vector2 point) => Bounds.Contains(point);
 
-    public virtual UIView GetElementAt(Vector2 position)
+    public virtual UIView GetElementAt(Vector2 mousePosition)
     {
-        return !Invalid && ContainsPoint(position) ? this : null;
+        if (Invalid || IgnoreMouseInteraction) return null;
+
+        if (ContainsPoint(mousePosition)) return this;
+
+        return null;
     }
 
     #endregion
@@ -206,7 +213,7 @@ public partial class UIView
             // 固定定位: 相对屏幕, 不受到布局影响
             case Positioning.Fixed:
             {
-                var container = DeviceHelper.GetViewportSizeByUIScale();
+                var container = GraphicsDeviceHelper.GetViewportSizeByUIScale();
                 OuterBounds.X = Left.CalculatePosition(container.Width, OuterBounds.Width) + DragOffset.X;
                 OuterBounds.Y = Top.CalculatePosition(container.Height, OuterBounds.Height) + DragOffset.Y;
                 break;
@@ -215,7 +222,7 @@ public partial class UIView
             case Positioning.Absolute:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, DeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
 
                 OuterBounds.X = container.X + Left.CalculatePosition(container.Width, OuterBounds.Width) +
                                 DragOffset.X;
@@ -229,7 +236,7 @@ public partial class UIView
             case Positioning.Relative:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, DeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
 
                 var scroll = Parent?.ScrollOffset ?? Vector2.Zero;
                 OuterBounds.X = container.X + scroll.X + Left.CalculatePosition(container.Width, OuterBounds.Width) +
@@ -243,7 +250,7 @@ public partial class UIView
             case Positioning.Static:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, DeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
 
                 var scroll = Parent?.ScrollOffset ?? Vector2.Zero;
                 OuterBounds.X = container.X + scroll.X + LayoutOffset.X;
@@ -276,12 +283,11 @@ public partial class UIView
     }
 
     protected internal Bounds Bounds;
-    public Bounds GetBounds() => Bounds;
-
     protected internal Bounds InnerBounds;
-    public Bounds GetInnerBounds() => InnerBounds;
-
     protected internal Bounds OuterBounds;
+
+    public Bounds GetBounds() => Bounds;
+    public Bounds GetInnerBounds() => InnerBounds;
     public Bounds GetOuterBounds() => OuterBounds;
 
 

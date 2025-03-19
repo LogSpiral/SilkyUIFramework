@@ -2,7 +2,7 @@
 
 namespace SilkyUIFramework;
 
-public partial class ViewGroup
+public partial class UIElementGroup
 {
     protected internal virtual void OnChildDirty()
     {
@@ -20,9 +20,8 @@ public partial class ViewGroup
     {
         if (IsDirty)
         {
-            var container = GetContainer();
-            Measure(container);
-            Trim(container);
+            Measure(GetParentAvailableSpace());
+            Trim();
             ApplyLayout();
 
             CleanupDirtyMark();

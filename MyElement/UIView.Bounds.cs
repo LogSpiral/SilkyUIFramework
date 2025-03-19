@@ -94,7 +94,7 @@ public partial class UIView
     }
 
     private Dimension _minWidth;
-    private Dimension _maxWidth = new(ushort.MaxValue * 10);
+    private Dimension _maxWidth = new(ushort.MaxValue * 100);
     private Dimension _width;
 
     private Dimension _minHeight;
@@ -132,26 +132,24 @@ public partial class UIView
 
     #endregion
 
-    protected Size GetContainer()
-    {
-        var parent = Parent;
-        if (parent != null)
-        {
-            var width = parent.AutomaticWidth ? 0 : parent.InnerBounds.Width;
-            var height = parent.AutomaticHeight ? 0 : parent.InnerBounds.Height;
-            return new Size(width, height);
-        }
+    /// <summary>
+    /// 获取可用空间
+    /// </summary>
+    protected Size GetAvailableSpace() =>
+        new(AutomaticWidth ? 0 : InnerBounds.Width, AutomaticHeight ? 0 : InnerBounds.Height);
 
-        return DeviceHelper.GetViewportSizeByUIScale();
-    }
+    /// <summary>
+    /// 给自己用的
+    /// </summary>
+    protected Size GetParentAvailableSpace() =>
+        Parent?.GetAvailableSpace() ?? GraphicsDeviceHelper.GetViewportSizeByUIScale();
 
     public virtual void UpdateBounds()
     {
         if (IsDirty)
         {
-            var container = GetContainer();
+            var container = GetParentAvailableSpace();
             Measure(container);
-            Trim(container);
             CleanupDirtyMark();
         }
     }
@@ -161,34 +159,46 @@ public partial class UIView
         RecalculateWidthConstraint(container.Width);
         RecalculateHeightConstraint(container.Height);
 
-        RecalculateBoundsWidth(_automaticWidth ? 0 : container.Width);
-        RecalculateBoundsHeight(_automaticHeight ? 0 : container.Height);
+        if (!AutomaticWidth)
+            RecalculateBoundsWidth(container.Width);
+        if (!AutomaticHeight)
+            RecalculateBoundsHeight(container.Height);
 
         Container = container;
     }
 
-    public virtual void Trim(Size container, float? outerWidth = null, float? outerHeight = null)
+    protected internal virtual void SpecifyWidth(float width)
     {
-        if (outerWidth.HasValue)
-        {
-            SetOuterBoundsWidth(outerWidth.Value);
-        }
-        else if (!_automaticWidth && Container.Width != container.Width)
-        {
-            RecalculateWidthConstraint(container.Width);
-            RecalculateBoundsWidth(container.Width);
-        }
-
-        if (outerHeight.HasValue)
-        {
-            SetOuterBoundsHeight(outerHeight.Value);
-        }
-        else if (!_automaticHeight && Container.Height != container.Height)
-        {
-            RecalculateHeightConstraint(container.Height);
-            RecalculateBoundsHeight(container.Height);
-        }
+        SetOuterBoundsWidth(width);
     }
+
+    protected internal virtual void SpecifyHeight(float height)
+    {
+        SetOuterBoundsHeight(height);
+    }
+
+    //public virtual void Trim(Size container, float? outerWidth = null, float? outerHeight = null)
+    //{
+    //    if (outerWidth.HasValue)
+    //    {
+    //        SpecifyWidth(outerWidth.Value);
+    //    }
+    //    else if (!AutomaticWidth && Container.Width != container.Width)
+    //    {
+    //        RecalculateWidthConstraint(container.Width);
+    //        RecalculateBoundsWidth(container.Width);
+    //    }
+
+    //    if (outerHeight.HasValue)
+    //    {
+    //        SpecifyHeight(outerHeight.Value);
+    //    }
+    //    else if (!AutomaticHeight && Container.Height != container.Height)
+    //    {
+    //        RecalculateHeightConstraint(container.Height);
+    //        RecalculateBoundsHeight(container.Height);
+    //    }
+    //}
 
     #region Calculate Constraint: Original Inner Outer
 
@@ -294,8 +304,6 @@ public partial class UIView
 
     protected void SetOuterBoundsWidth(float width)
     {
-        width = MathHelper.Clamp(width, MinOuterWidth, MaxOuterWidth);
-
         OuterBounds.Width = Math.Max(0, width);
         Bounds.Width = Math.Max(0, width -= Margin.Horizontal);
         InnerBounds.Width = Math.Max(0, width - Padding.Horizontal - Border.Horizontal);
@@ -303,8 +311,6 @@ public partial class UIView
 
     protected void SetOuterBoundsHeight(float height)
     {
-        height = MathHelper.Clamp(height, MinOuterHeight, MaxOuterHeight);
-
         OuterBounds.Height = Math.Max(0, height);
         Bounds.Height = Math.Max(0, height -= Margin.Vertical);
         InnerBounds.Height = Math.Max(0, height - Padding.Vertical - Border.Vertical);
@@ -326,8 +332,6 @@ public partial class UIView
 
     protected void SetInnerBoundsWidth(float width)
     {
-        width = MathHelper.Clamp(width, MinInnerWidth, MaxInnerWidth);
-
         InnerBounds.Width = Math.Max(0, width);
         Bounds.Width = Math.Max(0, width += Padding.Horizontal + Border.Horizontal);
         OuterBounds.Width = Math.Max(0, width + Margin.Horizontal);
@@ -335,8 +339,6 @@ public partial class UIView
 
     protected void SetInnerBoundsHeight(float height)
     {
-        height = MathHelper.Clamp(height, MinInnerHeight, MaxInnerHeight);
-
         InnerBounds.Height = Math.Max(0, height);
         Bounds.Height = Math.Max(0, height += Padding.Vertical + Border.Vertical);
         OuterBounds.Height = Math.Max(0, height + Margin.Vertical);

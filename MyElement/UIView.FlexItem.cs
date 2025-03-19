@@ -2,9 +2,7 @@ namespace SilkyUIFramework.MyElement;
 
 public partial class UIView
 {
-    /// <summary>
-    /// 弹性项目的扩张分量
-    /// </summary>
+    /// <summary> 弹性项目的增长因子 </summary>
     public float FlexGrow
     {
         get => _flexGrow;
@@ -18,6 +16,7 @@ public partial class UIView
 
     private float _flexGrow;
 
+    /// <summary> 弹性项目的收缩因子 </summary>
     public float FlexShrink
     {
         get => _flexShrink;

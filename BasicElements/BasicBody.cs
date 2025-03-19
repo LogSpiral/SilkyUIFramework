@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace SilkyUIFramework.BasicElements;
+﻿namespace SilkyUIFramework.BasicElements;
 
 public abstract class BasicBody : View
 {

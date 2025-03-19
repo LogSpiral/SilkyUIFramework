@@ -4,6 +4,8 @@ namespace SilkyUIFramework;
 
 public readonly struct Margin(float left, float top, float right, float bottom) : IEquatable<Margin>
 {
+    public static Margin Zero { get; } = new(0f, 0f, 0f, 0f);
+
     public Margin(float uniform) : this(uniform, uniform, uniform, uniform) { }
 
     public float Left { get; } = left;
