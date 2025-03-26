@@ -25,7 +25,7 @@ public class ClientConfig : ModConfig
 
     public override void OnChanged()
     {
-        SUIText.DeathTextOffset = DeathTextOffset;
-        SUIText.MouseTextOffset = MouseTextOffset;
+        UITextView.DeathTextOffset = DeathTextOffset;
+        UITextView.MouseTextOffset = MouseTextOffset;
     }
 }

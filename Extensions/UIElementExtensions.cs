@@ -1,56 +1,13 @@
-﻿using SilkyUIFramework.BasicElements;
-using SilkyUIFramework.Core;
-
-namespace SilkyUIFramework.Extensions;
+﻿namespace SilkyUIFramework.Extensions;
 
 public static class UIElementExtensions
 {
-    public static View RecentParentView(this UIElement uie)
-    {
-        var parent = uie?.Parent;
-
-        while (parent is not null)
-        {
-            if (parent is View view)
-                return view;
-
-            parent = parent.Parent;
-        }
-
-        return null;
-    }
-
-    public static UIElement PreviousElement(this UIElement uie, Func<UIElement, bool> predicate)
-    {
-        if (predicate == null ||
-            uie?.Parent is not { Elements.Count: > 1 } parent ||
-            parent.Elements[0] == uie)
-            return null;
-
-        var index = parent.Elements.IndexOf(uie);
-
-        while (index >= 1)
-        {
-            var previous = parent.Elements[--index];
-
-            if (predicate(previous))
-            {
-                return parent.Elements[(parent.Elements.IndexOf(uie) - 1)];
-            }
-        }
-
-        return null;
-    }
-
-    public static UIElement PreviousRelativeElement(this UIElement uie) =>
-        uie.PreviousElement(previous => previous is View { Positioning: Positioning.Relative });
-
-    public static T SetPositionPixels<T>(this T uie, float x, float y) where T : UIElement
-    {
-        uie.Left.Pixels = x;
-        uie.Top.Pixels = y;
-        return uie;
-    }
+    //public static T SetPositionPixels<T>(this T uie, float x, float y) where T : UIElement
+    //{
+    //    uie.Left.Pixels = x;
+    //    uie.Top.Pixels = y;
+    //    return uie;
+    //}
 
     // #region Offset Position
     //
@@ -110,21 +67,21 @@ public static class UIElementExtensions
     //
     // #endregion
 
-    public static T Join<T>(this T uie, View parent) where T : View
+    public static T Join<T>(this T uie, UIElementGroup parent) where T : UIView
     {
-        parent.AppendFromView(uie);
+        parent.AppendChild(uie);
         return uie;
     }
 
     #region [Margin] [Padding]
 
-    public static float HMargin(this UIElement uie) => uie.MarginLeft + uie.MarginRight;
+    //public static float HMargin(this UIElement uie) => uie.MarginLeft + uie.MarginRight;
 
-    public static float VMargin(this UIElement uie) => uie.MarginTop + uie.MarginBottom;
+    //public static float VMargin(this UIElement uie) => uie.MarginTop + uie.MarginBottom;
 
-    public static float HPadding(this UIElement uie) => uie.PaddingLeft + uie.PaddingRight;
+    //public static float HPadding(this UIElement uie) => uie.PaddingLeft + uie.PaddingRight;
 
-    public static float VPadding(this UIElement uie) => uie.PaddingTop + uie.PaddingBottom;
+    //public static float VPadding(this UIElement uie) => uie.PaddingTop + uie.PaddingBottom;
 
     #endregion
 }

@@ -1,9 +1,6 @@
-﻿using SilkyUIFramework.BasicElements;
-using SilkyUIFramework.Graphics2D;
+﻿namespace SilkyUIFramework.BasicComponents;
 
-namespace SilkyUIFramework.BasicComponents;
-
-public class SUICross(Color backgroundColor, Color borderColor) : View
+public class SUICross(Color backgroundColor, Color borderColor) : UIView
 {
     public float
         CrossSize = 24f,
@@ -18,24 +15,25 @@ public class SUICross(Color backgroundColor, Color borderColor) : View
 
     public Vector2 CrossOffset = Vector2.Zero;
 
-    public override void MouseOver(UIMouseEvent evt)
+
+    public override void OnMouseLeave(UIMouseEvent evt)
     {
         SoundEngine.PlaySound(SoundID.MenuTick);
-        base.MouseOver(evt);
+        base.OnMouseLeave(evt);
     }
 
-    public override void DrawSelf(SpriteBatch sb)
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        base.DrawSelf(sb);
+        base.Draw(gameTime, spriteBatch);
 
-        var position = GetDimensions().Position();
-        var size = GetDimensions().Size();
+        var position = InnerBounds.Position;
+        var size = InnerBounds.Size;
 
         var crossBorderColor = HoverTimer.Lerp(CrossBorderColor, CrossBorderHoverColor);
         var crossBackground = HoverTimer.Lerp(CrossBackgroundColor, CrossBackgroundHoverColor);
         var crossPosition = position + (size - new Vector2(CrossSize)) / 2f + CrossOffset;
 
         SDFGraphics.HasBorderCross(crossPosition, CrossSize, CrossRounded,
-            crossBackground, CrossBorder, crossBorderColor, FinalMatrix);
+            crossBackground, CrossBorder, crossBorderColor, SilkyUI.TransformMatrix);
     }
 }

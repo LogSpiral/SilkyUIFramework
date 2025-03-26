@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.MyElement;
+﻿namespace SilkyUIFramework;
 
 public class UIMouseEvent(UIView source, Vector2 position)
 {

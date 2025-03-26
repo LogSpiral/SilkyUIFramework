@@ -1,6 +1,4 @@
-﻿using SilkyUIFramework.MyElement;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 /// <summary>
 /// 似乎在密谋着什么，再等等...
@@ -12,6 +10,26 @@ public partial class UIElementGroup : UIView
     protected List<UIView> Elements { get; } = [];
     public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
     public IReadOnlyList<UIView> Children => Elements;
+
+    public sealed override void HandleMounted(SilkyUI silkyUI)
+    {
+        base.HandleMounted(silkyUI);
+
+        foreach (var el in Children)
+        {
+            el.HandleMounted(silkyUI);
+        }
+    }
+
+    public sealed override void HandleUnmounted()
+    {
+        base.HandleUnmounted();
+
+        foreach (var el in Children)
+        {
+            el.HandleUnmounted();
+        }
+    }
 
     /// <summary>
     /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutChildren"/>)
@@ -34,8 +52,10 @@ public partial class UIElementGroup : UIView
         child.Remove();
         Elements.Add(child);
         child.Parent = this;
-        MarkDirty();
-        PositionDirty = true;
+        MarkLayoutDirty();
+        MarkPositionDirty();
+
+        if (SilkyUI != null) child.HandleMounted(SilkyUI);
     }
 
     public virtual void RemoveChild(UIView child)
@@ -43,20 +63,20 @@ public partial class UIElementGroup : UIView
         if (!Elements.Remove(child)) return;
 
         child.Parent = null;
-        MarkDirty();
-        PositionDirty = true;
+        MarkLayoutDirty();
+        MarkPositionDirty();
+        child.HandleUnmounted();
     }
 
     public virtual void RemoveAllChildren()
     {
-        foreach (var child in Elements)
+        foreach (var child in Elements.ToArray())
         {
-            child.Parent = null;
+            RemoveChild(child);
         }
 
-        Elements.Clear();
-        MarkDirty();
-        PositionDirty = true;
+        MarkLayoutDirty();
+        MarkPositionDirty();
     }
 
     #endregion
@@ -91,11 +111,55 @@ public partial class UIElementGroup : UIView
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         base.HandleDraw(gameTime, spriteBatch);
+
         DrawChildren(gameTime, spriteBatch);
+    }
+
+    public virtual Rectangle GetClippingRectangle(SpriteBatch spriteBatch)
+    {
+        var bounds = HiddenBox switch
+        {
+            HiddenBox.Outer => OuterBounds,
+            HiddenBox.Inner => InnerBounds,
+            _ => Bounds,
+        };
+
+        var topLeft = Vector2.Transform(bounds.Position, SilkyUI.TransformMatrix);
+        var rightBottom = Vector2.Transform(bounds.RightBottom, SilkyUI.TransformMatrix);
+        var rectangle = new Rectangle(
+                (int)Math.Floor(topLeft.X), (int)Math.Floor(topLeft.Y),
+                (int)Math.Ceiling(rightBottom.X - topLeft.X),
+                (int)Math.Ceiling(rightBottom.Y - topLeft.Y));
+
+        var scissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
+        return Rectangle.Intersect(rectangle, scissorRectangle);
     }
 
     public virtual void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
+        if (OverflowHidden)
+        {
+            var innerBounds = InnerBounds;
+            spriteBatch.End();
+            var originalScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
+            var scissor = Rectangle.Intersect(GetClippingRectangle(spriteBatch), originalScissor);
+            spriteBatch.GraphicsDevice.ScissorRectangle = scissor;
+            var renderStatus = RenderStates.BackupStates(Main.graphics.GraphicsDevice, spriteBatch);
+            spriteBatch.Begin(SpriteSortMode.Deferred,
+                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+
+            foreach (var child in GetValidChildren().Where(el => el.OuterBounds.Intersects(innerBounds)))
+            {
+                child.HandleDraw(gameTime, spriteBatch);
+            }
+
+            spriteBatch.End();
+            spriteBatch.GraphicsDevice.ScissorRectangle = originalScissor;
+            renderStatus.Begin(spriteBatch, SpriteSortMode.Deferred);
+
+            return;
+        }
+
         foreach (var child in GetValidChildren())
         {
             child.HandleDraw(gameTime, spriteBatch);
@@ -107,7 +171,7 @@ public partial class UIElementGroup : UIView
     protected readonly List<UIView> FreeChildren = [];
     protected readonly List<UIView> LayoutChildren = [];
 
-    protected void ClassifyElements()
+    protected void ClassifyChildren()
     {
         FreeChildren.Clear();
         LayoutChildren.Clear();
@@ -140,12 +204,15 @@ public partial class UIElementGroup : UIView
                 if (target != null) return target;
             }
 
+            // 所有子元素都不符合条件, 如果自身不忽略鼠标交互, 则返回自己
             return IgnoreMouseInteraction ? null : this;
         }
 
+        // 没有开启溢出隐藏, 直接检查所有有效子元素
         foreach (var child in GetValidChildren())
         {
-            if (child.GetElementAt(mousePosition) is { } target) return target;
+            var target = child.GetElementAt(mousePosition);
+            if (target != null) return target;
         }
 
         // 忽略鼠标交互
@@ -157,14 +224,12 @@ public partial class UIElementGroup : UIView
 
     public Vector2 ScrollOffset
     {
-        get => _scrollOffset;
+        get;
         protected set
         {
-            if (value == _scrollOffset) return;
-            _scrollOffset = value;
-            PositionDirty = true;
+            if (field == value) return;
+            field = value;
+            MarkPositionDirty();
         }
     }
-
-    private Vector2 _scrollOffset;
 }

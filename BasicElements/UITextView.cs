@@ -1,11 +1,9 @@
 ﻿using System.Text.RegularExpressions;
-using SilkyUIFramework.Configs;
-using SilkyUIFramework.Helper;
 using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.BasicElements;
 
-public class SUIText : View
+public class UITextView : UIView
 {
     public static readonly Vector2[] ShadowOffsets = [-Vector2.UnitX, Vector2.UnitX, -Vector2.UnitY, Vector2.UnitY];
     public static float DeathTextOffset { get; internal set; }
@@ -18,8 +16,6 @@ public class SUIText : View
 
     #region 控制属性
 
-    protected bool TextChanges;
-
     public virtual DynamicSpriteFont Font
     {
         get => _font ?? FontAssets.MouseText.Value;
@@ -27,7 +23,7 @@ public class SUIText : View
         {
             if (_font == value) return;
             _font = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 
@@ -48,7 +44,7 @@ public class SUIText : View
         {
             if (_text.Equals(value)) return;
             _text = value;
-            TextChanges = true;
+            MarkLayoutDirty();
             OnTextChanged?.Invoke();
         }
     }
@@ -63,7 +59,7 @@ public class SUIText : View
         {
             if (_wordWrap == value) return;
             _wordWrap = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 
@@ -77,7 +73,7 @@ public class SUIText : View
         {
             if (_maxWordLength == value) return;
             _maxWordLength = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 
@@ -88,7 +84,7 @@ public class SUIText : View
         {
             if (_maxLines == value) return;
             _maxLines = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 
@@ -100,7 +96,7 @@ public class SUIText : View
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (_textScale == value) return;
             _textScale = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 
@@ -119,35 +115,64 @@ public class SUIText : View
 
     protected readonly List<TextSnippet> FinalSnippets = [];
 
+    public UITextView()
+    {
+        Padding = 2;
+        FitWidth = true;
+        FitHeight = true;
+    }
+
     public Vector2 TextSize { get; protected set; } = Vector2.Zero;
 
-    public override void Update(GameTime gameTime)
+    protected override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
-        if (TextChanges) Recalculate();
     }
 
-    public override Vector2 CalculateContentSize()
+    public override void Prepare(float? width, float? height)
     {
-        RecalculateText();
+        ComputeWidthConstraint(width ?? 0);
+        ComputeHeightConstraint(height ?? 0);
 
-        var content = base.CalculateContentSize();
-        if (!SpecifyWidth) content.X = TextSize.X * TextScale;
-        if (!SpecifyHeight) content.Y = TextSize.Y * TextScale;
-        return content;
+        if (FitWidth)
+        {
+            RecalculateText(MaxInnerWidth);
+            DefineInnerBoundsWidth(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
+        }
+        else
+        {
+            RecalculateBoundsWidth(width ?? 0);
+            RecalculateText(InnerBounds.Width);
+        }
+
+        if (FitHeight)
+        {
+            DefineInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+        }
+        else
+        {
+            RecalculateBoundsHeight(height ?? 0);
+        }
     }
 
-    protected virtual void RecalculateText()
+    public override void CalculateHeight()
+    {
+        RecalculateText(InnerBounds.Width);
+        if (FitHeight)
+        {
+            DefineInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+        }
+    }
+
+    protected virtual void RecalculateText(float maxWidth)
     {
         // text -> textSnippet -> plainTextSnippet & textSnippetSubclasses
         var parsed = TextSnippetHelper.ParseMessage(Text, TextColor);
         var converted = TextSnippetHelper.ConvertNormalSnippets(parsed);
 
         // 自动换行 & 指定宽度
-        if (WordWrap && SpecifyWidth)
+        if (WordWrap)
         {
-            // 宽度与 TextScale 相关
-            var maxWidth = _innerDimensions.Width / TextScale;
             // 进行换行
             TextSnippetHelper.WordwrapString(converted, FinalSnippets,
                 TextColor, Font, maxWidth, MaxWordLength, MaxLines);
@@ -160,32 +185,24 @@ public class SUIText : View
 
         // 计算文本大小
         TextSize = TextSnippetHelper.GetStringSize(Font, FinalSnippets, new Vector2(1f));
-        TextChanges = false;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        if (TextChanges)
-            RecalculateText();
-        base.Draw(spriteBatch);
-    }
-
-    public override void DrawChildren(SpriteBatch spriteBatch)
-    {
-        DrawText(spriteBatch, FinalSnippets.ToList());
-        base.DrawChildren(spriteBatch);
+        base.Draw(gameTime, spriteBatch);
+        DrawText(spriteBatch, [.. FinalSnippets]);
     }
 
     protected virtual void DrawText(SpriteBatch spriteBatch, List<TextSnippet> finalSnippets)
     {
-        var innerSize = _innerDimensions.Size();
+        var innerSize = (Vector2)InnerBounds.Size;
 
         var textSize = TextSize;
         // 无字符时会出问题，加上这行就好了
         textSize.Y = Math.Max(Font.LineSpacing, textSize.Y);
 
         var textPos =
-            _innerDimensions.Position()
+            InnerBounds.Position
             + TextOffset
             + TextPercentOffset * innerSize
             + TextAlign * (innerSize - textSize * TextScale)
@@ -231,8 +248,10 @@ public class SUIText : View
         float spread = 2f)
     {
         foreach (var offset in ShadowOffsets)
+        {
             DrawColorCodedString(spriteBatch, font, snippets, position + offset * spread, baseColor,
                 rotation, origin, baseScale, out var _, maxWidth, ignoreColors: true);
+        }
     }
 
     protected static Vector2 DrawColorCodedString(SpriteBatch spriteBatch, DynamicSpriteFont font,
@@ -278,7 +297,7 @@ public class SUIText : View
                     string[] strArray2 = input.Split(' ');
                     if (input == "\n")
                     {
-                        vector2_1.Y += (float)font.LineSpacing * num2 * baseScale.Y;
+                        vector2_1.Y += font.LineSpacing * num2 * baseScale.Y;
                         vector2_1.X = position.X;
                         vector2_2.Y = Math.Max(vector2_2.Y, vector2_1.Y);
                         num2 = 0.0f;
@@ -293,10 +312,10 @@ public class SUIText : View
                             if ((double)maxWidth > 0.0)
                             {
                                 float num3 = font.MeasureString(strArray2[index2]).X * baseScale.X * scale;
-                                if ((double)vector2_1.X - (double)position.X + (double)num3 > (double)maxWidth)
+                                if (vector2_1.X - (double)position.X + (double)num3 > (double)maxWidth)
                                 {
                                     vector2_1.X = position.X;
-                                    vector2_1.Y += (float)font.LineSpacing * num2 * baseScale.Y;
+                                    vector2_1.Y += font.LineSpacing * num2 * baseScale.Y;
                                     vector2_2.Y = Math.Max(vector2_2.Y, vector2_1.Y);
                                     num2 = 0.0f;
                                 }
@@ -315,7 +334,7 @@ public class SUIText : View
 
                         if (strArray1.Length > 1 & flag)
                         {
-                            vector2_1.Y += (float)font.LineSpacing * num2 * baseScale.Y;
+                            vector2_1.Y += font.LineSpacing * num2 * baseScale.Y;
                             vector2_1.X = position.X;
                             vector2_2.Y = Math.Max(vector2_2.Y, vector2_1.Y);
                             num2 = 0.0f;

@@ -54,7 +54,7 @@ public class SilkyUIPlayer : ModPlayer
         foreach (var ui in manager.SilkyUILayerNodes.SelectMany(uis => uis.Value))
         {
             if (!manager.BasicBodyMappingTable.TryGetValue(ui, out var type)) continue;
-            ui.SetBasicBody(Activator.CreateInstance(type) as BasicBody);
+            ui.SetBody(Activator.CreateInstance(type) as BasicBody);
         }
     }
 }

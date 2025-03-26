@@ -11,7 +11,7 @@ public class SilkyUIManager
     /// <summary>
     /// 当前的 <see cref="UserInterface"/>
     /// </summary>
-    public SilkyUI CurrentSilkyUI { get; private set; }
+    public SilkyUI CurrentSilkyUI { get; internal set; }
 
     /// <summary>
     /// 当前的 <see cref="UserInterface"/> 所在 List
@@ -21,7 +21,7 @@ public class SilkyUIManager
     /// <summary>
     /// 鼠标悬浮元素
     /// </summary>
-    protected UIElement MouseHoverTarget { get; set; }
+    protected UIView MouseHoverTarget { get; set; }
 
     /// <summary>
     /// <see cref="UserInterface"/> 实例绑定的 <see cref="BasicBody"/> <see cref="Type"/>
@@ -46,6 +46,11 @@ public class SilkyUIManager
 
     #endregion
 
+    /// <summary>
+    /// <see cref="BasicBody"/> 的子类
+    /// </summary>
+    /// <param name="basicBodyType"></param>
+    /// <param name="registerUIAttribute"></param>
     public void RegisterUI(Type basicBodyType, RegisterUIAttribute registerUIAttribute)
     {
         var silkyUI = new SilkyUI();
@@ -66,7 +71,7 @@ public class SilkyUIManager
         }
     }
 
-    protected UIElement MouseFocusTarget { get; set; }
+    protected UIView MouseFocusTarget { get; set; }
 
     /// <summary>
     /// 更新 UI
@@ -116,7 +121,7 @@ public class SilkyUIManager
             }
         }
 
-        if (MouseFocusTarget is View { OccupyPlayerInput: true } inputElement)
+        if (MouseFocusTarget is { OccupyPlayerInput: true } inputElement)
             Main.CurrentInputTextTakerOverride = inputElement;
 
         CurrentSilkyUIs = null;
@@ -155,11 +160,9 @@ public class SilkyUIManager
             {
                 if (!RegisterUIMappingTable.TryGetValue(silkyUI, out var autoload)) continue;
 
-                var silkyUILayer = new SilkyUILayer(
+                var silkyUILayer = new SilkyUILayer(this,
                     silkyUI, autoload.Name,
-                    autoload.InterfaceScaleType,
-                    () => CurrentSilkyUI = silkyUI,
-                    () => CurrentSilkyUI = null);
+                    autoload.InterfaceScaleType);
 
                 layers.Insert(index + 1, silkyUILayer);
             }

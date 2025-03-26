@@ -1,43 +1,36 @@
-﻿using Iced.Intel;
-using SilkyUIFramework.Core;
-
-namespace SilkyUIFramework.MyElement;
-
-public static class PositioningExtensions
-{
-    public static bool IsFree(this Positioning positioning) => positioning is Positioning.Fixed or Positioning.Absolute;
-}
+﻿namespace SilkyUIFramework.BasicElements;
 
 public partial class UIView
 {
-    #region IgnoreMouseInteraction Invalid DirtyMark
+    #region IgnoreMouseInteraction Invalid IsMouseHovering DirtyMark
 
-    /// <summary> 忽略鼠标交互 </summary>
+    /// <summary> 忽略鼠标交互, 不影响其子元素交互, 仅仅是忽略他自身 </summary>
     public bool IgnoreMouseInteraction { get; set; }
 
     public bool Invalid
     {
-        get => _invalid;
+        get;
         set
         {
-            if (_invalid == value) return;
-            _invalid = value;
-            MarkDirty();
+            if (field == value) return;
+            field = value;
+            MarkLayoutDirty();
         }
     }
 
-    private bool _invalid;
+    public bool IsMouseHovering { get; set; }
 
-    protected bool IsDirty { get; set; } = true;
+    protected bool LayoutIsDirty { get; set; } = true;
 
-    protected void MarkDirty()
+    protected void MarkLayoutDirty()
     {
-        IsDirty = true;
+        LayoutIsDirty = true;
+        PositionIsDirty = true;
         if (Positioning.IsFree()) return;
-        Parent?.OnChildDirty();
+        Parent?.NotifyParentChildDirty();
     }
 
-    public virtual void CleanupDirtyMark() => IsDirty = false;
+    public virtual void CleanupDirtyMark() => LayoutIsDirty = false;
 
     #endregion
 
@@ -60,6 +53,41 @@ public partial class UIView
 
     #endregion
 
+    private bool _initialized = false;
+
+    public void Initialize()
+    {
+        if (_initialized) return;
+        OnInitialize();
+        _initialized = true;
+    }
+
+    protected virtual void OnInitialize() { }
+
+    public SilkyUI SilkyUI { get; private set; }
+
+    public virtual void HandleMounted(SilkyUI silkyUI)
+    {
+        SilkyUI = silkyUI;
+        OnMounted();
+    }
+
+    public virtual void HandleUnmounted()
+    {
+        SilkyUI = null;
+        OnUnmounted();
+    }
+
+    protected virtual void OnMounted()
+    {
+
+    }
+
+    protected virtual void OnUnmounted()
+    {
+
+    }
+
     /// <summary> 按条件获取祖先元素 </summary>
     public UIView GetAncestor(Func<UIView, bool> condition = null)
     {
@@ -76,52 +104,50 @@ public partial class UIView
         return null;
     }
 
-    protected bool PositionDirty { get; set; } = true;
+    protected bool PositionIsDirty { get; set; } = true;
+
+    protected void MarkPositionDirty() => PositionIsDirty = true;
+    protected void CleanupPositionDirtyMark() => PositionIsDirty = false;
 
     public Positioning Positioning
     {
-        get => _positioning;
+        get;
         set
         {
-            if (_positioning == value) return;
-            var freeChanged = _positioning.IsFree() != value.IsFree();
-            _positioning = value;
-            PositionDirty = true;
-            if (freeChanged)
-            {
-                IsDirty = true;
-                Parent?.OnChildDirty();
-            }
+            if (field == value) return;
+            var freeChanged = field.IsFree() != value.IsFree();
+
+            field = value;
+            MarkPositionDirty();
+
+            if (!freeChanged) return;
+            LayoutIsDirty = true;
+            Parent?.NotifyParentChildDirty();
         }
     }
-
-    private Positioning _positioning;
 
     public StickyType StickyType
     {
-        get => _stickyType;
+        get;
         set
         {
-            if (value == _stickyType) return;
-            _stickyType = value;
-            if (Positioning == Positioning.Sticky) PositionDirty = true;
+            if (field == value) return;
+            field = value;
+            // 仅当元素为 sticky 定位时, 才需要重新计算位置
+            if (Positioning == Positioning.Sticky) MarkPositionDirty();
         }
     }
-
-    private StickyType _stickyType;
 
     public Vector4 Sticky
     {
-        get => _sticky;
+        get;
         set
         {
-            if (_sticky == value) return;
-            _sticky = value;
-            if (Positioning is Positioning.Sticky) PositionDirty = true;
+            if (field == value) return;
+            field = value;
+            if (Positioning is Positioning.Sticky) MarkPositionDirty();
         }
     }
-
-    private Vector4 _sticky;
 
     #region Anchor
 
@@ -152,7 +178,7 @@ public partial class UIView
         anchor = anchor.With(pixels, percent, alignment);
 
         if (Positioning != Positioning.Static)
-            PositionDirty = true;
+            MarkPositionDirty();
     }
 
     #endregion
@@ -174,33 +200,27 @@ public partial class UIView
         if (x.HasValue) _layoutOffset.X = x.Value;
         if (y.HasValue) _layoutOffset.Y = y.Value;
 
-        PositionDirty = true;
+        MarkPositionDirty();
     }
 
-    private Vector2 _dragOffset;
-
-    protected Vector2 DragOffset
+    public Vector2 DragOffset
     {
-        get => _dragOffset;
-        set => SetDragOffset(value.X, value.Y);
+        get => field;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            MarkPositionDirty();
+        }
     }
 
-    public void SetDragOffset(float? x = null, float? y = null)
-    {
-        if ((!x.HasValue || x.Value == _layoutOffset.X) && (!y.HasValue || y.Value == _layoutOffset.Y)) return;
-
-        if (x.HasValue) _dragOffset.X = x.Value;
-        if (y.HasValue) _dragOffset.Y = y.Value;
-
-        if (Positioning != Positioning.Static) return;
-        PositionDirty = true;
-    }
+    public void SetDragOffset(float? x = null, float? y = null) => DragOffset = new Vector2(x ?? DragOffset.X, y ?? DragOffset.Y);
 
     #endregion
 
     public virtual void UpdatePosition()
     {
-        if (PositionDirty)
+        if (PositionIsDirty)
         {
             RecalculatePosition();
         }
@@ -213,7 +233,7 @@ public partial class UIView
             // 固定定位: 相对屏幕, 不受到布局影响
             case Positioning.Fixed:
             {
-                var container = GraphicsDeviceHelper.GetViewportSizeByUIScale();
+                var container = GraphicsDeviceHelper.GetBackBufferSizeByUIScale();
                 OuterBounds.X = Left.CalculatePosition(container.Width, OuterBounds.Width) + DragOffset.X;
                 OuterBounds.Y = Top.CalculatePosition(container.Height, OuterBounds.Height) + DragOffset.Y;
                 break;
@@ -222,7 +242,7 @@ public partial class UIView
             case Positioning.Absolute:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetBackBufferSizeByUIScale());
 
                 OuterBounds.X = container.X + Left.CalculatePosition(container.Width, OuterBounds.Width) +
                                 DragOffset.X;
@@ -236,12 +256,14 @@ public partial class UIView
             case Positioning.Relative:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetBackBufferSizeByUIScale());
 
-                var scroll = Parent?.ScrollOffset ?? Vector2.Zero;
-                OuterBounds.X = container.X + scroll.X + Left.CalculatePosition(container.Width, OuterBounds.Width) +
+                var scrollOffset = GetScrollOffsetByParent();
+                OuterBounds.X = container.X + scrollOffset.X +
+                                Left.CalculatePosition(container.Width, OuterBounds.Width) +
                                 LayoutOffset.X + DragOffset.X;
-                OuterBounds.Y = container.Y + scroll.Y + Top.CalculatePosition(container.Height, OuterBounds.Height) +
+                OuterBounds.Y = container.Y + scrollOffset.Y +
+                                Top.CalculatePosition(container.Height, OuterBounds.Height) +
                                 LayoutOffset.Y + DragOffset.Y;
                 HandleStickyPositioning(container);
                 break;
@@ -250,19 +272,24 @@ public partial class UIView
             case Positioning.Static:
             {
                 var container = Parent?.InnerBounds ??
-                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetViewportSizeByUIScale());
+                                new Bounds(Vector2.Zero, GraphicsDeviceHelper.GetBackBufferSizeByUIScale());
 
-                var scroll = Parent?.ScrollOffset ?? Vector2.Zero;
-                OuterBounds.X = container.X + scroll.X + LayoutOffset.X;
-                OuterBounds.Y = container.Y + scroll.Y + LayoutOffset.Y;
+                var scrollOffset = GetScrollOffsetByParent();
+                OuterBounds.X = container.X + scrollOffset.X + LayoutOffset.X;
+                OuterBounds.Y = container.Y + scrollOffset.Y + LayoutOffset.Y;
                 break;
             }
         }
 
         Bounds.Position = OuterBounds.Position + Margin;
-        InnerBounds.Position = Bounds.Position + Border + Padding;
+        InnerBounds.Position = Bounds.Position + new Vector2(Border) + Padding;
 
-        PositionDirty = false;
+        CleanupPositionDirtyMark();
+    }
+
+    protected Vector2 GetScrollOffsetByParent()
+    {
+        return Parent?.ScrollOffset ?? Vector2.Zero;
     }
 
     protected virtual void HandleStickyPositioning(Bounds container)
@@ -290,9 +317,7 @@ public partial class UIView
     public Bounds GetInnerBounds() => InnerBounds;
     public Bounds GetOuterBounds() => OuterBounds;
 
-
     public event Action<GameTime> OnUpdateStatus;
-    protected virtual void UpdateStatus(GameTime gameTime) { }
 
     public virtual void HandleUpdateStatus(GameTime gameTime)
     {
@@ -310,20 +335,4 @@ public partial class UIView
     }
 
     public event Action<GameTime, SpriteBatch> DrawAction;
-
-    protected virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-        var viewport = Main.graphics.GraphicsDevice.Viewport;
-        var matrix = Main.UIScaleMatrix;
-
-        var background = Color.White * 0.2f;
-        var borderColor = Color.White * 0.5f;
-        SDFRectangle.DrawWithBorder(Bounds.Position, Bounds.Size, new Vector4(0f), background, 2, borderColor, matrix);
-    }
-
-    public virtual void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-        DrawAction?.Invoke(gameTime, spriteBatch);
-        Draw(gameTime, spriteBatch);
-    }
 }

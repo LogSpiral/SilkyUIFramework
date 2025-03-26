@@ -2,7 +2,7 @@
 
 namespace SilkyUIFramework.BasicComponents;
 
-public class SUIImage : View
+public class SUIImage : UIView
 {
     #region Texture2D
 
@@ -20,7 +20,7 @@ public class SUIImage : View
             _texture2D = value;
         }
     }
-    public Vector2 ImageOrigianlSize
+    public Vector2 ImageOriginalSize
     {
         get
         {
@@ -55,37 +55,40 @@ public class SUIImage : View
         ArgumentNullException.ThrowIfNull(texture);
 
         Texture2D = texture;
-        SpecifyWidth = SpecifyHeight = true;
+        FitWidth = true;
+        FitHeight = true;
     }
 
-    protected override Vector2 GetOuterSize(float width, float height)
+    public override void Prepare(float? width, float? height)
     {
-        var size = base.GetOuterSize(width, height);
+        base.Prepare(width, height);
 
-        if (Texture2D.Value is { } texture)
+        if (Texture2D == null || Texture2D.Value == null) return;
+
+        if (FitWidth)
         {
-            if (!SpecifyWidth)
-                size.X = texture.Width + this.HPadding() + this.HMargin() + Border * 2f;
-            if (!SpecifyHeight)
-                size.Y = texture.Height + this.VPadding() + this.VMargin() + Border * 2f;
+            DefineInnerBoundsWidth(Texture2D.Value.Width);
         }
 
-        return size;
+        if (FitHeight)
+        {
+            DefineInnerBoundsWidth(Texture2D.Value.Height);
+        }
     }
 
-    public override void DrawSelf(SpriteBatch sb)
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        base.DrawSelf(sb);
+        base.Draw(gameTime, spriteBatch);
 
         if (Texture2D.Value is null) return;
 
-        var position = _dimensions.Position();
-        var size = _dimensions.Size();
+        var position = InnerBounds.Position;
+        var size = (Vector2)InnerBounds.Size;
 
-        var imageOrigianlSize = ImageOrigianlSize;
-        var completeOffset = ImageOffset + size * ImagePercent + (size - imageOrigianlSize * ImageScale) * ImageAlign;
+        var imageOriginalSize = ImageOriginalSize;
+        var completeOffset = ImageOffset + size * ImagePercent + (size - imageOriginalSize * ImageScale) * ImageAlign;
 
-        sb.Draw(Texture2D.Value, position + completeOffset, SourceRectangle,
-            ImageColor, 0f, imageOrigianlSize * ImageOriginPercent, ImageScale, 0f, 0f);
+        spriteBatch.Draw(Texture2D.Value, position + completeOffset, SourceRectangle,
+            ImageColor, 0f, imageOriginalSize * ImageOriginPercent, ImageScale, 0f, 0f);
     }
 }

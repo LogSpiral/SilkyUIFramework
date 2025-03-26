@@ -21,10 +21,7 @@ public enum MouseEventType
 
 public class MouseStatus
 {
-    private bool
-        _leftButton,
-        _middleButton,
-        _rightButton;
+    private bool _leftButton, _middleButton, _rightButton;
 
     public void SetState(MouseStatus status)
     {
@@ -73,11 +70,11 @@ public class MouseStatus
 
 public class MouseTarget
 {
-    private UIElement _leftButton;
-    private UIElement _middleButton;
-    private UIElement _rightButton;
+    private UIView _leftButton;
+    private UIView _middleButton;
+    private UIView _rightButton;
 
-    public UIElement this[MouseButtonType button]
+    public UIView this[MouseButtonType button]
     {
         get => button switch
         {
@@ -117,39 +114,39 @@ public class SilkyUI
     public BasicBody BasicBody { get; private set; }
     public Matrix TransformMatrix { get; set; }
     public Vector2 MousePosition { get; private set; }
-    public UIElement MouseHoverTarget { get; private set; }
-    public UIElement MouseFocusTarget { get; private set; }
-    public UIElement LastHoverTarget { get; private set; }
+    public UIView MouseHoverTarget { get; private set; }
+    public UIView MouseFocusTarget { get; private set; }
+    public UIView LastHoverTarget { get; private set; }
     public MouseTarget LastMouseTargets { get; } = new();
 
     private readonly MouseStatus _mouseStatus = new();
     private readonly MouseStatus _lastMouseStatus = new();
 
-    public void SetFocus(UIElement element)
+    public void SetFocus(UIView focusTarget)
     {
-        var target = MouseFocusTarget;
-        MouseFocusTarget = element;
-        (target as View)?.OnLostFocus(new UIMouseEvent(MouseFocusTarget, MousePosition));
-        (MouseFocusTarget as View)?.OnGotFocus(new UIMouseEvent(MouseFocusTarget, MousePosition));
+        var lastFocusTarget = MouseFocusTarget;
+        MouseFocusTarget = focusTarget;
+        lastFocusTarget?.OnLostFocus(new UIMouseEvent(MouseFocusTarget, MousePosition));
+        MouseFocusTarget?.OnGotFocus(new UIMouseEvent(MouseFocusTarget, MousePosition));
     }
 
-    public void SetBasicBody(BasicBody basicBody = null)
+    public void SetBody(BasicBody basicBody = null)
     {
+        if (BasicBody != null && BasicBody.SilkyUI != null) return;
+
         if (BasicBody == basicBody) return;
+
+        var lastBasicBody = basicBody;
         BasicBody = basicBody;
 
-        if (BasicBody == null) return;
-        BasicBody.SilkyUI = this;
-        BasicBody.Activate();
-        BasicBody.Recalculate();
+        lastBasicBody?.HandleUnmounted();
+        BasicBody?.Initialize();
+        BasicBody?.HandleMounted(this);
     }
 
     public bool Update(GameTime gameTime, bool hasHoverTarget, bool hasFocusTarget)
     {
-        if (hasFocusTarget || Keys.Escape.JustPressed())
-        {
-            SetFocus(null);
-        }
+        if (hasFocusTarget || Keys.Escape.JustPressed()) { SetFocus(null); }
 
         if (BasicBody is null or { Enabled: false }) return false;
 
@@ -164,7 +161,7 @@ public class SilkyUI
             LastHoverTarget = MouseHoverTarget;
             if (!hasHoverTarget && BasicBody.IsInteractable)
             {
-                MouseHoverTarget = BasicBody.GetElementAtFromView(Vector2.Transform(MousePosition, TransformMatrix));
+                MouseHoverTarget = BasicBody.GetElementAt(MousePosition);
             }
             else
             {
@@ -174,8 +171,8 @@ public class SilkyUI
             // 当切换悬浮目标
             if (MouseHoverTarget != LastHoverTarget)
             {
-                LastHoverTarget?.MouseOut(new UIMouseEvent(LastHoverTarget, MousePosition));
-                MouseHoverTarget?.MouseOver(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                LastHoverTarget?.OnMouseLeave(new UIMouseEvent(LastHoverTarget, MousePosition));
+                MouseHoverTarget?.OnMouseEnter(new UIMouseEvent(MouseHoverTarget, MousePosition));
             }
 
             // 遍历三种鼠标按键：左键、右键和中键
@@ -208,11 +205,11 @@ public class SilkyUI
             // 滚动
             if (PlayerInput.ScrollWheelDeltaForUI != 0)
             {
-                MouseHoverTarget?.ScrollWheel(new UIScrollWheelEvent(MouseHoverTarget, MousePosition,
+                MouseHoverTarget?.OnMouseWheel(new UIScrollWheelEvent(MouseHoverTarget, MousePosition,
                     PlayerInput.ScrollWheelDeltaForUI));
             }
-
-            BasicBody.Update(gameTime);
+            // UI 中的普通更新
+            BasicBody.HandleUpdate(gameTime);
         }
         catch (Exception ex)
         {
@@ -224,41 +221,41 @@ public class SilkyUI
 
     #region HandleMouseEvent
 
-    #region Get Event
+    #region Switch Mouse Events
 
-    private static Action<UIMouseEvent> GetMouseDownEvent(MouseButtonType mouseButtonType, UIElement element)
+    private static Action<UIMouseEvent> GetMouseDownEvent(MouseButtonType mouseButtonType, UIView element)
     {
         if (element is null) return null;
         return mouseButtonType switch
         {
-            MouseButtonType.Left => element.LeftMouseDown,
-            MouseButtonType.Right => element.RightMouseDown,
-            MouseButtonType.Middle => element.MiddleMouseDown,
-            _ => element.LeftMouseDown,
+            MouseButtonType.Left => element.OnLeftMouseDown,
+            MouseButtonType.Right => element.OnRightMouseDown,
+            MouseButtonType.Middle => element.OnMiddleMouseDown,
+            _ => null,
         };
     }
 
-    private static Action<UIMouseEvent> GetMouseUpEvent(MouseButtonType mouseButtonType, UIElement element)
+    private static Action<UIMouseEvent> GetMouseUpEvent(MouseButtonType mouseButtonType, UIView element)
     {
         if (element is null) return null;
         return mouseButtonType switch
         {
-            MouseButtonType.Left => element.LeftMouseUp,
-            MouseButtonType.Right => element.RightMouseUp,
-            MouseButtonType.Middle => element.MiddleMouseUp,
-            _ => element.LeftMouseUp,
+            MouseButtonType.Left => element.OnLeftMouseUp,
+            MouseButtonType.Right => element.OnRightMouseUp,
+            MouseButtonType.Middle => element.OnMiddleMouseUp,
+            _ => null,
         };
     }
 
-    private static Action<UIMouseEvent> GetMouseClickEvent(MouseButtonType mouseButtonType, UIElement element)
+    private static Action<UIMouseEvent> GetMouseClickEvent(MouseButtonType mouseButtonType, UIView element)
     {
         if (element is null) return null;
         return mouseButtonType switch
         {
-            MouseButtonType.Left => element.LeftClick,
-            MouseButtonType.Right => element.RightClick,
-            MouseButtonType.Middle => element.MiddleClick,
-            _ => element.LeftClick,
+            MouseButtonType.Left => element.OnLeftMouseClick,
+            MouseButtonType.Right => element.OnRightMouseClick,
+            MouseButtonType.Middle => element.OnMiddleMouseClick,
+            _ => null,
         };
     }
 
@@ -291,26 +288,40 @@ public class SilkyUI
     #endregion
 
     private uint _lastCandidateCount;
-    public void Draw()
+    public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         if (BasicBody is not { Enabled: true }) return;
-        BasicBody.Draw(Main.spriteBatch);
+
+        // 更新 UI 的各种状态，比如动画
+        BasicBody.HandleUpdateStatus(gameTime);
+        // Bounds and Layout
+        BasicBody.RefreshLayout();
+        // 位置脏标记检测
+        BasicBody.UpdatePosition();
+
+        BasicBody.HandleDraw(gameTime, spriteBatch);
 
         // 鼠标焦点程序
-        if (MouseFocusTarget is not View { OccupyPlayerInput: true } inputElement) return;
+        if (MouseFocusTarget is not { OccupyPlayerInput: true }) return;
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp,
-            DepthStencilState.None, UIElement.OverflowHiddenRasterizerState, null, inputElement.FinalMatrix);
+            DepthStencilState.None, RasterizerStateForOverflowHidden, null, TransformMatrix);
 
         PlayerInput.WritingText = true;
         Main.instance.HandleIME();
-        Main.instance.DrawWindowsIMEPanel(inputElement.InputMethodPosition);
+        Main.instance.DrawWindowsIMEPanel(MouseFocusTarget.InputMethodPosition);
 
-        inputElement.HandlePlayerInput(_lastCandidateCount > 0 || Platform.Get<IImeService>().CandidateCount > 0);
+        MouseFocusTarget.HandlePlayerInput(_lastCandidateCount > 0 || Platform.Get<IImeService>().CandidateCount > 0);
         _lastCandidateCount = Platform.Get<IImeService>().CandidateCount;
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin();
     }
+
+    public static RasterizerState RasterizerStateForOverflowHidden
+    {
+        get;
+        set;
+    } = new RasterizerState { CullMode = CullMode.None, ScissorTestEnable = true, };
 }
