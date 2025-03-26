@@ -20,7 +20,6 @@ public class SUIDraggableView : UIElementGroup
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        Main.NewText(evt.Source == this);
         if (evt.Source == this)
         {
             MouseDragOffset = new Vector2(Main.mouseX, Main.mouseY) - ControlTarget.DragOffset;
@@ -41,7 +40,6 @@ public class SUIDraggableView : UIElementGroup
     {
         if (Dragging)
         {
-            Main.NewText(123);
             var x = Main.mouseX - MouseDragOffset.X;
             var y = Main.mouseY - MouseDragOffset.Y;
             if (DragIncrement.X != 0) x -= x % DragIncrement.X;

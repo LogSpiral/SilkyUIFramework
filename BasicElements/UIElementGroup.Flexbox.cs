@@ -4,8 +4,6 @@ public partial class UIElementGroup
 {
     #region FlexWrap MainAlignment CrossAlignment CrossContentAlignment
 
-    public bool MainAxisIsFixed => FlexDirection == FlexDirection.Column ? !FitHeight : !FitWidth;
-
     public bool FlexWrap
     {
         get => _flexWrap;

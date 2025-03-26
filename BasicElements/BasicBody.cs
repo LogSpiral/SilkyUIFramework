@@ -20,6 +20,26 @@ public abstract class BasicBody : UIElementGroup
         FinallyDrawBorder = true;
     }
 
+    public override void RefreshLayout()
+    {
+        if (LayoutIsDirty)
+        {
+            var container = GetParentAvailableSpace();
+            Prepare(container.Width, container.Height);
+            ResizeChildrenWidth();
+            CalculateHeight();
+            ResizeChildrenHeight();
+            ApplyLayout();
+
+            CleanupDirtyMark();
+        }
+
+        foreach (var child in GetValidChildren())
+        {
+            child.RefreshLayout();
+        }
+    }
+
     public virtual bool Enabled { get; set; } = true;
 
     /// <summary> 可交互的 (default: true) </summary>
@@ -49,6 +69,7 @@ public abstract class BasicBody : UIElementGroup
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
+        return base.GetElementAt(mousePosition);
         if (Invalid) return null;
 
         if (!ContainsPoint(mousePosition)) return null;
@@ -94,6 +115,7 @@ public abstract class BasicBody : UIElementGroup
         try
         {
             device.SetRenderTarget(uiRenderTarget);
+
             device.Clear(Color.Transparent);
 
             spriteBatch.End();

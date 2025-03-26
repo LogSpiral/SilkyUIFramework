@@ -1,4 +1,6 @@
-﻿namespace SilkyUIFramework;
+﻿using Terraria;
+
+namespace SilkyUIFramework;
 
 public static class FlexboxModule
 {
@@ -72,6 +74,14 @@ public static class FlexboxModule
         crossAxisSize += (flexLines.Count - 1) * gap;
     }
 
+    public static void RefreshMainSize(this List<FlexLine> flexLines, float gap)
+    {
+        Parallel.ForEach(flexLines, flexLine =>
+        {
+            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
+        });
+    }
+
     public static void GrowOrShrinkByRow(this List<FlexLine> flexLines, Size innerSize, float gap)
     {
         Parallel.ForEach(flexLines, flexLine =>
@@ -89,15 +99,15 @@ public static class FlexboxModule
                         .ToList();
                     var totalGrow = growElements.Sum(el => el.Element.FlexGrow);
 
-                    foreach (var el in growElements)
+                    foreach (var item in growElements)
                     {
                         var each = remaining / totalGrow;
-                        var alloc = Math.Min(el.AvailableGrowth, each * el.Element.FlexGrow);
+                        var alloc = Math.Min(item.AvailableGrowth, each * item.Element.FlexGrow);
 
-                        el.Element.SetExactWidth(el.Element.OuterBounds.Width + alloc);
+                        item.Element.SetExactWidth(item.Element.OuterBounds.Width + alloc);
 
                         remaining -= alloc;
-                        totalGrow -= el.Element.FlexGrow;
+                        totalGrow -= item.Element.FlexGrow;
                     }
 
                     break;

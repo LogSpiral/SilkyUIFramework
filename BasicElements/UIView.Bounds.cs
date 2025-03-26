@@ -187,7 +187,6 @@ public partial class UIView
     public virtual void RefreshWidth(float containerWidth)
     {
         ComputeWidthConstraint(containerWidth);
-
         if (!FitWidth)
         {
             RecalculateBoundsWidth(containerWidth);
@@ -197,7 +196,6 @@ public partial class UIView
     public virtual void RefreshHeight(float containerHeight)
     {
         ComputeHeightConstraint(containerHeight);
-
         if (!FitWidth)
         {
             RecalculateBoundsHeight(containerHeight);

@@ -44,8 +44,22 @@ public class ExampleUI : BasicBody
             BackgroundColor = Color.White * 0.5f,
         }.Join(DraggableView);
 
+        var editText = new SUIEditText()
+        {
+            BackgroundColor = backgroundColor * 0.25f,
+            Border = 2f,
+            BorderColor = borderColor,
+        }.Join(this);
+        editText.SetHeight(50f);
+
         var blockContainer = new SUIScrollView()
         {
+            BackgroundColor = Color.Yellow * 0.25f,
+            Padding = 2f,
+            Mask = {
+                Padding = 2f,
+            BackgroundColor = Color.Black * 0.25f,
+            },
             Container = {
                 BackgroundColor = Color.Red * 0.25f,
                 Padding = new Margin(12f),
@@ -81,7 +95,7 @@ public class ExampleUI : BasicBody
             // 创建并添加
             var block = new SUIItemSlot
             {
-                ItemInteractive = false,
+                ItemInteractive = true,
                 BorderRadius = new Vector4(8f),
                 Border = 2f,
                 BorderColor = borderColor * 0.5f,

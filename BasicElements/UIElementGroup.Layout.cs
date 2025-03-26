@@ -84,7 +84,7 @@ public partial class UIElementGroup
                 }
                 else
                 {
-                    var maxMainAxisSize = (FlexWrap && MainAxisIsFixed) ? InnerBounds.Width : MaxInnerWidth;
+                    var maxMainAxisSize = (FlexWrap && !FitWidth) ? InnerBounds.Width : MaxInnerWidth;
                     LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Width);
                 }
 
@@ -99,7 +99,7 @@ public partial class UIElementGroup
                 }
                 else
                 {
-                    var maxMainAxisSize = (FlexWrap && MainAxisIsFixed) ? InnerBounds.Height : MaxInnerHeight;
+                    var maxMainAxisSize = (FlexWrap && !FitHeight) ? InnerBounds.Height : MaxInnerHeight;
                     LayoutChildren.WrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
                 }
 
@@ -194,7 +194,7 @@ public partial class UIElementGroup
         // 如果不适应宽度, 子元素也不适应宽度, 则重新设置子元素的宽度
         if (!FitWidth)
         {
-            foreach (var el in LayoutChildren.Where(el => !el.FitWidth))
+            foreach (var el in LayoutChildren)
             {
                 el.RefreshWidth(innerSize.Width);
             }
@@ -209,10 +209,14 @@ public partial class UIElementGroup
                 case FlexDirection.Row:
                 {
                     // 宽度可能被父元素拉伸, 再次计算元素换行
-                    if (!FitWidth && FlexWrap)
+                    if (FlexWrap)
                     {
                         var maxMainAxisSize = innerSize.Width;
                         LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Width);
+                    }
+                    else
+                    {
+                        FlexLines.RefreshMainSize(Gap.Width);
                     }
 
                     // 拉伸或者压缩宽度
@@ -288,7 +292,7 @@ public partial class UIElementGroup
 
         if (!FitHeight)
         {
-            foreach (var el in LayoutChildren.Where(el => !el.FitHeight))
+            foreach (var el in LayoutChildren)
             {
                 el.RefreshHeight(innerSize.Height);
             }
@@ -317,6 +321,16 @@ public partial class UIElementGroup
                 }
                 case FlexDirection.Column:
                 {
+                    if (FlexWrap)
+                    {
+                        var maxMainAxisSize = innerSize.Height;
+                        LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Height);
+                    }
+                    else
+                    {
+                        FlexLines.RefreshMainSize(Gap.Width);
+                    }
+
                     FlexLines.GrowOrShrinkByColumn(innerSize, Gap.Height);
                     break;
                 }
@@ -330,7 +344,7 @@ public partial class UIElementGroup
     }
 
 
-    private void ApplyLayout()
+    protected virtual void ApplyLayout()
     {
         if (_layoutType == LayoutType.Flexbox)
         {

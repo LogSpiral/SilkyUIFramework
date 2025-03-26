@@ -79,8 +79,7 @@ public class SUIScrollView : UIElementGroup
             FitHeight = true,
         }.Join(Mask);
         Container.SetWidth(0f, 1f);
-        Container.SetMinWidth(0f, 1f);
-        Container.SetMinHeight(0f, 1f);
+        Container.SetHeight(0f, 1f);
         Container.SetGap(8f);
 
         ScrollBar = new SUIScrollbar(direction, Container)
