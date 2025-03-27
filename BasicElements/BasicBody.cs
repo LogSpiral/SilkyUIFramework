@@ -1,7 +1,10 @@
 ﻿namespace SilkyUIFramework.BasicElements;
 
-public abstract class BasicBody : UIElementGroup
+public abstract partial class BasicBody : UIElementGroup
 {
+    public virtual bool Enabled { get; set; } = true;
+    public virtual bool IsInteractable => true;
+
     protected BasicBody()
     {
         SetSize(16f * 30f, 9f * 30f);
@@ -20,35 +23,58 @@ public abstract class BasicBody : UIElementGroup
         FinallyDrawBorder = true;
     }
 
-    public override void RefreshLayout()
+    private bool _adjustingWidth;
+    private bool _adjustingHeight;
+
+    private float _startWidth;
+    private float _startHeight;
+
+    private Vector2 _startPosition;
+
+    public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        if (LayoutIsDirty)
-        {
-            var container = GetParentAvailableSpace();
-            Prepare(container.Width, container.Height);
-            ResizeChildrenWidth();
-            CalculateHeight();
-            ResizeChildrenHeight();
-            ApplyLayout();
+        base.OnLeftMouseDown(evt);
 
-            CleanupDirtyMark();
-        }
-
-        foreach (var child in GetValidChildren())
+        if (evt.Source == this)
         {
-            child.RefreshLayout();
+            if (evt.MousePosition.X > Bounds.Right - Border - 2)
+            {
+                _startWidth = Bounds.Width;
+                _adjustingWidth = true;
+                FitWidth = false;
+            }
+
+            //_startHeight = Bounds.Height;
+            //_adjustingHeight = true;
+
+            _startPosition = evt.MousePosition;
         }
     }
 
-    public virtual bool Enabled { get; set; } = true;
+    public override void OnLeftMouseUp(UIMouseEvent evt)
+    {
+        base.OnLeftMouseUp(evt);
 
-    /// <summary> 可交互的 (default: true) </summary>
-    public virtual bool IsInteractable => true;
+        _adjustingWidth = false;
+        _adjustingHeight = false;
+    }
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        base.UpdateStatus(gameTime);
+        if (_adjustingWidth)
+        {
+            var offset = Main.MouseScreen.X - _startPosition.X;
+            SetWidth(_startWidth + offset * 2f);
+        }
+
+        if (_adjustingHeight)
+        {
+            var offset = Main.MouseScreen.Y - _startPosition.Y;
+            SetHeight(_startHeight + offset * 2f);
+        }
+
         WatchBackBufferSize();
+        base.UpdateStatus(gameTime);
     }
 
     protected Size LastBackBufferSize = GraphicsDeviceHelper.GetBackBufferSize();
@@ -69,12 +95,11 @@ public abstract class BasicBody : UIElementGroup
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
-        return base.GetElementAt(mousePosition);
         if (Invalid) return null;
 
         if (!ContainsPoint(mousePosition)) return null;
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;
@@ -84,66 +109,29 @@ public abstract class BasicBody : UIElementGroup
         return IgnoreMouseInteraction ? null : this;
     }
 
-    public virtual bool UseRenderTarget { get; set; } = false;
-
-    public virtual float Opacity
+    public override void RefreshLayout()
     {
-        get => field;
-        set => field = Math.Clamp(value, 0f, 1f);
-    } = 1f;
-
-    public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-        var pool = RenderTargetPool.Instance;
-        var device = Main.graphics.GraphicsDevice;
-
-        // 不使用独立画布
-        if (!UseRenderTarget)
+        if (ChildrenZIndexIsDirty)
         {
-            base.HandleDraw(gameTime, spriteBatch);
-            return;
+            RefreshZIndex();
+            ChildrenZIndexIsDirty = false;
         }
 
-        var original = device.GetRenderTargets();
-        var usageRecords = original.RecordUsage();
-        var lastRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
-        device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-
-        // 画布大小计算
-        var canvasSize = GraphicsDeviceHelper.GetBackBufferSize();
-        var uiRenderTarget = pool.Get((int)canvasSize.Width, (int)canvasSize.Height);
-        try
+        if (LayoutIsDirty)
         {
-            device.SetRenderTarget(uiRenderTarget);
+            var container = GetParentAvailableSpace();
+            Prepare(container.Width, container.Height);
+            ResizeChildrenWidth();
+            RecalculateHeight();
+            ResizeChildrenHeight();
+            ApplyLayout();
 
-            device.Clear(Color.Transparent);
-
-            spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred,
-                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
-
-            base.HandleDraw(gameTime, spriteBatch);
-
-            spriteBatch.End();
-
-            device.SetRenderTargets(original);
-            usageRecords.Restore();
-
-            spriteBatch.Begin();
-            spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null,
-                Color.White * Opacity, 0f, Vector2.Zero, Vector2.One, 0, 0);
-
-            device.PresentationParameters.RenderTargetUsage = lastRenderTargetUsage;
+            CleanupDirtyMark();
         }
-        catch (Exception e)
+
+        foreach (var child in GetValidChildren())
         {
-            var mod = ModContent.GetInstance<SilkyUIFramework>();
-            mod.Logger.Error($"BasicBody Draw error: {e}");
-            throw;
-        }
-        finally
-        {
-            pool.Return(uiRenderTarget);
+            child.RefreshLayout();
         }
     }
 }

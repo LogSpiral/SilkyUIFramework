@@ -263,21 +263,19 @@ public class SilkyUI
 
     private void HandleMouseEvent(MouseEventType eventType, MouseButtonType mouseButton)
     {
-        var mouseEvent = new UIMouseEvent(MouseHoverTarget, MousePosition);
 
         switch (eventType)
         {
             default:
             case MouseEventType.Down:
-                GetMouseDownEvent(mouseButton, MouseHoverTarget)?.Invoke(mouseEvent);
+                GetMouseDownEvent(mouseButton, MouseHoverTarget)?.Invoke(new UIMouseEvent(MouseHoverTarget, MousePosition));
                 break;
             case MouseEventType.Up:
-                GetMouseUpEvent(mouseButton, LastMouseTargets[mouseButton])?.Invoke(mouseEvent);
+                GetMouseUpEvent(mouseButton, LastMouseTargets[mouseButton])?.Invoke(new UIMouseEvent(LastMouseTargets[mouseButton], MousePosition));
 
                 if (LastMouseTargets[mouseButton] == MouseHoverTarget)
                 {
-                    mouseEvent = new UIMouseEvent(MouseHoverTarget, MousePosition);
-                    GetMouseClickEvent(mouseButton, LastMouseTargets[mouseButton])?.Invoke(mouseEvent);
+                    GetMouseClickEvent(mouseButton, MouseHoverTarget)?.Invoke(new UIMouseEvent(MouseHoverTarget, MousePosition));
                 }
                 break;
         }

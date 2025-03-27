@@ -145,11 +145,11 @@ public partial class UIElementGroup
         }
     }
 
-    public virtual void MeasureChildrenHeight()
+    public virtual void RecalculateChildrenHeight()
     {
         foreach (var el in LayoutChildren)
         {
-            el.CalculateHeight();
+            el.RecalculateHeight();
         }
 
         if (LayoutType != LayoutType.Flexbox) return;
@@ -249,13 +249,13 @@ public partial class UIElementGroup
         }
     }
 
-    public override void CalculateHeight()
+    public override void RecalculateHeight()
     {
-        base.CalculateHeight();
+        base.RecalculateHeight();
 
         if (LayoutChildren.Count <= 0) return;
 
-        MeasureChildrenHeight();
+        RecalculateChildrenHeight();
 
         if (LayoutType != LayoutType.Flexbox) return;
 

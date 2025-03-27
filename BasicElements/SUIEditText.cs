@@ -37,7 +37,7 @@ public class SUIEditText : UITextView
         if (WordWrap)
         {
             // 进行换行
-            TextSnippetHelper.WordwrapString(beforeSnippet, FinalSnippets,
+            TextSnippetHelper.WordWrapString(beforeSnippet, FinalSnippets,
                 TextColor, Font, maxWidth, MaxWordLength, MaxLines);
         }
         else

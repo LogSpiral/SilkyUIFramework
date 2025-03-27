@@ -9,18 +9,13 @@ public class SUIScrollMask : UIElementGroup
         OverflowHidden = true;
     }
 
-    public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-        base.DrawChildren(gameTime, spriteBatch);
-    }
-
     public override UIView GetElementAt(Vector2 mousePosition)
     {
         if (Invalid) return null;
 
         if (!ContainsPoint(mousePosition)) return null;
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;
@@ -40,7 +35,7 @@ public class SUIScrollContainer(SUIScrollMask mask) : UIElementGroup
     public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
         var innerBounds = Mask.InnerBounds;
-        foreach (var child in GetValidChildren().Where(el => el.OuterBounds.Intersects(innerBounds)))
+        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>().Where(el => el.OuterBounds.Intersects(innerBounds)))
         {
             child.HandleDraw(gameTime, spriteBatch);
         }
@@ -105,9 +100,9 @@ public class SUIScrollView : UIElementGroup
         }
     }
 
-    public override void MeasureChildrenHeight()
+    public override void RecalculateChildrenHeight()
     {
-        base.MeasureChildrenHeight();
+        base.RecalculateChildrenHeight();
 
         switch (Direction)
         {
@@ -119,11 +114,6 @@ public class SUIScrollView : UIElementGroup
                 ScrollBar?.SetVScrollRange(Mask.InnerBounds.Height, Container.OuterBounds.Height);
                 break;
         }
-    }
-
-    public override void CalculateHeight()
-    {
-        base.CalculateHeight();
     }
 
     public override void OnMouseWheel(UIScrollWheelEvent evt)

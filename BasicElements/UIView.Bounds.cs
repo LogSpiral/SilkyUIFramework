@@ -162,7 +162,7 @@ public partial class UIView
 
         var container = GetParentAvailableSpace();
         Prepare(container.Width, container.Height);
-        CalculateHeight();
+        RecalculateHeight();
         CleanupDirtyMark();
     }
 
@@ -172,17 +172,17 @@ public partial class UIView
         ComputeHeightConstraint(height ?? 0);
 
         if (FitWidth)
-            DefineInnerBoundsWidth(0);
+            DefineInnerBoundsWidth(MathHelper.Clamp(0f, MinInnerWidth, MaxInnerWidth));
         else
             RecalculateBoundsWidth(width ?? 0);
 
         if (FitHeight)
-            DefineInnerBoundsHeight(0);
+            DefineInnerBoundsHeight(MathHelper.Clamp(0f, MinInnerHeight, MaxInnerHeight));
         else
             RecalculateBoundsHeight(height ?? 0);
     }
 
-    public virtual void CalculateHeight() { }
+    public virtual void RecalculateHeight() { }
 
     public virtual void RefreshWidth(float containerWidth)
     {

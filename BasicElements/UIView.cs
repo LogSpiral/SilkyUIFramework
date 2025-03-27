@@ -17,6 +17,19 @@ public partial class UIView
             MarkLayoutDirty();
         }
     }
+    public int ZIndex
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            if (Parent != null)
+            {
+                Parent.ChildrenZIndexIsDirty = true;
+            }
+        }
+    }
 
     public bool IsMouseHovering { get; set; }
 

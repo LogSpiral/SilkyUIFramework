@@ -52,14 +52,9 @@ public class ExampleUI : BasicBody
         }.Join(this);
         editText.SetHeight(50f);
 
+        // 滚动
         var blockContainer = new SUIScrollView()
         {
-            BackgroundColor = Color.Yellow * 0.25f,
-            Padding = 2f,
-            Mask = {
-                Padding = 2f,
-            BackgroundColor = Color.Black * 0.25f,
-            },
             Container = {
                 BackgroundColor = Color.Red * 0.25f,
                 Padding = new Margin(12f),

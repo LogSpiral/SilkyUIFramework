@@ -54,6 +54,7 @@ public partial class UIElementGroup : UIView
         child.Parent = this;
         MarkLayoutDirty();
         MarkPositionDirty();
+        ChildrenZIndexIsDirty = true;
 
         if (SilkyUI != null) child.HandleMounted(SilkyUI);
     }
@@ -65,6 +66,7 @@ public partial class UIElementGroup : UIView
         child.Parent = null;
         MarkLayoutDirty();
         MarkPositionDirty();
+        ChildrenZIndexIsDirty = true;
         child.HandleUnmounted();
     }
 
@@ -74,9 +76,6 @@ public partial class UIElementGroup : UIView
         {
             RemoveChild(child);
         }
-
-        MarkLayoutDirty();
-        MarkPositionDirty();
     }
 
     #endregion
@@ -148,7 +147,7 @@ public partial class UIElementGroup : UIView
             spriteBatch.Begin(SpriteSortMode.Deferred,
                 null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
-            foreach (var child in GetValidChildren().Where(el => el.OuterBounds.Intersects(innerBounds)))
+            foreach (var child in ElementsSortedByZIndex.Reverse<UIView>().Where(el => el.OuterBounds.Intersects(innerBounds)))
             {
                 child.HandleDraw(gameTime, spriteBatch);
             }
@@ -160,7 +159,7 @@ public partial class UIElementGroup : UIView
             return;
         }
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
         {
             child.HandleDraw(gameTime, spriteBatch);
         }
@@ -198,7 +197,7 @@ public partial class UIElementGroup : UIView
         {
             if (!ContainsPoint(mousePosition)) return null;
 
-            foreach (var child in GetValidChildren())
+            foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
             {
                 var target = child.GetElementAt(mousePosition);
                 if (target != null) return target;
@@ -209,7 +208,7 @@ public partial class UIElementGroup : UIView
         }
 
         // 没有开启溢出隐藏, 直接检查所有有效子元素
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;

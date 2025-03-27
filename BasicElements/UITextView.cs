@@ -155,7 +155,7 @@ public class UITextView : UIView
         }
     }
 
-    public override void CalculateHeight()
+    public override void RecalculateHeight()
     {
         RecalculateText(InnerBounds.Width);
         if (FitHeight)
@@ -174,7 +174,7 @@ public class UITextView : UIView
         if (WordWrap)
         {
             // 进行换行
-            TextSnippetHelper.WordwrapString(converted, FinalSnippets,
+            TextSnippetHelper.WordWrapString(converted, FinalSnippets,
                 TextColor, Font, maxWidth, MaxWordLength, MaxLines);
         }
         else

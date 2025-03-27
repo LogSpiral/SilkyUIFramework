@@ -165,7 +165,7 @@ public static class TextSnippetHelper
     }
 
     /// <summary> TextSnippet 特殊文本换行 </summary>
-    public static void WordwrapString(List<TextSnippet> original, List<TextSnippet> final,
+    public static void WordWrapString(List<TextSnippet> original, List<TextSnippet> final,
         Color textColor, DynamicSpriteFont font, float maxWidth, int maxWordLength = 19, int maxLines = -1)
     {
         final.Clear();
@@ -287,7 +287,7 @@ public static class TextSnippetHelper
         DynamicSpriteFont font, float maxWidth, int maxWordLength = 19, int maxLines = -1)
     {
         var original = ConvertNormalSnippets(ParseMessage(text, textColor));
-        WordwrapString(original, final, textColor, font, maxWidth, maxWordLength, maxLines);
+        WordWrapString(original, final, textColor, font, maxWidth, maxWordLength, maxLines);
     }
 
     // https://unicode-table.com/cn/blocks/cjk-unified-ideographs/ 中日韩统一表意文字

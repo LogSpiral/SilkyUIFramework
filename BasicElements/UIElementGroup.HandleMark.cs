@@ -18,8 +18,23 @@ public partial class UIElementGroup
         PositionIsDirty = true;
     }
 
+    protected List<UIView> ElementsSortedByZIndex { get; } = [];
+    public bool ChildrenZIndexIsDirty { get; set; } = true;
+
+    protected void RefreshZIndex()
+    {
+        ElementsSortedByZIndex.Clear();
+        ElementsSortedByZIndex.AddRange(GetValidChildren().OrderBy(el => el.ZIndex));
+    }
+
     public override void RefreshLayout()
     {
+        if (ChildrenZIndexIsDirty)
+        {
+            RefreshZIndex();
+            ChildrenZIndexIsDirty = false;
+        }
+
         if (LayoutIsDirty)
         {
             if (Positioning.IsFree())
@@ -27,7 +42,7 @@ public partial class UIElementGroup
                 var container = GetParentAvailableSpace();
                 Prepare(container.Width, container.Height);
                 ResizeChildrenWidth();
-                CalculateHeight();
+                RecalculateHeight();
                 ResizeChildrenHeight();
                 ApplyLayout();
             }
@@ -35,7 +50,7 @@ public partial class UIElementGroup
             {
                 PrepareChildren();
                 ResizeChildrenWidth();
-                MeasureChildrenHeight();
+                RecalculateChildrenHeight();
                 ResizeChildrenHeight();
                 ApplyLayout();
             }
