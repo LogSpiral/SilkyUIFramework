@@ -23,55 +23,55 @@ public abstract partial class BasicBody : UIElementGroup
         FinallyDrawBorder = true;
     }
 
-    private bool _adjustingWidth;
-    private bool _adjustingHeight;
+    //private bool _adjustingWidth;
+    //private bool _adjustingHeight;
 
-    private float _startWidth;
-    private float _startHeight;
+    //private float _startWidth;
+    //private float _startHeight;
 
-    private Vector2 _startPosition;
+    //private Vector2 _startPosition;
 
-    public override void OnLeftMouseDown(UIMouseEvent evt)
-    {
-        base.OnLeftMouseDown(evt);
+    //public override void OnLeftMouseDown(UIMouseEvent evt)
+    //{
+    //    base.OnLeftMouseDown(evt);
 
-        if (evt.Source == this)
-        {
-            if (evt.MousePosition.X > Bounds.Right - Border - 2)
-            {
-                _startWidth = Bounds.Width;
-                _adjustingWidth = true;
-                FitWidth = false;
-            }
+    //    if (evt.Source == this)
+    //    {
+    //        if (evt.MousePosition.X > Bounds.Right - Border - 2)
+    //        {
+    //            _startWidth = Bounds.Width;
+    //            _adjustingWidth = true;
+    //            FitWidth = false;
+    //        }
 
-            //_startHeight = Bounds.Height;
-            //_adjustingHeight = true;
+    //        //_startHeight = Bounds.Height;
+    //        //_adjustingHeight = true;
 
-            _startPosition = evt.MousePosition;
-        }
-    }
+    //        _startPosition = evt.MousePosition;
+    //    }
+    //}
 
-    public override void OnLeftMouseUp(UIMouseEvent evt)
-    {
-        base.OnLeftMouseUp(evt);
+    //public override void OnLeftMouseUp(UIMouseEvent evt)
+    //{
+    //    base.OnLeftMouseUp(evt);
 
-        _adjustingWidth = false;
-        _adjustingHeight = false;
-    }
+    //    _adjustingWidth = false;
+    //    _adjustingHeight = false;
+    //}
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        if (_adjustingWidth)
-        {
-            var offset = Main.MouseScreen.X - _startPosition.X;
-            SetWidth(_startWidth + offset * 2f);
-        }
+        //if (_adjustingWidth)
+        //{
+        //    var offset = Main.MouseScreen.X - _startPosition.X;
+        //    SetWidth(_startWidth + offset * 2f);
+        //}
 
-        if (_adjustingHeight)
-        {
-            var offset = Main.MouseScreen.Y - _startPosition.Y;
-            SetHeight(_startHeight + offset * 2f);
-        }
+        //if (_adjustingHeight)
+        //{
+        //    var offset = Main.MouseScreen.Y - _startPosition.Y;
+        //    SetHeight(_startHeight + offset * 2f);
+        //}
 
         WatchBackBufferSize();
         base.UpdateStatus(gameTime);

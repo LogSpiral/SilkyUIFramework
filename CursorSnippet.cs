@@ -1,7 +1,6 @@
-using ReLogic.Content;
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.Core;
+namespace SilkyUIFramework;
 
 public class CursorSnippet(SUIEditText editText) : TextSnippet
 {

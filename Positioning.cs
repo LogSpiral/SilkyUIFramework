@@ -1,6 +1,4 @@
-﻿global using SilkyUIFramework.Core;
-
-namespace SilkyUIFramework.Core;
+﻿namespace SilkyUIFramework;
 
 public enum Positioning
 {

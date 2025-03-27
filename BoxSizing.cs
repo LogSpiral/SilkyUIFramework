@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.Core;
+﻿namespace SilkyUIFramework;
 
 public enum BoxSizing
 {

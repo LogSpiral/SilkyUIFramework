@@ -133,3 +133,10 @@ public class SUIScrollView : UIElementGroup
         base.OnMouseWheel(evt);
     }
 }
+
+/// <summary> 滚动方向 </summary>
+public enum Direction
+{
+    Horizontal,
+    Vertical,
+}

@@ -39,6 +39,11 @@ public class DeathTextOffsetPreview : FloatElement
         var stringSize = ChatManager.GetStringSize(SpriteFont.Value, "调整到你觉得顺眼的位置", Vector2.One) * TextScale;
         spriteBatch.DrawString(SpriteFont.Value, $"调整到你觉得顺眼的位置", dimensions.Center() + new Vector2(0f, (float)GetObject() * TextScale) - stringSize * new Vector2(0.5f, 0.5f), Color.White, 0f, Vector2.Zero, TextScale, 0, 0f);
     }
+
+    public override void SetValue(object value)
+    {
+        base.SetValue(MathF.Round((float)value, 2));
+    }
 }
 
 public class MouseTextOffsetPreview : DeathTextOffsetPreview
