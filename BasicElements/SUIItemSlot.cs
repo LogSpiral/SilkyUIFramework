@@ -1,8 +1,6 @@
-﻿using Terraria.UI.Chat;
+﻿namespace SilkyUIFramework.BasicElements;
 
-namespace SilkyUIFramework.BasicElements;
-
-public class SUIItemSlot : View
+public class SUIItemSlot : UIView
 {
     public static bool PlayerInUseItem => Main.LocalPlayer?.ItemAnimationActive ?? false;
 
@@ -49,17 +47,15 @@ public class SUIItemSlot : View
     {
         Border = 2;
         BorderColor = Color.Black * 0.75f;
-        BgColor = Color.Black * 0.5f;
-
-        DragIgnore = false;
+        BackgroundColor = Color.Black * 0.5f;
     }
 
     protected int RightMousePressedTimer;
 
-    public override void LeftMouseDown(UIMouseEvent evt)
+    public override void OnLeftMouseDown(UIMouseEvent evt)
     {
         HandleItemSlotLeftClick();
-        base.LeftMouseDown(evt);
+        base.OnLeftMouseDown(evt);
     }
 
     /// <summary>
@@ -98,13 +94,13 @@ public class SUIItemSlot : View
         }
     }
 
-    public override void RightMouseDown(UIMouseEvent evt)
+    public override void OnRightMouseDown(UIMouseEvent evt)
     {
         RightMousePressedTimer = 0;
-        base.RightMouseDown(evt);
+        base.OnRightMouseDown(evt);
     }
 
-    public override void Update(GameTime gameTime)
+    protected override void Update(GameTime gameTime)
     {
         HandleItemSlotRightLongPress();
         if (RightMousePressed)
@@ -193,9 +189,10 @@ public class SUIItemSlot : View
 
     #region Draw
 
-    public override void DrawSelf(SpriteBatch spriteBatch)
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        base.DrawSelf(spriteBatch);
+        base.Draw(gameTime, spriteBatch);
+
         if (Item.IsAir) return;
 
         if (DisplayItemInfo && IsMouseHovering)
@@ -204,7 +201,7 @@ public class SUIItemSlot : View
             Main.HoverItem = Item.Clone();
         }
 
-        DrawItemIcon(spriteBatch, Item, Color.White, _dimensions.Position() + ItemOffset + _dimensions.Size() * ItemAlign, ItemIconSizeLimit, ItemScale, ItemAlign);
+        DrawItemIcon(spriteBatch, Item, Color.White, InnerBounds.Position + ItemOffset + (Vector2)InnerBounds.Size * ItemAlign, ItemIconSizeLimit, ItemScale, ItemAlign);
 
         // 绘制物品堆叠数字
         if (AlwaysDisplayItemStack || (DisplayItemStack && Item.stack > 1))
@@ -221,9 +218,9 @@ public class SUIItemSlot : View
         var font = FontAssets.ItemStack.Value;
         var stack = string.Format(StackFormat, Item.stack);
         Vector2 textSize = font.MeasureString(stack) * 0.75f * ItemScale;
-        Vector2 position = _dimensions.Position() + (_dimensions.Size() - textSize) * StackAlign;
+        Vector2 position = InnerBounds.Position + ((Vector2)InnerBounds.Size - textSize) * StackAlign;
 
-        foreach (var offset in SUIText.ShadowOffsets)
+        foreach (var offset in UITextView.ShadowOffsets)
         {
             spriteBatch.DrawString(font, stack, position + offset * 2f, Color.Black, 0f, Vector2.Zero, 0.75f, 0f, 1f);
         }

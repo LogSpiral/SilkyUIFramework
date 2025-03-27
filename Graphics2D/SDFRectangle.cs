@@ -6,7 +6,7 @@ public static class SDFRectangle
     public static readonly GraphicsDevice GraphicsDevice = Main.graphics.GraphicsDevice;
     private static Effect Effect => ModAsset.SDFRectangle.Value;
 
-    public static void DrawWithBorder(Vector2 position, Vector2 size,
+    public static void DrawHasBorder(Vector2 position, Vector2 size,
         Vector4 rounded, Color backgroundColor, float border, Color borderColor, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);
@@ -28,7 +28,7 @@ public static class SDFRectangle
         );
     }
 
-    public static void DrawWithoutBorder(Vector2 position, Vector2 size,
+    public static void DrawNoBorder(Vector2 position, Vector2 size,
         Vector4 rounded, Color backgroundColor, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);

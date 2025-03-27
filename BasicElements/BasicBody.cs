@@ -1,177 +1,149 @@
 ﻿namespace SilkyUIFramework.BasicElements;
 
-public abstract class BasicBody : View
+public abstract class BasicBody : UIElementGroup
 {
-    public SilkyUI SilkyUI { get; set; }
-
     protected BasicBody()
     {
-        Border = 0;
-        Width.Percent = Height.Percent = 1f;
-        SpecifyWidth = SpecifyHeight = true;
+        SetSize(16f * 30f, 9f * 30f);
+        SetPadding(10f);
+        SetGap(10f);
+
+        Positioning = Positioning.Fixed;
+        Border = 2f;
+        BorderColor = Color.Black;
+        BackgroundColor = Color.White * 0.25f;
+
+        LayoutType = LayoutType.Flexbox;
+        FlexDirection = FlexDirection.Column;
+        MainAlignment = MainAlignment.Start;
+        FlexWrap = false;
+        FinallyDrawBorder = true;
+    }
+
+    public override void RefreshLayout()
+    {
+        if (LayoutIsDirty)
+        {
+            var container = GetParentAvailableSpace();
+            Prepare(container.Width, container.Height);
+            ResizeChildrenWidth();
+            CalculateHeight();
+            ResizeChildrenHeight();
+            ApplyLayout();
+
+            CleanupDirtyMark();
+        }
+
+        foreach (var child in GetValidChildren())
+        {
+            child.RefreshLayout();
+        }
     }
 
     public virtual bool Enabled { get; set; } = true;
 
-    /// <summary>
-    /// 可交互的 (default: true)
-    /// </summary>
+    /// <summary> 可交互的 (default: true) </summary>
     public virtual bool IsInteractable => true;
 
-    public override void Update(GameTime gameTime)
+    protected override void UpdateStatus(GameTime gameTime)
     {
-        CheckScreenSizeChanges();
-        base.Update(gameTime);
+        base.UpdateStatus(gameTime);
+        WatchBackBufferSize();
     }
 
-    public override UIElement GetElementAtFromView(Vector2 point)
+    protected Size LastBackBufferSize = GraphicsDeviceHelper.GetBackBufferSize();
+
+    protected void WatchBackBufferSize()
     {
-        if (Invalidate) return null;
+        var currentBackBufferSize = GraphicsDeviceHelper.GetBackBufferSize();
+        if (LastBackBufferSize == currentBackBufferSize) return;
 
-        if (OverflowHidden && !ContainsPoint(point)) return null;
+        OnBackBufferSizeChanged(currentBackBufferSize, LastBackBufferSize);
+        LastBackBufferSize = currentBackBufferSize;
+    }
 
-        var children =
-            GetChildrenByZIndexSort().OfType<View>().Where(el => !el.IgnoresMouseInteraction);
+    protected virtual void OnBackBufferSizeChanged(Size newVector2, Size oldVector2)
+    {
+        SetSize(newVector2.Width, newVector2.Height);
+    }
 
-        foreach (var child in children.Reverse())
+    public override UIView GetElementAt(Vector2 mousePosition)
+    {
+        return base.GetElementAt(mousePosition);
+        if (Invalid) return null;
+
+        if (!ContainsPoint(mousePosition)) return null;
+
+        foreach (var child in GetValidChildren())
         {
-            if (child.GetElementAt(point) is { } target) return target;
+            var target = child.GetElementAt(mousePosition);
+            if (target != null) return target;
         }
 
-        return null;
+        // 所有子元素都不符合条件, 如果自身不忽略鼠标交互, 则返回自己
+        return IgnoreMouseInteraction ? null : this;
     }
 
-    public event Action<Vector2, Vector2> ScreenSizeChanges;
+    public virtual bool UseRenderTarget { get; set; } = false;
 
-    protected static Vector2 GetCurrentScreenSize() => PlayerInput.OriginalScreenSize / Main.UIScale;
-    protected Vector2 LastScreenSize { get; set; } = GetCurrentScreenSize();
-
-    /// <summary>
-    /// 总是执行
-    /// </summary>
-    protected virtual void CheckScreenSizeChanges()
-    {
-        var currentScreenSize = GetCurrentScreenSize();
-        if (currentScreenSize == LastScreenSize) return;
-        OnScreenSizeChanges(currentScreenSize, LastScreenSize);
-        LastScreenSize = currentScreenSize;
-    }
-
-    protected virtual void OnScreenSizeChanges(Vector2 newVector2, Vector2 oldVector2)
-    {
-        ScreenSizeChanges?.Invoke(newVector2, oldVector2);
-        Recalculate();
-    }
-
-    public virtual bool UseRenderTarget { get; set; } = true;
-
-    private float _opacity = 1f;
-
-    /// <summary>
-    /// 当前元素会创建一个独立的画布, 不建议频繁使用
-    /// </summary>
     public virtual float Opacity
     {
-        get => _opacity;
-        set => _opacity = Math.Clamp(value, 0f, 1f);
-    }
+        get => field;
+        set => field = Math.Clamp(value, 0f, 1f);
+    } = 1f;
 
-    protected float LastUIScale { get; set; } = Main.UIScale;
-    protected bool UIScaleIsChanged => Math.Abs(LastUIScale - Main.UIScale) > float.Epsilon;
-
-    protected virtual void OnUIScaleChanges()
+    public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        try
-        {
-            UpdateMatrix();
-        }
-        finally
-        {
-            LastUIScale = Main.UIScale;
-        }
-    }
-
-    protected static Point GetCanvasSize()
-    {
-        var viewport = Main.graphics.GraphicsDevice.Viewport;
-        return new Point(viewport.Width, viewport.Height);
-    }
-
-    /// <summary>
-    /// 记录原来 RenderTargetUsage, 并全部设为 PreserveContents 防止设置新的 RenderTarget 时候消失
-    /// </summary>
-    protected static Dictionary<RenderTargetBinding, RenderTargetUsage> RecordWhileSetUpUsages
-        (RenderTargetBinding[] bindings)
-    {
-        if (bindings is null || bindings.Length == 0) return null;
-        Dictionary<RenderTargetBinding, RenderTargetUsage> usages = [];
-        foreach (var item in bindings)
-        {
-            if (item.renderTarget is not RenderTarget2D rt) continue;
-            usages[item] = rt.RenderTargetUsage;
-            rt.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-        }
-
-        return usages;
-    }
-
-    protected static void RecoverUsages(Dictionary<RenderTargetBinding, RenderTargetUsage> usages)
-    {
-        if (usages is null) return;
-        foreach (var kvp in usages)
-        {
-            if (kvp.Key.renderTarget is not RenderTarget2D rt) continue;
-            rt.RenderTargetUsage = kvp.Value;
-        }
-    }
-
-    public override void Draw(SpriteBatch spriteBatch)
-    {
-        if (UIScaleIsChanged) OnUIScaleChanges();
-
         var pool = RenderTargetPool.Instance;
         var device = Main.graphics.GraphicsDevice;
 
         // 不使用独立画布
         if (!UseRenderTarget)
         {
-            base.Draw(spriteBatch);
+            base.HandleDraw(gameTime, spriteBatch);
             return;
         }
 
         var original = device.GetRenderTargets();
-        var usages = RecordWhileSetUpUsages(original);
+        var usageRecords = original.RecordUsage();
         var lastRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
         device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
 
         // 画布大小计算
-        var canvasSize = GetCanvasSize();
-        var rt2d = pool.Get(canvasSize.X, canvasSize.Y);
+        var canvasSize = GraphicsDeviceHelper.GetBackBufferSize();
+        var uiRenderTarget = pool.Get((int)canvasSize.Width, (int)canvasSize.Height);
         try
         {
-            device.SetRenderTarget(rt2d);
+            device.SetRenderTarget(uiRenderTarget);
+
             device.Clear(Color.Transparent);
-            base.Draw(spriteBatch);
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred,
+                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+
+            base.HandleDraw(gameTime, spriteBatch);
+
             spriteBatch.End();
 
-            // 恢复 RenderTargetUsage
-            RecoverUsages(usages);
             device.SetRenderTargets(original);
+            usageRecords.Restore();
 
             spriteBatch.Begin();
-            spriteBatch.Draw(rt2d, Vector2.Zero, null,
+            spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null,
                 Color.White * Opacity, 0f, Vector2.Zero, Vector2.One, 0, 0);
 
             device.PresentationParameters.RenderTargetUsage = lastRenderTargetUsage;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            var mod = ModContent.GetInstance<SilkyUIFramework>();
+            mod.Logger.Error($"BasicBody Draw error: {e}");
             throw;
         }
         finally
         {
-            pool.Return(rt2d);
+            pool.Return(uiRenderTarget);
         }
     }
 }

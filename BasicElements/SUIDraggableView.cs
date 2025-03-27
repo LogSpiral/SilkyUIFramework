@@ -3,63 +3,40 @@
 /// <summary>
 /// 可拖动视图
 /// </summary>
-public class SUIDraggableView : View
+public class SUIDraggableView : UIElementGroup
 {
-    public bool Draggable { get; set; }
     public bool Dragging { get; protected set; }
     public Vector2 DragIncrement { get; set; } = Vector2.Zero;
     public Vector2 MouseDragOffset { get; set; } = Vector2.Zero;
     public bool OccupyMouseInterface { get; set; } = true;
 
-    public SUIDraggableView(bool draggable = true)
+    public readonly UIElementGroup ControlTarget;
+
+    public SUIDraggableView(UIElementGroup controlTarget)
     {
-        Draggable = draggable;
-
-        Border = 2;
-        BorderColor = SUIColor.Border * 0.75f;
-        BgColor = SUIColor.Background * 0.75f;
-        CornerRadius = new Vector4(12);
-
-        RoundedRectangle.ShadowColor = new Color(18, 18, 38) * 0.1f;
-        RoundedRectangle.ShadowExpand = 50f;
-        RoundedRectangle.ShadowWidth = 50f;
-
-        SetPadding(12f);
+        ControlTarget = controlTarget;
+        BackgroundColor = SUIColor.Background * 0.75f;
     }
 
-    public override void LeftMouseDown(UIMouseEvent evt)
+    public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        base.LeftMouseDown(evt);
-
-        if (!Draggable ||
-            (evt.Target != this && evt.Target is not View { DragIgnore: true } &&
-             !evt.Target.GetType().IsAssignableFrom(typeof(UIElement)))) return;
-
-        MouseDragOffset = new Vector2(Main.mouseX, Main.mouseY) - DragOffset;
-        Dragging = true;
-    }
-
-    public override void LeftMouseUp(UIMouseEvent evt)
-    {
-        base.LeftMouseUp(evt);
-        Dragging = false;
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        if (IsMouseHovering)
+        if (evt.Source == this)
         {
-            // 锁定滚动条
-            PlayerInput.LockVanillaMouseScroll("SilkyUIFramework");
-            // 锁定鼠标操作
-            if (OccupyMouseInterface)
-                Main.LocalPlayer.mouseInterface = true;
+            MouseDragOffset = new Vector2(Main.mouseX, Main.mouseY) - ControlTarget.DragOffset;
+            Dragging = true;
         }
 
-        base.Update(gameTime);
+        base.OnLeftMouseDown(evt);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void OnLeftMouseUp(UIMouseEvent evt)
+    {
+        Dragging = false;
+
+        base.OnLeftMouseUp(evt);
+    }
+
+    public override void HandleUpdateStatus(GameTime gameTime)
     {
         if (Dragging)
         {
@@ -67,9 +44,9 @@ public class SUIDraggableView : View
             var y = Main.mouseY - MouseDragOffset.Y;
             if (DragIncrement.X != 0) x -= x % DragIncrement.X;
             if (DragIncrement.Y != 0) y -= y % DragIncrement.Y;
-            DragOffset = new Vector2(x, y);
+            ControlTarget.DragOffset = new Vector2(x, y);
         }
 
-        base.Draw(spriteBatch);
+        base.HandleUpdateStatus(gameTime);
     }
 }

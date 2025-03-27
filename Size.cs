@@ -4,12 +4,19 @@ public readonly struct Size(float width, float height) : IEquatable<Size>
 {
     public static readonly Size Zero = new(0, 0);
 
+    public Size(float size) : this(size, size) { }
+
     public float Width { get; } = width;
     public float Height { get; } = height;
 
     public Size With(float? width = null, float? height = null)
     {
         return new Size(width ?? Width, height ?? Height);
+    }
+
+    public static implicit operator Size(float gap)
+    {
+        return new Size(gap);
     }
 
     public static implicit operator Size(Vector2 vector2)

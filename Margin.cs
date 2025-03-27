@@ -16,7 +16,9 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
     public float Horizontal => Left + Right;
     public float Vertical => Top + Bottom;
 
-    public Margin With(float? left, float? top, float? right, float? bottom) =>
+    public static implicit operator Margin(float margin) => new Margin(margin);
+
+    public Margin With(float? left = null, float? top = null, float? right = null, float? bottom = null) =>
         new(left ?? Left, top ?? Top, right ?? Right, bottom ?? Bottom);
 
     public static Vector2 operator +(Vector2 position, Margin margin) =>

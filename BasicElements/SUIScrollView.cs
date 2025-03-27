@@ -1,114 +1,145 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿using System.ComponentModel;
 
-public class SUIScrollContainer : View
+namespace SilkyUIFramework.BasicElements;
+
+public class SUIScrollMask : UIElementGroup
 {
-    public SUIScrollContainer()
+    public SUIScrollMask()
     {
         OverflowHidden = true;
     }
 
-    public override View AppendFromView(View child)
+    public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        child.Remove();
-        child.Parent = this;
-        Elements.Add(child);
-        if (Parent is SUIScrollView sUIScrollView)
-            sUIScrollView.Recalculate();
-        else Recalculate();
-        return this;
+        base.DrawChildren(gameTime, spriteBatch);
+    }
+
+    public override UIView GetElementAt(Vector2 mousePosition)
+    {
+        if (Invalid) return null;
+
+        if (!ContainsPoint(mousePosition)) return null;
+
+        foreach (var child in GetValidChildren())
+        {
+            var target = child.GetElementAt(mousePosition);
+            if (target != null) return target;
+        }
+
+        // 所有子元素都不符合条件, 如果自身不忽略鼠标交互, 则返回自己
+        return IgnoreMouseInteraction ? null : this;
     }
 }
 
-public class SUIScrollView : View
+public class SUIScrollContainer(SUIScrollMask mask) : UIElementGroup
+{
+    public readonly SUIScrollMask Mask = mask;
+
+    public void UpdateScrollPosition(Vector2 currentScrollPosition) => ScrollOffset = -currentScrollPosition;
+
+    public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        var innerBounds = Mask.InnerBounds;
+        foreach (var child in GetValidChildren().Where(el => el.OuterBounds.Intersects(innerBounds)))
+        {
+            child.HandleDraw(gameTime, spriteBatch);
+        }
+    }
+}
+
+public class SUIScrollView : UIElementGroup
 {
     public readonly Direction Direction;
 
-    public readonly SUIScrollContainer Container;
     public readonly SUIScrollbar ScrollBar;
+    public readonly SUIScrollMask Mask;
+    public readonly SUIScrollContainer Container;
 
     public SUIScrollView(Direction direction = Direction.Vertical)
     {
         Direction = direction;
+        SetGap(8f);
 
-        Display = Display.Flexbox;
-        FlexWrap = false;
-        Gap = new Vector2(8f);
-
-        Container = new SUIScrollContainer
+        Mask = new SUIScrollMask
         {
-            FlexWeight = { Enable = true, Value = 1 },
-            Gap = new Vector2(8f),
-            Display = Display.Flexbox,
+            HiddenBox = HiddenBox.Inner,
+            FlexGrow = 1f,
+            FlexShrink = 1f,
+        };
+        Mask.Join(this);
+        Mask.SetSize(0f, 0f, 1f, 1f);
+
+        Container = new SUIScrollContainer(Mask)
+        {
+            LayoutType = LayoutType.Flexbox,
+            FlexDirection = FlexDirection.Row,
             MainAlignment = MainAlignment.SpaceBetween,
             FlexWrap = true,
-        }.Join(this);
-        Container.SetSize(0f, 0f, 1f, 1f);
+            FitWidth = false,
+            FitHeight = true,
+        }.Join(Mask);
+        Container.SetWidth(0f, 1f);
+        Container.SetHeight(0f, 1f);
+        Container.SetGap(8f);
 
         ScrollBar = new SUIScrollbar(direction, Container)
         {
-            CornerRadius = new Vector4(2f),
-            BgColor = Color.Black * 0.25f,
+            BorderRadius = new Vector4(2f),
+            BackgroundColor = Color.Black * 0.25f,
+            FitWidth = false,
         }.Join(this);
-        ScrollBar.OnCurrentScrollPositionChanged += UpdateScrollPosition;
+        ScrollBar.SetSize(8f, 0f, 0f, 1f);
+        ScrollBar.OnCurrentScrollPositionChanged += Container.UpdateScrollPosition;
 
         switch (Direction)
         {
             case Direction.Horizontal:
-                LayoutDirection = LayoutDirection.Column;
-                Container.LayoutDirection = LayoutDirection.Column;
+                FlexDirection = FlexDirection.Column;
                 ScrollBar.SetSize(0f, 4f, 1f, 0f);
                 break;
             default:
             case Direction.Vertical:
-                LayoutDirection = LayoutDirection.Row;
-                Container.LayoutDirection = LayoutDirection.Row;
+                FlexDirection = FlexDirection.Row;
                 ScrollBar.SetSize(4f, 0f, 0f, 1f);
                 break;
         }
     }
 
-    public void UpdateScrollPosition(Vector2 currentScrollPosition) =>
-        Container.ScrollPosition = -currentScrollPosition;
-
-    public override void Recalculate()
+    public override void MeasureChildrenHeight()
     {
-        base.Recalculate();
+        base.MeasureChildrenHeight();
 
-        if (Container == null) return;
-
-        var content = Container.CalculateContentSize();
         switch (Direction)
         {
             case Direction.Horizontal:
-                ScrollBar?.SetHScrollRange(Container._innerDimensions.Width, content.X);
+                ScrollBar?.SetHScrollRange(Mask.InnerBounds.Width, Container.OuterBounds.Width);
                 break;
             default:
             case Direction.Vertical:
-                ScrollBar?.SetVScrollRange(Container._innerDimensions.Height, content.Y);
+                ScrollBar?.SetVScrollRange(Mask.InnerBounds.Height, Container.OuterBounds.Height);
                 break;
         }
     }
 
-    public override void ScrollWheel(UIScrollWheelEvent evt)
+    public override void CalculateHeight()
     {
+        base.CalculateHeight();
+    }
+
+    public override void OnMouseWheel(UIScrollWheelEvent evt)
+    {
+
         switch (Direction)
         {
             case Direction.Horizontal:
-                ScrollBar.HScrollBy(-evt.ScrollWheelValue);
+                ScrollBar.HScrollBy(-evt.ScrollDelta);
                 break;
             default:
             case Direction.Vertical:
-                ScrollBar.VScrollBy(-evt.ScrollWheelValue);
+                ScrollBar.VScrollBy(-evt.ScrollDelta);
                 break;
         }
 
-        base.ScrollWheel(evt);
-    }
-
-    public override View AppendFromView(View child)
-    {
-        return child is SUIScrollbar or SUIScrollContainer
-            ? base.AppendFromView(child)
-            : Container?.AppendFromView(child);
+        base.OnMouseWheel(evt);
     }
 }

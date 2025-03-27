@@ -1,4 +1,6 @@
-﻿namespace SilkyUIFramework.Core;
+﻿global using SilkyUIFramework.Core;
+
+namespace SilkyUIFramework.Core;
 
 public enum Positioning
 {
@@ -20,4 +22,9 @@ public enum StickyType
     RightTop = Right | Top,
     LeftBottom = Left | Bottom,
     RightBottom = Right | Bottom,
+}
+
+public static class PositioningExtensions
+{
+    public static bool IsFree(this Positioning positioning) => positioning is Positioning.Fixed or Positioning.Absolute;
 }

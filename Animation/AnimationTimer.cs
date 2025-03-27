@@ -5,11 +5,11 @@
 /// <summary>
 /// 动画当前的状态
 /// </summary>
-public enum AnimationTimerStaus
+public enum AnimationTimerStatus
 {
-    ForwardUpdating,
+    Updating,
     ReverseUpdating,
-    ForwardCompleted,
+    Completed,
     ReverseCompleted
 }
 
@@ -40,12 +40,12 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// </summary>
     public float Schedule { get; private set; }
 
-    public AnimationTimerStaus Status = AnimationTimerStaus.ReverseCompleted;
+    public AnimationTimerStatus Status = AnimationTimerStatus.ReverseCompleted;
 
     /// <summary>
     /// 在正向更新完成时回调
     /// </summary>
-    public event Action OnForwardUpdateCompleted;
+    public event Action OnUpdateCompleted;
 
     /// <summary>
     /// 在反向更新完成时回调
@@ -54,20 +54,20 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
 
     #region IsComplete Updating
 
-    public bool IsComplete => Status is AnimationTimerStaus.ForwardCompleted or AnimationTimerStaus.ReverseCompleted;
-    public bool IsUpdating => Status is AnimationTimerStaus.ForwardUpdating or AnimationTimerStaus.ReverseUpdating;
+    public bool IsCompleted => Status is AnimationTimerStatus.Completed or AnimationTimerStatus.ReverseCompleted;
+    public bool IsUpdating => Status is AnimationTimerStatus.Updating or AnimationTimerStatus.ReverseUpdating;
 
     public bool IsForward =>
-        Status is AnimationTimerStaus.ForwardUpdating or AnimationTimerStaus.ForwardCompleted;
+        Status is AnimationTimerStatus.Updating or AnimationTimerStatus.Completed;
 
-    public bool IsForwardUpdating => Status is AnimationTimerStaus.ForwardUpdating;
-    public bool IsForwardCompleted => Status is AnimationTimerStaus.ForwardCompleted;
+    public bool IsForwardUpdating => Status is AnimationTimerStatus.Updating;
+    public bool IsForwardCompleted => Status is AnimationTimerStatus.Completed;
 
     public bool IsReverse =>
-        Status is AnimationTimerStaus.ReverseUpdating or AnimationTimerStaus.ReverseCompleted;
+        Status is AnimationTimerStatus.ReverseUpdating or AnimationTimerStatus.ReverseCompleted;
 
-    public bool IsReverseUpdating => Status is AnimationTimerStaus.ReverseUpdating;
-    public bool IsReverseCompleted => Status is AnimationTimerStaus.ReverseCompleted;
+    public bool IsReverseUpdating => Status is AnimationTimerStatus.ReverseUpdating;
+    public bool IsReverseCompleted => Status is AnimationTimerStatus.ReverseCompleted;
 
     #endregion
 
@@ -76,55 +76,39 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// <summary>
     /// 开始正向更新
     /// </summary>
-    public virtual void StartForwardUpdate()
+    public virtual void StartUpdate(bool reset = false)
     {
-        Status = AnimationTimerStaus.ForwardUpdating;
-    }
-
-    /// <summary>
-    /// 开启并重置
-    /// </summary>
-    public virtual void StartForwardUpdateAndReset()
-    {
-        Timer = 0f;
-        Status = AnimationTimerStaus.ForwardUpdating;
+        if (reset) Timer = 0f;
+        Status = AnimationTimerStatus.Updating;
     }
 
     /// <summary>
     /// 开始反向更新
     /// </summary>
-    public virtual void StartReverseUpdate()
+    public virtual void StartReverseUpdate(bool reset = false)
     {
-        Status = AnimationTimerStaus.ReverseUpdating;
-    }
-
-    /// <summary>
-    /// 关闭并重置
-    /// </summary>
-    public virtual void StartReverseUpdateAndRest()
-    {
-        Timer = TimerMax;
-        Status = AnimationTimerStaus.ReverseUpdating;
+        if (reset) Timer = TimerMax;
+        Status = AnimationTimerStatus.ReverseUpdating;
     }
 
     /// <summary>
     /// 直接跳到完全关闭状态
     /// </summary>
-    public void ImmediateReverseUpdateCompleted()
+    public void ImmediateReverseCompleted()
     {
         Timer = 0;
-        Status = AnimationTimerStaus.ReverseCompleted;
+        Status = AnimationTimerStatus.ReverseCompleted;
         OnReverseUpdateCompleted?.Invoke();
     }
 
     /// <summary>
     /// 直接跳到完全开启状态
     /// </summary>
-    public void ImmediateForwardUpdateCompleted()
+    public void ImmediateCompleted()
     {
         Timer = TimerMax;
-        Status = AnimationTimerStaus.ForwardCompleted;
-        OnForwardUpdateCompleted?.Invoke();
+        Status = AnimationTimerStatus.Completed;
+        OnUpdateCompleted?.Invoke();
     }
 
     #endregion
@@ -135,27 +119,27 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
             (float)gameTime.ElapsedGameTime.TotalSeconds * 60f;
         switch (Status)
         {
-            case AnimationTimerStaus.ForwardUpdating:
+            case AnimationTimerStatus.Updating:
             {
                 Timer += (TimerMax - Timer) / Speed * speedFactor;
 
                 if (TimerMax - Timer < TimerMax * 0.0001f)
                 {
                     Timer = TimerMax;
-                    Status = AnimationTimerStaus.ForwardCompleted;
-                    OnForwardUpdateCompleted?.Invoke();
+                    Status = AnimationTimerStatus.Completed;
+                    OnUpdateCompleted?.Invoke();
                 }
 
                 break;
             }
-            case AnimationTimerStaus.ReverseUpdating:
+            case AnimationTimerStatus.ReverseUpdating:
             {
                 Timer -= Timer / Speed * speedFactor;
 
                 if (Timer < TimerMax * 0.0001f)
                 {
                     Timer = 0;
-                    Status = AnimationTimerStaus.ReverseCompleted;
+                    Status = AnimationTimerStatus.ReverseCompleted;
                     OnReverseUpdateCompleted?.Invoke();
                 }
 

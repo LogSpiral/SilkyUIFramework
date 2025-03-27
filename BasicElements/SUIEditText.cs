@@ -1,15 +1,9 @@
-﻿using System.Net.Mime;
-using System.Xml;
-using Microsoft.Xna.Framework.Input;
-using ReLogic.Localization.IME;
-using ReLogic.OS;
-using SilkyUIFramework.Core;
-using Terraria.GameContent.UI.Chat;
+﻿using Microsoft.Xna.Framework.Input;
 using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.BasicElements;
 
-public class SUIEditText : SUIText
+public class SUIEditText : UITextView
 {
     private float _cursorFlashTimer;
 
@@ -22,18 +16,16 @@ public class SUIEditText : SUIText
     {
         OccupyPlayerInput = true;
         CursorSnippet = new CursorSnippet(this);
-        DragIgnore = false;
     }
 
     public readonly CursorSnippet CursorSnippet;
 
-    protected override void RecalculateText()
+    protected override void RecalculateText(float maxWidth)
     {
         var text = Text;
 
         var beforeText = text[..CursorIndex];
         var afterText = text[CursorIndex..];
-        var maxWidth = _innerDimensions.Width / TextScale;
         var beforeSnippet =
             TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(beforeText, TextColor));
         var afterSnippet =
@@ -41,10 +33,12 @@ public class SUIEditText : SUIText
         beforeSnippet.Add(CursorSnippet);
         beforeSnippet.AddRange(afterSnippet);
 
-        // 是否换行
-        if (WordWrap && SpecifyWidth)
+        // 自动换行 & 指定宽度
+        if (WordWrap)
         {
-            TextSnippetHelper.WordwrapString(beforeSnippet, FinalSnippets, TextColor, Font, maxWidth, MaxWordLength);
+            // 进行换行
+            TextSnippetHelper.WordwrapString(beforeSnippet, FinalSnippets,
+                TextColor, Font, maxWidth, MaxWordLength, MaxLines);
         }
         else
         {
@@ -52,8 +46,8 @@ public class SUIEditText : SUIText
             FinalSnippets.AddRange(beforeSnippet);
         }
 
-        TextSize = ChatManager.GetStringSize(Font, [.. FinalSnippets], new Vector2(1f));
-        TextChanges = false;
+        // 计算文本大小
+        TextSize = TextSnippetHelper.GetStringSize(Font, FinalSnippets, new Vector2(1f));
     }
 
     protected override void DrawText(SpriteBatch spriteBatch, List<TextSnippet> textSnippets)
@@ -104,7 +98,7 @@ public class SUIEditText : SUIText
         {
             if (_cursorIndex == value) return;
             _cursorIndex = value;
-            TextChanges = true;
+            MarkLayoutDirty();
         }
     }
 

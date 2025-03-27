@@ -7,17 +7,13 @@ namespace SilkyUIFramework;
 /// </summary>
 public class SilkyUILayer : GameInterfaceLayer
 {
+    public SilkyUIManager SilkyUIManager { get; }
     public SilkyUI SilkyUI { get; }
 
-    public event Action PreDraw;
-    public event Action PostDraw;
-
-    public SilkyUILayer(SilkyUI silkyUI, string name, InterfaceScaleType scaleType,
-        Action onPreDraw = null, Action onPostDraw = null) : base(name, scaleType)
+    public SilkyUILayer(SilkyUIManager silkyUIManager, SilkyUI silkyUI, string name, InterfaceScaleType scaleType) : base(name, scaleType)
     {
+        SilkyUIManager = silkyUIManager;
         SilkyUI = silkyUI;
-        PreDraw += onPreDraw;
-        PostDraw += onPostDraw;
     }
 
     public override bool DrawSelf()
@@ -35,9 +31,9 @@ public class SilkyUILayer : GameInterfaceLayer
         Main.spriteBatch.Begin(SpriteSortMode.Deferred,
             null, null, null, null, null, transformMatrix);
 
-        PreDraw?.Invoke();
-        SilkyUI.Draw();
-        PostDraw?.Invoke();
+        SilkyUIManager.CurrentSilkyUI = SilkyUI;
+        SilkyUI.Draw(Main.gameTimeCache, Main.spriteBatch);
+        SilkyUIManager.CurrentSilkyUI = null;
         return true;
     }
 }
