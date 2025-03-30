@@ -78,7 +78,14 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// </summary>
     public virtual void StartUpdate(bool reset = false)
     {
-        if (reset) Timer = 0f;
+        if (reset)
+        {
+            Timer = 0f;
+            Status = AnimationTimerStatus.Updating;
+            return;
+        }
+
+        if (Status is AnimationTimerStatus.Completed) return;
         Status = AnimationTimerStatus.Updating;
     }
 
@@ -87,7 +94,14 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
     /// </summary>
     public virtual void StartReverseUpdate(bool reset = false)
     {
-        if (reset) Timer = TimerMax;
+        if (reset)
+        {
+            Timer = 0f;
+            Status = AnimationTimerStatus.ReverseUpdating;
+            return;
+        }
+
+        if (Status is AnimationTimerStatus.ReverseCompleted) return;
         Status = AnimationTimerStatus.ReverseUpdating;
     }
 

@@ -68,8 +68,10 @@ public class RenderTargetPool : IDisposable
             throw new Exception("对象不属于此处...");
         }
 
-        occupied.TryPop(out _);
-        available.Push(rt2d);
+        if(occupied.TryPop(out _))
+        {
+            available.Push(rt2d);
+        }
     }
 
     public void Dispose()

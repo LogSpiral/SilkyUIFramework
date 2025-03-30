@@ -21,84 +21,35 @@ public enum MouseEventType
 
 public class MouseStatus
 {
-    private bool _leftButton, _middleButton, _rightButton;
-
-    public void SetState(MouseStatus status)
-    {
-        _leftButton = status._leftButton;
-        _middleButton = status._middleButton;
-        _rightButton = status._rightButton;
-    }
-
-    public void SetState(bool leftButton, bool middleButton, bool rightButton)
-    {
-        _leftButton = leftButton;
-        _middleButton = middleButton;
-        _rightButton = rightButton;
-    }
+    private readonly bool[] _buttons = new bool[3];
 
     public bool this[MouseButtonType button]
     {
-        get
-        {
-            return button switch
-            {
-                MouseButtonType.Left => _leftButton,
-                MouseButtonType.Middle => _middleButton,
-                MouseButtonType.Right => _rightButton,
-                _ => _leftButton,
-            };
-        }
-        set
-        {
-            switch (button)
-            {
-                default:
-                case MouseButtonType.Left:
-                    _leftButton = value;
-                    break;
-                case MouseButtonType.Right:
-                    _rightButton = value;
-                    break;
-                case MouseButtonType.Middle:
-                    _middleButton = value;
-                    break;
-            }
-        }
+        get => _buttons[(int)button];
+        set => _buttons[(int)button] = value;
+    }
+
+    public void SetState(MouseStatus status)
+    {
+        Array.Copy(status._buttons, _buttons, _buttons.Length);
+    }
+
+    public void SetState(bool left, bool middle, bool right)
+    {
+        _buttons[0] = left;
+        _buttons[1] = middle;
+        _buttons[2] = right;
     }
 }
 
 public class MouseTarget
 {
-    private UIView _leftButton;
-    private UIView _middleButton;
-    private UIView _rightButton;
+    private readonly UIView[] _targets = new UIView[3];
 
     public UIView this[MouseButtonType button]
     {
-        get => button switch
-        {
-            MouseButtonType.Left => _leftButton,
-            MouseButtonType.Middle => _middleButton,
-            MouseButtonType.Right => _rightButton,
-            _ => _leftButton
-        };
-        set
-        {
-            switch (button)
-            {
-                default:
-                case MouseButtonType.Left:
-                    _leftButton = value;
-                    break;
-                case MouseButtonType.Right:
-                    _rightButton = value;
-                    break;
-                case MouseButtonType.Middle:
-                    _middleButton = value;
-                    break;
-            }
-        }
+        get => _targets[(int)button];
+        set => _targets[(int)button] = value;
     }
 }
 
@@ -132,11 +83,11 @@ public class SilkyUI
 
     public void SetBody(BasicBody basicBody = null)
     {
-        if (BasicBody != null && BasicBody.SilkyUI != null) return;
-
         if (BasicBody == basicBody) return;
 
-        var lastBasicBody = basicBody;
+        if (basicBody != null && basicBody.SilkyUI != null) return;
+
+        var lastBasicBody = BasicBody;
         BasicBody = basicBody;
 
         lastBasicBody?.HandleUnmounted();
@@ -292,9 +243,10 @@ public class SilkyUI
 
         // 更新 UI 的各种状态，比如动画
         BasicBody.HandleUpdateStatus(gameTime);
-        // Bounds and Layout
+
+        if (BasicBody is not { Enabled: true }) return;
+
         BasicBody.RefreshLayout();
-        // 位置脏标记检测
         BasicBody.UpdatePosition();
 
         BasicBody.HandleDraw(gameTime, spriteBatch);

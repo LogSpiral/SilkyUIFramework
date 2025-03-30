@@ -4,9 +4,28 @@ namespace SilkyUIFramework.BasicElements;
 
 public class SUIScrollMask : UIElementGroup
 {
-    public SUIScrollMask()
+    public SUIScrollView ScrollView { get; }
+
+    public SUIScrollMask(SUIScrollView scrollView)
     {
+        ScrollView = scrollView;
         OverflowHidden = true;
+    }
+
+    public override void RecalculateChildrenHeight()
+    {
+        base.RecalculateChildrenHeight();
+
+        switch (ScrollView.Direction)
+        {
+            case Direction.Horizontal:
+                ScrollView.ScrollBar?.SetHScrollRange(InnerBounds.Width, ScrollView.Container.OuterBounds.Width);
+                break;
+            default:
+            case Direction.Vertical:
+                ScrollView.ScrollBar?.SetVScrollRange(InnerBounds.Height, ScrollView.Container.OuterBounds.Height);
+                break;
+        }
     }
 
     public override UIView GetElementAt(Vector2 mousePosition)
@@ -26,16 +45,16 @@ public class SUIScrollMask : UIElementGroup
     }
 }
 
-public class SUIScrollContainer(SUIScrollMask mask) : UIElementGroup
+public class SUIScrollContainer(SUIScrollView scrollView) : UIElementGroup
 {
-    public readonly SUIScrollMask Mask = mask;
+    public SUIScrollView ScrollView { get; } = scrollView;
 
     public void UpdateScrollPosition(Vector2 currentScrollPosition) => ScrollOffset = -currentScrollPosition;
 
     public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        var innerBounds = Mask.InnerBounds;
-        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>().Where(el => el.OuterBounds.Intersects(innerBounds)))
+        var innerBounds = ScrollView.Mask.InnerBounds;
+        foreach (var child in ElementsSortedByZIndex.Where(el => el.OuterBounds.Intersects(innerBounds)))
         {
             child.HandleDraw(gameTime, spriteBatch);
         }
@@ -55,7 +74,7 @@ public class SUIScrollView : UIElementGroup
         Direction = direction;
         SetGap(8f);
 
-        Mask = new SUIScrollMask
+        Mask = new SUIScrollMask(this)
         {
             HiddenBox = HiddenBox.Inner,
             FlexGrow = 1f,
@@ -64,7 +83,7 @@ public class SUIScrollView : UIElementGroup
         Mask.Join(this);
         Mask.SetSize(0f, 0f, 1f, 1f);
 
-        Container = new SUIScrollContainer(Mask)
+        Container = new SUIScrollContainer(this)
         {
             LayoutType = LayoutType.Flexbox,
             FlexDirection = FlexDirection.Row,
@@ -100,25 +119,8 @@ public class SUIScrollView : UIElementGroup
         }
     }
 
-    public override void RecalculateChildrenHeight()
-    {
-        base.RecalculateChildrenHeight();
-
-        switch (Direction)
-        {
-            case Direction.Horizontal:
-                ScrollBar?.SetHScrollRange(Mask.InnerBounds.Width, Container.OuterBounds.Width);
-                break;
-            default:
-            case Direction.Vertical:
-                ScrollBar?.SetVScrollRange(Mask.InnerBounds.Height, Container.OuterBounds.Height);
-                break;
-        }
-    }
-
     public override void OnMouseWheel(UIScrollWheelEvent evt)
     {
-
         switch (Direction)
         {
             case Direction.Horizontal:

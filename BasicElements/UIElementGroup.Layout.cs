@@ -216,7 +216,7 @@ public partial class UIElementGroup
                     }
                     else
                     {
-                        FlexLines.RefreshMainSize(Gap.Width);
+                        FlexLines.RefreshMainSizeByRow(Gap.Width);
                     }
 
                     // 拉伸或者压缩宽度
@@ -264,18 +264,18 @@ public partial class UIElementGroup
             default:
             case FlexDirection.Row:
             {
-                var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
                 if (FitHeight)
                 {
+                    var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
                     DefineInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
                 }
                 break;
             }
             case FlexDirection.Column:
             {
-                var content = FlexLines.Max(line => line.MainSize);
                 if (FitHeight)
                 {
+                    var content = FlexLines.Max(line => line.MainSize);
                     DefineInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
                 }
                 break;
@@ -283,11 +283,10 @@ public partial class UIElementGroup
         }
     }
 
-    public virtual void ResizeChildrenHeight()
+    protected virtual void ResizeChildrenHeight()
     {
         if (LayoutChildren.Count <= 0) return;
 
-        var space = GetAvailableSpace();
         var innerSize = InnerBounds.Size;
 
         if (!FitHeight)
@@ -328,7 +327,7 @@ public partial class UIElementGroup
                     }
                     else
                     {
-                        FlexLines.RefreshMainSize(Gap.Width);
+                        FlexLines.RefreshMainSizeByColumn(Gap.Width);
                     }
 
                     FlexLines.GrowOrShrinkByColumn(innerSize, Gap.Height);

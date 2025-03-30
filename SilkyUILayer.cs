@@ -1,4 +1,5 @@
-﻿using static Terraria.UI.InterfaceScaleType;
+﻿using Microsoft.Xna.Framework.Graphics;
+using static Terraria.UI.InterfaceScaleType;
 
 namespace SilkyUIFramework;
 
@@ -29,7 +30,7 @@ public class SilkyUILayer : GameInterfaceLayer
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred,
-            null, null, null, null, null, transformMatrix);
+            null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, transformMatrix);
 
         SilkyUIManager.CurrentSilkyUI = SilkyUI;
         SilkyUI.Draw(Main.gameTimeCache, Main.spriteBatch);

@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SilkyUIFramework")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+626448b660c3830c77983fdf45b8f022b8337403")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0cf53c967dc47b19ba57588061a4022b36d315f6")]
 [assembly: System.Reflection.AssemblyProductAttribute("SilkyUIFramework")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SilkyUIFramework")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -41,7 +41,7 @@ public partial class UIElementGroup
         }
     }
 
-    private CrossAlignment _crossAlignment;
+    private CrossAlignment _crossAlignment = CrossAlignment.Stretch;
 
     public CrossContentAlignment CrossContentAlignment
     {

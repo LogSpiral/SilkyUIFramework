@@ -26,7 +26,7 @@ public partial class UIView
             field = value;
             if (Parent != null)
             {
-                Parent.ChildrenZIndexIsDirty = true;
+                Parent.ChildrenOrderIsDirty = true;
             }
         }
     }

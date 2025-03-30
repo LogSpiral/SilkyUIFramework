@@ -19,9 +19,9 @@ public partial class UIElementGroup
     }
 
     protected List<UIView> ElementsSortedByZIndex { get; } = [];
-    public bool ChildrenZIndexIsDirty { get; set; } = true;
+    public bool ChildrenOrderIsDirty { get; set; } = true;
 
-    protected void RefreshZIndex()
+    protected void ReorderChildren()
     {
         ElementsSortedByZIndex.Clear();
         ElementsSortedByZIndex.AddRange(GetValidChildren().OrderBy(el => el.ZIndex));
@@ -29,10 +29,10 @@ public partial class UIElementGroup
 
     public override void RefreshLayout()
     {
-        if (ChildrenZIndexIsDirty)
+        if (ChildrenOrderIsDirty)
         {
-            RefreshZIndex();
-            ChildrenZIndexIsDirty = false;
+            ReorderChildren();
+            ChildrenOrderIsDirty = false;
         }
 
         if (LayoutIsDirty)
@@ -78,7 +78,7 @@ public partial class UIElementGroup
     {
         base.RecalculatePosition();
 
-        foreach (var child in LayoutChildren)
+        foreach (var child in GetValidChildren().Where(el => el.Positioning is not Positioning.Fixed))
         {
             child.RecalculatePosition();
         }

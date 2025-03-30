@@ -1,7 +1,9 @@
 ﻿namespace SilkyUIFramework.UserInterfaces;
 
+#if DEBUG
+
 [RegisterUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
-public class ExampleUI : BasicBody
+internal class ExampleUI : BasicBody
 {
     public SUIDraggableView DraggableView { get; protected set; }
 
@@ -73,7 +75,7 @@ public class ExampleUI : BasicBody
         blockContainer.ScrollBar.OnUpdateStatus += _ =>
         {
             blockContainer.Container.MainAlignment = MainAlignment.SpaceBetween;
-            blockContainer.ScrollBar.SetWidth(blockContainer.ScrollBar.HoverTimer.Lerp(4f, 40f));
+            blockContainer.ScrollBar.SetWidth(blockContainer.ScrollBar.HoverTimer.Lerp(10f, 100f));
         };
 
         var textView2 = new UITextView()
@@ -164,30 +166,27 @@ public class ExampleUI : BasicBody
         box12.SetSize(100f, 20f);
     }
 
+    protected override void UpdateStatus(GameTime gameTime)
+    {
+        base.UpdateStatus(gameTime);
+    }
+
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        spriteBatch.End();
-        spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Main.UIScaleMatrix);
+        UseRenderTarget = false;
         base.HandleDraw(gameTime, spriteBatch);
     }
 
-    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    protected override void UseRenderTargetDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-
-        UseRenderTarget = true;
         Opacity = HoverTimer.Lerp(0.5f, 1f);
-        base.Draw(gameTime, spriteBatch);
-    }
-
-    protected override void UpdateStatus(GameTime gameTime)
-    {
-        if (IsMouseHovering)
-        {
-            // 锁定滚动条
-            PlayerInput.LockVanillaMouseScroll("SilkyUIFramework");
-            Main.LocalPlayer.mouseInterface = true;
-        }
-
-        base.UpdateStatus(gameTime);
+        var scale = HoverTimer.Lerp(1f, 1.1f);
+        RenderTargetMatrix =
+            Matrix.CreateTranslation(-Bounds.Center.X * 2f, -Bounds.Center.Y * 2f, 0f) *
+            Matrix.CreateScale(scale, scale, 1f) *
+            Matrix.CreateTranslation(Bounds.Center.X * 2f, Bounds.Center.Y * 2f, 0f);
+        base.UseRenderTargetDraw(gameTime, spriteBatch);
     }
 }
+
+#endif

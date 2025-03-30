@@ -5,10 +5,12 @@ public abstract partial class BasicBody : UIElementGroup
     public virtual bool Enabled { get; set; } = true;
     public virtual bool IsInteractable => true;
 
+    protected bool AvailableItem { get; set; } = false;
+    protected bool AvailableScroll { get; set; } = false;
+
     protected BasicBody()
     {
         SetSize(16f * 30f, 9f * 30f);
-        SetPadding(10f);
         SetGap(10f);
 
         Positioning = Positioning.Fixed;
@@ -61,6 +63,8 @@ public abstract partial class BasicBody : UIElementGroup
 
     protected override void UpdateStatus(GameTime gameTime)
     {
+        WatchScreenSize();
+
         //if (_adjustingWidth)
         //{
         //    var offset = Main.MouseScreen.X - _startPosition.X;
@@ -73,24 +77,35 @@ public abstract partial class BasicBody : UIElementGroup
         //    SetHeight(_startHeight + offset * 2f);
         //}
 
-        WatchBackBufferSize();
+        if (IsMouseHovering)
+        {
+            if (!AvailableScroll)
+            {
+                PlayerInput.LockVanillaMouseScroll("SilkyUIFramework");
+            }
+
+            if (!AvailableItem)
+            {
+                Main.LocalPlayer.mouseInterface = true;
+            }
+        }
+
         base.UpdateStatus(gameTime);
     }
 
-    protected Size LastBackBufferSize = GraphicsDeviceHelper.GetBackBufferSize();
+    protected Size oldScreenSize = GraphicsDeviceHelper.GetBackBufferSize();
 
-    protected void WatchBackBufferSize()
+    protected void WatchScreenSize()
     {
-        var currentBackBufferSize = GraphicsDeviceHelper.GetBackBufferSize();
-        if (LastBackBufferSize == currentBackBufferSize) return;
-
-        OnBackBufferSizeChanged(currentBackBufferSize, LastBackBufferSize);
-        LastBackBufferSize = currentBackBufferSize;
+        var newScreenSize = GraphicsDeviceHelper.GetBackBufferSizeByUIScale();
+        if (oldScreenSize == newScreenSize) return;
+        OnScreenSizeChanged(newScreenSize, oldScreenSize);
+        oldScreenSize = newScreenSize;
     }
 
-    protected virtual void OnBackBufferSizeChanged(Size newVector2, Size oldVector2)
+    protected virtual void OnScreenSizeChanged(Size newScreenSize, Size oldScreenSize)
     {
-        SetSize(newVector2.Width, newVector2.Height);
+        MarkLayoutDirty();
     }
 
     public override UIView GetElementAt(Vector2 mousePosition)
@@ -111,10 +126,10 @@ public abstract partial class BasicBody : UIElementGroup
 
     public override void RefreshLayout()
     {
-        if (ChildrenZIndexIsDirty)
+        if (ChildrenOrderIsDirty)
         {
-            RefreshZIndex();
-            ChildrenZIndexIsDirty = false;
+            ReorderChildren();
+            ChildrenOrderIsDirty = false;
         }
 
         if (LayoutIsDirty)

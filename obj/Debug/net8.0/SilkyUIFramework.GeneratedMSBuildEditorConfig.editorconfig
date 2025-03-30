@@ -89,6 +89,10 @@ build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework\.idea\vcs.
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = .idea\.idea.SilkyUIFramework\.idea\workspace.xml
 
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Assets/Shader/BlurEffect.xnb]
+build_metadata.AdditionalFiles.Pack = true
+build_metadata.AdditionalFiles.ModPath = Assets\Shader\BlurEffect.xnb
+
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/bin/Debug/net8.0/Assets/Graphics2D/ColorBlock.xnb]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Graphics2D\ColorBlock.xnb

@@ -2,6 +2,9 @@
 
 public static class GraphicsDeviceHelper
 {
+    public static int BackBufferWidth => Main.graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+    public static int BackBufferHeight => Main.graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
     public static Size GetBackBufferSize()
     {
         var pp = Main.graphics.GraphicsDevice.PresentationParameters;

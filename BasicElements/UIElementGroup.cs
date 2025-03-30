@@ -47,6 +47,8 @@ public partial class UIElementGroup : UIView
 
     #region Append Remove RemoveChild
 
+    public virtual bool HasChild(UIView child) => Elements.Contains(child);
+
     public virtual void AppendChild(UIView child)
     {
         child.Remove();
@@ -54,7 +56,7 @@ public partial class UIElementGroup : UIView
         child.Parent = this;
         MarkLayoutDirty();
         MarkPositionDirty();
-        ChildrenZIndexIsDirty = true;
+        ChildrenOrderIsDirty = true;
 
         if (SilkyUI != null) child.HandleMounted(SilkyUI);
     }
@@ -66,7 +68,7 @@ public partial class UIElementGroup : UIView
         child.Parent = null;
         MarkLayoutDirty();
         MarkPositionDirty();
-        ChildrenZIndexIsDirty = true;
+        ChildrenOrderIsDirty = true;
         child.HandleUnmounted();
     }
 
@@ -147,7 +149,7 @@ public partial class UIElementGroup : UIView
             spriteBatch.Begin(SpriteSortMode.Deferred,
                 null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
-            foreach (var child in ElementsSortedByZIndex.Reverse<UIView>().Where(el => el.OuterBounds.Intersects(innerBounds)))
+            foreach (var child in ElementsSortedByZIndex.Where(el => el.OuterBounds.Intersects(innerBounds)))
             {
                 child.HandleDraw(gameTime, spriteBatch);
             }
@@ -159,7 +161,7 @@ public partial class UIElementGroup : UIView
             return;
         }
 
-        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
+        foreach (var child in ElementsSortedByZIndex)
         {
             child.HandleDraw(gameTime, spriteBatch);
         }

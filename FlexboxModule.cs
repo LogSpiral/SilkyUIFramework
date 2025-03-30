@@ -74,11 +74,19 @@ public static class FlexboxModule
         crossAxisSize += (flexLines.Count - 1) * gap;
     }
 
-    public static void RefreshMainSize(this List<FlexLine> flexLines, float gap)
+    public static void RefreshMainSizeByRow(this List<FlexLine> flexLines, float gap)
     {
         Parallel.ForEach(flexLines, flexLine =>
         {
             flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
+        });
+    }
+
+    public static void RefreshMainSizeByColumn(this List<FlexLine> flexLines, float gap)
+    {
+        Parallel.ForEach(flexLines, flexLine =>
+        {
+            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(gap);
         });
     }
 
@@ -155,10 +163,10 @@ public static class FlexboxModule
                     var sortedElements = flexLine.Elements
                         .Where(el => el.FlexGrow > 0)
                         .Select(el => new { Element = el, AvailableGrowth = el.MaxOuterHeight - el.OuterBounds.Height })
-                        .Where(el => el.AvailableGrowth > 0)
+                        .Where(item => item.AvailableGrowth > 0)
                         .OrderBy(item => item.AvailableGrowth)
                         .ToList();
-                    var totalGrow = sortedElements.Sum(el => el.Element.FlexGrow);
+                    var totalGrow = sortedElements.Sum(item => item.Element.FlexGrow);
 
                     foreach (var item in sortedElements)
                     {

@@ -16,6 +16,10 @@
         <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Remove="Assets\Shader\BlurEffect.fx" />
+    </ItemGroup>
+
     <!-- <ItemGroup>
         <ProjectReference Include="..\AutoDirtyGenerator\AutoDirtyGenerator.csproj"
             OutputItemType="Analyzer"

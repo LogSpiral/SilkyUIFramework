@@ -196,7 +196,7 @@ public partial class UIView
     public virtual void RefreshHeight(float containerHeight)
     {
         ComputeHeightConstraint(containerHeight);
-        if (!FitWidth)
+        if (!FitHeight)
         {
             RecalculateBoundsHeight(containerHeight);
         }
