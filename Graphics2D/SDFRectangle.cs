@@ -7,7 +7,7 @@ public static class SDFRectangle
     private static Effect Effect => ModAsset.SDFRectangle.Value;
 
     public static void DrawHasBorder(Vector2 position, Vector2 size,
-        Vector4 rounded, Color backgroundColor, float border, Color borderColor, Matrix matrix)
+        Vector4 borderRadius, Color backgroundColor, float border, Color borderColor, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);
 
@@ -24,12 +24,12 @@ public static class SDFRectangle
         DrawRectanglePrimitives(
             position - new Vector2(innerShrinkage),
             size + new Vector2(innerShrinkage * 2),
-            rounded + new Vector4(innerShrinkage)
+            borderRadius + new Vector4(innerShrinkage)
         );
     }
 
     public static void DrawNoBorder(Vector2 position, Vector2 size,
-        Vector4 rounded, Color backgroundColor, Matrix matrix)
+        Vector4 borderRadius, Color backgroundColor, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);
 
@@ -43,21 +43,21 @@ public static class SDFRectangle
         DrawRectanglePrimitives(
             position - new Vector2(innerShrinkage),
             size + new Vector2(innerShrinkage * 2),
-            rounded + new Vector4(innerShrinkage)
+            borderRadius + new Vector4(innerShrinkage)
         );
     }
 
     public static void DrawShadow(Vector2 position, Vector2 size,
-        Vector4 rounded, Color backgroundColor, float shadow, Matrix matrix)
+        Vector4 borderRadius, Color backgroundColor, float shadowBlurSize, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);
 
         SetSmoothstepRange();
         SetMatrixWithBgColor(matrix, backgroundColor);
-        Effect.Parameters["uShadowSize"].SetValue(shadow);
+        Effect.Parameters["uShadowBlurSize"].SetValue(shadowBlurSize);
 
         Effect.CurrentTechnique.Passes["Shadow"].Apply();
-        DrawRectanglePrimitives(position, size, rounded + new Vector4(shadow));
+        DrawRectanglePrimitives(position, size, borderRadius);
     }
 
     #region SET
@@ -81,29 +81,29 @@ public static class SDFRectangle
 
     #endregion
 
-    private static void DrawRectanglePrimitives(Vector2 position, Vector2 size, Vector4 rounded)
+    private static void DrawRectanglePrimitives(Vector2 position, Vector2 size, Vector4 borderRadius)
     {
         size /= 2f;
 
         List<SDFGraphicsVertexType> vertices = [];
 
-        var coordQ1 = new Vector2(rounded.X) - size;
-        var coordQ2 = new Vector2(rounded.X);
-        vertices.SDFVertexTypeRectangle(position, size, coordQ2, coordQ1, rounded.X);
+        var coordQ1 = new Vector2(borderRadius.X) - size;
+        var coordQ2 = new Vector2(borderRadius.X);
+        vertices.SDFVertexTypeRectangle(position, size, coordQ2, coordQ1, borderRadius.X);
 
-        coordQ1 = new Vector2(rounded.Y) - size;
-        coordQ2 = new Vector2(rounded.Y);
+        coordQ1 = new Vector2(borderRadius.Y) - size;
+        coordQ2 = new Vector2(borderRadius.Y);
         vertices.SDFVertexTypeRectangle(position + new Vector2(size.X, 0f), size, new Vector2(coordQ1.X, coordQ2.Y),
-            new Vector2(coordQ2.X, coordQ1.Y), rounded.Y);
+            new Vector2(coordQ2.X, coordQ1.Y), borderRadius.Y);
 
-        coordQ1 = new Vector2(rounded.Z) - size;
-        coordQ2 = new Vector2(rounded.Z);
+        coordQ1 = new Vector2(borderRadius.Z) - size;
+        coordQ2 = new Vector2(borderRadius.Z);
         vertices.SDFVertexTypeRectangle(position + new Vector2(0f, size.Y), size, new Vector2(coordQ2.X, coordQ1.Y),
-            new Vector2(coordQ1.X, coordQ2.Y), rounded.Z);
+            new Vector2(coordQ1.X, coordQ2.Y), borderRadius.Z);
 
-        coordQ1 = new Vector2(rounded.W) - size;
-        coordQ2 = new Vector2(rounded.W);
-        vertices.SDFVertexTypeRectangle(position + size, size, coordQ1, coordQ2, rounded.W);
+        coordQ1 = new Vector2(borderRadius.W) - size;
+        coordQ2 = new Vector2(borderRadius.W);
+        vertices.SDFVertexTypeRectangle(position + size, size, coordQ1, coordQ2, borderRadius.W);
 
         GraphicsDevice.DrawUserPrimitives(0, vertices.ToArray(), 0, vertices.Count / 3);
 

@@ -27,7 +27,7 @@ public abstract partial class BasicBody
 
         var backBufferWidth = device.PresentationParameters.BackBufferWidth;
         var backBufferHeight = device.PresentationParameters.BackBufferHeight;
-        var uiRenderTarget = RenderTargetPool.Instance.Get(backBufferWidth, backBufferHeight);
+        var uiRenderTarget = RenderTargetPool.Instance.Rent(backBufferWidth, backBufferHeight);
 
         try
         {
@@ -51,7 +51,7 @@ public abstract partial class BasicBody
             spriteBatch.End();
 
             device.SetRenderTargets(original);
-            usageRecords.Restore();
+            usageRecords.RestoreUsage();
 
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, RenderTargetMatrix);
             spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null,

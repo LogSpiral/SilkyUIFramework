@@ -7,21 +7,11 @@ public class SilkyUISystem : ModSystem
 {
     public static SilkyUISystem Instance => ModContent.GetInstance<SilkyUISystem>();
 
-    public override void PostSetupContent() => InitializeSystem();
-
-    public override void UpdateUI(GameTime gameTime)
-    {
-        SilkyUIManager.Instance.UpdateUI(gameTime);
-    }
-
-    public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
-    {
-        SilkyUIManager.Instance.ModifyInterfaceLayers(layers);
-    }
-
     private bool _initialized;
 
-    private void InitializeSystem()
+    public override void PostSetupContent() => Initialize();
+
+    private void Initialize()
     {
         if (_initialized) return;
 
@@ -40,6 +30,16 @@ public class SilkyUISystem : ModSystem
         }
 
         _initialized = true;
+    }
+
+    public override void UpdateUI(GameTime gameTime)
+    {
+        SilkyUIManager.Instance.UpdateUI(gameTime);
+    }
+
+    public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
+    {
+        SilkyUIManager.Instance.ModifyInterfaceLayers(layers);
     }
 }
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using static Terraria.UI.InterfaceScaleType;
+﻿using static Terraria.UI.InterfaceScaleType;
 
 namespace SilkyUIFramework;
 

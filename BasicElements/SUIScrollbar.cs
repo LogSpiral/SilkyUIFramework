@@ -208,7 +208,7 @@ public class SUIScrollbar : UIView
     }
 
     public (Color Default, Color Hover) BarColor = (Color.Black * 0.2f, Color.Black * 0.3f);
-    
+
     public Vector4 BarBorderRadius
     {
         get => ControlBar.BorderRadius;

@@ -1,6 +1,4 @@
-﻿using Terraria;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 public static class FlexboxModule
 {

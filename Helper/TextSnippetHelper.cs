@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using Terraria.GameContent.UI.Chat;
 using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Helper;

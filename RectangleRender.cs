@@ -2,10 +2,10 @@
 
 public class RectangleRender
 {
-    public float Border = 0f;
-    public Color BorderColor = Color.Transparent;
-    public Color BackgroundColor = Color.Transparent;
-    public Vector4 BorderRadius = Vector4.Zero;
+    public float Border { get; set; } = 0f;
+    public Color BorderColor { get; set; } = Color.Transparent;
+    public Color BackgroundColor { get; set; } = Color.Transparent;
+    public Vector4 BorderRadius { get; set; } = Vector4.Zero;
 
     public void Draw(Vector2 position, Vector2 size, bool noBorder, Matrix matrix)
     {
@@ -31,30 +31,29 @@ public class RectangleRender
     public void DrawOnlyBorder(Vector2 position, Vector2 size, Matrix matrix) =>
         SDFRectangle.DrawHasBorder(position, size, BorderRadius, Color.Transparent, Border, BorderColor, matrix);
 
-    public void CopyStyle(RectangleRender roundedRectangle)
+    public void CopyStyle(RectangleRender rectangleRender)
     {
-        BorderRadius = roundedRectangle.BorderRadius;
-        Border = roundedRectangle.Border;
-        BackgroundColor = roundedRectangle.BackgroundColor;
-        BorderColor = roundedRectangle.BorderColor;
+        BorderRadius = rectangleRender.BorderRadius;
+        Border = rectangleRender.Border;
+        BackgroundColor = rectangleRender.BackgroundColor;
+        BorderColor = rectangleRender.BorderColor;
 
-        ShadowExpand = roundedRectangle.ShadowExpand;
-        ShadowWidth = roundedRectangle.ShadowWidth;
-        ShadowColor = roundedRectangle.ShadowColor;
+        ShadowSize = rectangleRender.ShadowSize;
+        ShadowBlurSize = rectangleRender.ShadowBlurSize;
+        ShadowColor = rectangleRender.ShadowColor;
     }
 
-    public float ShadowExpand = 10f;
-    public float ShadowWidth = 10f;
-    public Color ShadowColor = Color.Transparent;
+    public float ShadowSize { get; set; } = 10f;
+    public float ShadowBlurSize { get; set; } = 10f;
+    public Color ShadowColor { get; set; } = Color.Transparent;
 
     public void DrawShadow(Vector2 position, Vector2 size, Matrix matrix)
     {
         if (ShadowColor == Color.Transparent) return;
 
-        position -= new Vector2(ShadowExpand);
-        size += new Vector2(ShadowExpand * 2);
-        // var cornerRadius = CornerRadius + new Vector4(ShadowExpand / 2f);
-        SDFRectangle.DrawShadow(position, size, BorderRadius, ShadowColor, ShadowWidth, matrix);
+        position -= new Vector2(ShadowSize);
+        size += new Vector2(ShadowSize * 2);
+        SDFRectangle.DrawShadow(position, size, BorderRadius + new Vector4(ShadowSize), ShadowColor, ShadowBlurSize, matrix);
     }
 
     public RectangleRender Clone() => MemberwiseClone() as RectangleRender;

@@ -49,8 +49,6 @@ public class SilkyUIManager
     /// <summary>
     /// <see cref="BasicBody"/> 的子类
     /// </summary>
-    /// <param name="basicBodyType"></param>
-    /// <param name="registerUIAttribute"></param>
     public void RegisterUI(Type basicBodyType, RegisterUIAttribute registerUIAttribute)
     {
         var silkyUI = new SilkyUI();
@@ -94,7 +92,6 @@ public class SilkyUIManager
                 silkyUIs.Clear();
                 silkyUIs.AddRange(order);
 
-                // ReSharper disable once ForCanBeConvertedToForeach
                 for (var i = 0; i < silkyUIs.Count; i++)
                 {
                     var silkyUI = silkyUIs[i];
@@ -151,6 +148,11 @@ public class SilkyUIManager
         if (uiLayerCount < 1) return;
         foreach (var (layerNode, silkyUIs) in SilkyUILayerNodes)
         {
+            var order = silkyUIs.OrderBy(value =>
+                RegisterUIMappingTable[value].Priority).ToList();
+            silkyUIs.Clear();
+            silkyUIs.AddRange(order);
+
             // 找到图层节点
             var index = layers.FindIndex(layer => layer.Name.Equals(layerNode));
             if (index <= -1) continue;

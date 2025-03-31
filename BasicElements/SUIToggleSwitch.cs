@@ -7,6 +7,18 @@ namespace SilkyUIFramework.BasicElements;
 /// </summary>
 public class SUIToggleSwitch : UIView
 {
+    public SUIToggleSwitch()
+    {
+        SetPadding(2f);
+        SetSize(36f, 20f);
+
+        Border = 2f;
+        BorderRadius = new Vector4(10f);
+        BorderColor = SUIColor.Border * 0.75f;
+
+        InternalRectangleRender.BackgroundColor = SUIColor.Background * 0.75f;
+    }
+
     /// <summary> 状态改变时触发 </summary>
     public event Action<bool> OnStatusChanges;
 
@@ -24,7 +36,7 @@ public class SUIToggleSwitch : UIView
         }
     }
 
-    public readonly RectangleRender Bead = new();
+    public readonly RectangleRender InternalRectangleRender = new();
     public readonly AnimationTimer SwitchTimer = new(3);
 
     public virtual void StatusChanged(bool value)
@@ -32,17 +44,6 @@ public class SUIToggleSwitch : UIView
         OnStatusChanges?.Invoke(value);
         if (value) SwitchTimer.StartUpdate();
         else SwitchTimer.StartReverseUpdate();
-    }
-
-    public SUIToggleSwitch()
-    {
-        Padding = new Margin(2f);
-        SetSize(36f, 20f);
-
-        //CornerRadius = new Vector4(10f);
-        Border = 2f;
-        BorderColor = new Color(18, 18, 38) * 0.75f;
-        Bead.BackgroundColor = new Color(18, 18, 38) * 0.75f;
     }
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
@@ -66,7 +67,7 @@ public class SUIToggleSwitch : UIView
         var beadSize = new Vector2(MathHelper.Min(size.Width, size.Height));
         var end = InnerBounds.RightBottom - beadSize;
 
-        Bead.BorderRadius = new Vector4(beadSize.Y / 2f);
-        Bead.Draw(SwitchTimer.Lerp(position, end), beadSize, false, SilkyUI.TransformMatrix);
+        InternalRectangleRender.BorderRadius = new Vector4(beadSize.Y / 2f);
+        InternalRectangleRender.Draw(SwitchTimer.Lerp(position, end), beadSize, false, SilkyUI.TransformMatrix);
     }
 }

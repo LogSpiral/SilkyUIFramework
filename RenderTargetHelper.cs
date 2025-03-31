@@ -17,10 +17,7 @@ public static class RenderTargetHelper
                 rtUsageRecords[item] = rt.RenderTargetUsage;
                 rt.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             }
-            else
-            {
-                rtUsageRecords[item] = null;
-            }
+            else rtUsageRecords[item] = null;
         }
 
         return rtUsageRecords;
@@ -29,7 +26,7 @@ public static class RenderTargetHelper
     /// <summary>
     /// 恢复渲染目标使用情况
     /// </summary>
-    public static void Restore(this Dictionary<RenderTargetBinding, RenderTargetUsage?> usages)
+    public static void RestoreUsage(this Dictionary<RenderTargetBinding, RenderTargetUsage?> usages)
     {
         if (usages is null) return;
 
