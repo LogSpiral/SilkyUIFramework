@@ -1,5 +1,5 @@
 Configs: {
-	ClientConfig: {
+	SilkyUIClientConfig: {
 		DisplayName: 客户端配置
 
 		DeathTextOffset: {
@@ -7,9 +7,37 @@ Configs: {
 			Tooltip: ""
 		}
 
-		MouseTextOffset: {
-			Label: MouseText 偏移
+		EnableBlur: {
+			Label: 启用模糊效果（复古模式不可用）
 			Tooltip: ""
+		}
+
+		BlurZoomMultiplierDenominator: {
+			Label: 缩放乘数分母（值越大消耗越小）
+			Tooltip:
+				'''
+				数值越大，处理的图像越小
+				如果卡顿，可以尝试增大此值
+				'''
+		}
+
+		BlurIterationCount: {
+			Label: 迭代次数（值越大消耗越大）
+			Tooltip:
+				'''
+				数值越大，处理模糊的次数越多，同时会变得越模糊
+				如果卡顿，可以尝试降低此值
+				'''
+		}
+
+		IterationOffsetMultiplier: {
+			Label: 采样偏移乘数（性能无关）
+			Tooltip: "值越大越模糊，但同时越容易出现条纹"
+		}
+
+		BlurMixingNumber: {
+			Label: 颜色混合数（值越大消耗越大）
+			Tooltip: "值越大越颜色采样越多"
 		}
 	}
 }

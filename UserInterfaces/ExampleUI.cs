@@ -1,6 +1,6 @@
 ﻿namespace SilkyUIFramework.UserInterfaces;
 
-#if DEBUG
+#if false
 
 [RegisterUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
 internal class ExampleUI : BasicBody

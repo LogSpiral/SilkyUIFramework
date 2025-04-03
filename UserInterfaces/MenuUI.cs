@@ -10,6 +10,9 @@ public class MenuUI : BasicBody
 
     protected override void OnInitialize()
     {
+        SetLeft(alignment: 0.5f);
+        SetTop(alignment: 0.5f);
+
         BorderRadius = new Vector4(8f);
         DraggableView = new SUIDraggableView(this)
         {

@@ -2,6 +2,23 @@
 
 public static class RenderTargetHelper
 {
+    public static void RestoreRenderTargets(this RenderTargetBinding[] original, GraphicsDevice device)
+    {
+        if (original is null || original.Length == 0)
+        {
+            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+            device.SetRenderTarget(null);
+            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.DiscardContents;
+        }
+        else
+        {
+            var records = original.RecordUsage();
+            device.SetRenderTargets(original);
+            records.RestoreUsage();
+        }
+    }
+
+
     /// <summary>
     /// 记录原来 RenderTargetUsage, 并全部设为 PreserveContents 防止设置新的 RenderTarget 时候消失
     /// </summary>

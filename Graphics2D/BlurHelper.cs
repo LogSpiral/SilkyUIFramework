@@ -1,6 +1,6 @@
 ﻿namespace SilkyUIFramework.Graphics2D;
 
-public enum BlurType { One, Two, Three, Four, Five }
+public enum BlurMixingNumber { One, Two, Three, Four, Five }
 
 public static class BlurHelper
 {
@@ -20,13 +20,13 @@ public static class BlurHelper
     }
 
     public static void KawaseBlur(RenderTarget2D renderTarget,
-        int iterationCount, float radio, BlurType blurType = BlurType.Three)
+        int iterationCount, float radio, BlurMixingNumber blurType = BlurMixingNumber.Three)
     {
         KawaseBlur(renderTarget, GenerateGeometricSequence(iterationCount, radio), blurType);
     }
 
     public static void KawaseBlur(RenderTarget2D renderTarget,
-        float[] offsets, BlurType blurType = BlurType.Three)
+        float[] offsets, BlurMixingNumber blurType = BlurMixingNumber.Three)
     {
         if (offsets.Length == 0) return;
 
@@ -37,9 +37,7 @@ public static class BlurHelper
         var batch = Main.spriteBatch;
 
         var original = device.GetRenderTargets();
-        var records = original.RecordUsage();
 
-        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
 
         var renderTargetSwap = RenderTargetPool.Instance.Rent(renderTarget.Width, renderTarget.Height);
 
@@ -47,9 +45,12 @@ public static class BlurHelper
 
         SelectBlurEffectPasses(blurType, out var blurX, out var blurY);
 
+        device.Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);
+        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
         for (int i = 0; i < offsets.Length; i++)
         {
             device.SetRenderTarget(renderTargetSwap);
+            device.Clear(Color.Transparent);
 
             effect.Parameters["uBlurRadius"].SetValue(offsets[i]);
             blurX.Apply();
@@ -60,10 +61,10 @@ public static class BlurHelper
             blurY.Apply();
             batch.Draw(renderTargetSwap, Vector2.Zero, null, Color.White);
         }
-
         batch.End();
 
-        if (records is null)
+
+        if (original is null || original.Length == 0)
         {
             device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             device.SetRenderTarget(null);
@@ -71,6 +72,7 @@ public static class BlurHelper
         }
         else
         {
+            var records = original.RecordUsage();
             device.SetRenderTargets(original);
             records.RestoreUsage();
         }
@@ -78,29 +80,29 @@ public static class BlurHelper
         RenderTargetPool.Instance.Return(renderTargetSwap);
     }
 
-    public static void SelectBlurEffectPasses(BlurType blurType, out EffectPass blurX, out EffectPass blurY)
+    public static void SelectBlurEffectPasses(BlurMixingNumber blurType, out EffectPass blurX, out EffectPass blurY)
     {
         var effect = ModAsset.BlurEffect.Value;
         switch (blurType)
         {
             default:
-            case BlurType.One:
+            case BlurMixingNumber.One:
                 blurX = effect.CurrentTechnique.Passes["BlurX1"];
                 blurY = effect.CurrentTechnique.Passes["BlurY1"];
                 break;
-            case BlurType.Two:
+            case BlurMixingNumber.Two:
                 blurX = effect.CurrentTechnique.Passes["BlurX2"];
                 blurY = effect.CurrentTechnique.Passes["BlurY2"];
                 break;
-            case BlurType.Three:
+            case BlurMixingNumber.Three:
                 blurX = effect.CurrentTechnique.Passes["BlurX3"];
                 blurY = effect.CurrentTechnique.Passes["BlurY3"];
                 break;
-            case BlurType.Four:
+            case BlurMixingNumber.Four:
                 blurX = effect.CurrentTechnique.Passes["BlurX4"];
                 blurY = effect.CurrentTechnique.Passes["BlurY4"];
                 break;
-            case BlurType.Five:
+            case BlurMixingNumber.Five:
                 blurX = effect.CurrentTechnique.Passes["BlurX5"];
                 blurY = effect.CurrentTechnique.Passes["BlurY5"];
                 break;

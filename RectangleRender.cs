@@ -14,8 +14,10 @@ public class RectangleRender
             if (BorderColor == Color.Transparent || noBorder)
             {
                 if (BackgroundColor != Color.Transparent)
-                    SDFRectangle.DrawNoBorder(position + new Vector2(Border), size - new Vector2(Border * 2f),
-                        BorderRadius - new Vector4(Border), BackgroundColor, matrix);
+                    SDFRectangle.DrawNoBorder(
+                        position + new Vector2(Border), size - new Vector2(Border * 2f),
+                        BorderRadius - new Vector4(Border), BackgroundColor, matrix
+                    );
             }
             else
             {

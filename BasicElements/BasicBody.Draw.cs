@@ -10,6 +10,13 @@ public abstract partial class BasicBody
 
     public Matrix RenderTargetMatrix;
 
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+
+        SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget, Bounds.Position * 2f, Bounds.Size * 2f, BorderRadius * 2f, Matrix.Identity);
+        base.Draw(gameTime, spriteBatch);
+    }
+
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         if (UseRenderTarget)
