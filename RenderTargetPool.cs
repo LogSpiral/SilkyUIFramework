@@ -1,4 +1,26 @@
-﻿namespace SilkyUIFramework;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SilkyUIFramework;
+
+public readonly struct CanvasSize(int width, int height) : IEquatable<CanvasSize>
+{
+    public readonly int Width = width;
+    public readonly int Height = height;
+
+    public readonly override bool Equals([NotNullWhen(true)] object obj)
+    {
+        return obj is CanvasSize other && Equals(other);
+    }
+
+    public override int GetHashCode() => HashCode.Combine(Width, Height);
+
+    public readonly bool Equals(CanvasSize other) => Width == other.Width && Height == other.Height;
+
+    public static bool operator ==(CanvasSize left, CanvasSize right) => left.Equals(right);
+    public static bool operator !=(CanvasSize left, CanvasSize right) => !left.Equals(right);
+
+    public static implicit operator CanvasSize(RenderTarget2D renderTarget) => new(renderTarget.Width, renderTarget.Height);
+}
 
 /// <summary>
 /// 渲染目标对象池，用于管理和复用 RenderTarget2D 实例
@@ -14,10 +36,10 @@ public sealed class RenderTargetPool : IDisposable
     private readonly GraphicsDevice _graphicsDevice = Main.graphics.GraphicsDevice;
 
     // 可用渲染目标字典，按尺寸分组存储
-    private readonly Dictionary<(int Width, int Height), Stack<RenderTarget2D>> _available = [];
+    private readonly Dictionary<CanvasSize, HashSet<RenderTarget2D>> _available = [];
 
     // 已占用渲染目标字典，按尺寸分组存储
-    private readonly Dictionary<(int Width, int Height), Stack<RenderTarget2D>> _occupied = [];
+    private readonly Dictionary<CanvasSize, HashSet<RenderTarget2D>> _occupied = [];
 
     /// <summary>
     /// 租借指定尺寸的渲染目标
@@ -27,34 +49,33 @@ public sealed class RenderTargetPool : IDisposable
     /// <returns>可用的 RenderTarget2D 实例</returns>
     public RenderTarget2D Rent(int width, int height)
     {
-        var size = (width, height);
+        var size = new CanvasSize(width, height);
 
-        // 确保 _available 和 _occupied 都有对应的 Stack
         if (!_available.TryGetValue(size, out var available))
         {
-            available = new Stack<RenderTarget2D>();
+            available = [];
             _available[size] = available;
         }
 
         if (!_occupied.TryGetValue(size, out var occupied))
         {
-            occupied = new Stack<RenderTarget2D>();
+            occupied = [];
             _occupied[size] = occupied;
         }
 
-        // 如果有可用的渲染目标，则直接返回
         if (available.Count > 0)
         {
-            var target = available.Pop();
-            occupied.Push(target);
+            var target = available.First(); // 取出任意一个
+            available.Remove(target);
+            occupied.Add(target);
             return target;
         }
 
-        // 没有可用的则创建新的
         var newTarget = CreateRenderTarget(_graphicsDevice, width, height);
-        occupied.Push(newTarget);
+        occupied.Add(newTarget);
         return newTarget;
     }
+
 
     /// <summary>
     /// 归还渲染目标到对象池
@@ -63,18 +84,22 @@ public sealed class RenderTargetPool : IDisposable
     /// <exception cref="InvalidOperationException">当尝试归还未从此池租借的渲染目标时抛出</exception>
     public void Return(RenderTarget2D renderTarget)
     {
-        var size = (renderTarget.Width, renderTarget.Height);
+        var size = (CanvasSize)renderTarget;
 
-        // 检查渲染目标是否确实是从此池租借的
-        if (!_occupied.TryGetValue(size, out var occupied) || occupied.Count == 0)
+        if (!_occupied.TryGetValue(size, out var occupied) || !occupied.Remove(renderTarget))
         {
             throw new InvalidOperationException("RenderTarget was not rented from this pool");
         }
 
-        // 从占用栈移除并添加到可用栈
-        occupied.Pop();
-        _available[size].Push(renderTarget);
+        if (!_available.TryGetValue(size, out var available))
+        {
+            available = [];
+            _available[size] = available;
+        }
+
+        available.Add(renderTarget);
     }
+
 
     /// <summary>
     /// 创建新的渲染目标
@@ -102,19 +127,21 @@ public sealed class RenderTargetPool : IDisposable
     /// <exception cref="InvalidOperationException">当还有未归还的渲染目标时抛出</exception>
     public void Dispose()
     {
-        // 检查是否所有渲染目标都已归还
-        foreach (var stack in _occupied.Values)
+        // 释放所有已租借的 RenderTarget2D
+        foreach (var occupiedSet in _occupied.Values)
         {
-            if (stack?.Count > 0)
-                throw new InvalidOperationException("Dispose 前请确保所有 RenderTarget2D 已归还");
+            foreach (var renderTarget in occupiedSet)
+            {
+                renderTarget?.Dispose();
+            }
         }
 
-        // 释放所有可用渲染目标
-        foreach (var stack in _available.Values)
+        // 释放所有可用的 RenderTarget2D
+        foreach (var availableSet in _available.Values)
         {
-            while (stack?.Count > 0)
+            foreach (var renderTarget in availableSet)
             {
-                stack.Pop().Dispose();
+                renderTarget?.Dispose();
             }
         }
 
@@ -122,4 +149,5 @@ public sealed class RenderTargetPool : IDisposable
         _occupied.Clear();
         _available.Clear();
     }
+
 }

@@ -10,13 +10,6 @@ public abstract partial class BasicBody
 
     public Matrix RenderTargetMatrix;
 
-    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-
-        SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget, Bounds.Position * 2f, Bounds.Size * 2f, BorderRadius * 2f, Matrix.Identity);
-        base.Draw(gameTime, spriteBatch);
-    }
-
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         if (UseRenderTarget)
@@ -45,8 +38,6 @@ public abstract partial class BasicBody
             var lastRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
             device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
 
-            var usageRecords = original.RecordUsage();
-
             device.SetRenderTarget(uiRenderTarget);
             device.Clear(Color.Transparent);
 
@@ -57,8 +48,7 @@ public abstract partial class BasicBody
 
             spriteBatch.End();
 
-            device.SetRenderTargets(original);
-            usageRecords.RestoreUsage();
+            original.RestoreRenderTargets(device);
 
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, RenderTargetMatrix);
             spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null,

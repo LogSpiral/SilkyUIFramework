@@ -20,7 +20,12 @@ public static class SDFRectangle
         Effect.Parameters["uBorderColor"].SetValue(borderColor.ToVector4());
 
         Effect.CurrentTechnique.Passes["HasBorder"].Apply();
-        DrawRectanglePrimitives(innerShrinkage, position, size, borderRadius);
+        SetRectanglePrimitives(innerShrinkage, position, size, borderRadius);
+
+        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+            RectangleVertexData, 0, RectangleVertexData.Length, IndexData, 0, 8);
+
+        SpriteEffectPass.Apply();
     }
 
     public static void DrawNoBorder(Vector2 position, Vector2 size,
@@ -34,7 +39,12 @@ public static class SDFRectangle
         SetMatrixWithBgColor(matrix, backgroundColor);
 
         Effect.CurrentTechnique.Passes["NoBorder"].Apply();
-        DrawRectanglePrimitives(innerShrinkage, position, size, borderRadius);
+        SetRectanglePrimitives(innerShrinkage, position, size, borderRadius);
+
+        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+            RectangleVertexData, 0, RectangleVertexData.Length, IndexData, 0, 8);
+
+        SpriteEffectPass.Apply();
     }
 
     public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size, Vector4 borderRadius, Matrix matrix)
@@ -50,7 +60,12 @@ public static class SDFRectangle
         var screenSize = new Vector2(device.Viewport.Width, device.Viewport.Height);
         Effect.CurrentTechnique.Passes["SampleVersion"].Apply();
         device.Textures[0] = texture2D;
-        DrawRectanglePrimitives(innerShrinkage, position, size, borderRadius, position / screenSize, size / screenSize);
+        SetRectanglePrimitives(innerShrinkage, position, size, borderRadius, position / screenSize, size / screenSize);
+
+        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+            RectangleVertexData, 0, RectangleVertexData.Length, IndexData, 0, 8);
+
+        SpriteEffectPass.Apply();
     }
 
     public static void DrawShadow(Vector2 position, Vector2 size,
@@ -63,7 +78,12 @@ public static class SDFRectangle
         Effect.Parameters["uShadowBlurSize"].SetValue(shadowBlurSize);
 
         Effect.CurrentTechnique.Passes["Shadow"].Apply();
-        DrawRectanglePrimitives(0f, position, size, borderRadius);
+        SetRectanglePrimitives(0f, position, size, borderRadius);
+
+        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+            RectangleVertexData, 0, RectangleVertexData.Length, IndexData, 0, 8);
+
+        SpriteEffectPass.Apply();
     }
 
     #region SET
@@ -85,7 +105,7 @@ public static class SDFRectangle
     private static readonly SDFGraphicsVertexType[] RectangleVertexData = new SDFGraphicsVertexType[16];
     private static readonly short[] IndexData = [0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15];
 
-    private static void DrawRectanglePrimitives(float innerShrinkage,
+    private static void SetRectanglePrimitives(float innerShrinkage,
         Vector2 position, Vector2 size, Vector4 borderRadius)
     {
         position -= new Vector2(innerShrinkage);
@@ -110,14 +130,12 @@ public static class SDFRectangle
         vertexData.SetBorderRadius(borderRadius.Y, 4);
         vertexData.SetBorderRadius(borderRadius.Z, 8);
         vertexData.SetBorderRadius(borderRadius.W, 12);
-
-        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-            vertexData, 0, vertexData.Length, IndexData, 0, 8);
-
-        SpriteEffectPass.Apply();
     }
 
-    private static void DrawRectanglePrimitives(float innerShrinkage,
+    /// <summary>
+    /// 设置并绘制图元
+    /// </summary>
+    private static void SetRectanglePrimitives(float innerShrinkage,
         Vector2 position, Vector2 size, Vector4 borderRadius, Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize)
     {
         position -= new Vector2(innerShrinkage);
@@ -148,13 +166,11 @@ public static class SDFRectangle
         vertexData.SetBorderRadius(borderRadius.Y, 4);
         vertexData.SetBorderRadius(borderRadius.Z, 8);
         vertexData.SetBorderRadius(borderRadius.W, 12);
-
-        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-            vertexData, 0, vertexData.Length, IndexData, 0, 8);
-
-        SpriteEffectPass.Apply();
     }
 
+    /// <summary>
+    /// 设置顶点位置
+    /// </summary>
     public static void SetPosition(this SDFGraphicsVertexType[] vertexData, Vector2 position, Vector2 size, int indexOffset)
     {
         vertexData[indexOffset].Position = position;
@@ -163,6 +179,9 @@ public static class SDFRectangle
         vertexData[indexOffset + 3].Position = position + size;
     }
 
+    /// <summary>
+    /// 设置圆角
+    /// </summary>
     public static void SetBorderRadius(this SDFGraphicsVertexType[] vertexData, float borderRadius, int indexOffset)
     {
         vertexData[indexOffset].BorderRadius = borderRadius;
@@ -171,6 +190,9 @@ public static class SDFRectangle
         vertexData[indexOffset + 3].BorderRadius = borderRadius;
     }
 
+    /// <summary>
+    /// 设置当前点与边界的距离
+    /// </summary>
     public static void SetDistanceFromEdge(this SDFGraphicsVertexType[] vertexData, Vector2 size, float borderRadius, int a, int b, int c, int d, int indexOffset)
     {
         vertexData[indexOffset + a].DistanceFromEdge = new Vector2(borderRadius);
@@ -179,6 +201,13 @@ public static class SDFRectangle
         vertexData[indexOffset + d].DistanceFromEdge = new Vector2(borderRadius) - size;
     }
 
+    /// <summary>
+    /// 设置捕获图元的位置
+    /// </summary>
+    /// <param name="vertexData"></param>
+    /// <param name="position"></param>
+    /// <param name="size"></param>
+    /// <param name="indexOffset"></param>
     public static void SetTextureCoordinates(this SDFGraphicsVertexType[] vertexData, Vector2 position, Vector2 size, int indexOffset)
     {
         vertexData[indexOffset].TextureCoordinates = position;

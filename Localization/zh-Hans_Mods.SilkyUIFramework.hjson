@@ -1,0 +1,56 @@
+﻿{
+    Configs:
+    {
+        SilkyUIClientConfig:
+        {
+            DisplayName: 客户端配置
+            DeathTextOffset:
+            {
+                Label: DeathText 偏移
+                Tooltip: ""
+            }
+            EnableBlur:
+            {
+                Label: 启用模糊效果（复古模式不管用）
+                Tooltip: 高分辨率屏幕建议拉高缩放乘数分母
+            }
+            SingleBlur:
+            {
+                Label: 窗口独立模糊
+                Tooltip: 每个 UI 都单独模糊，效果更好，可能有兼容性问题
+            }
+            BlurZoomMultiplierDenominator:
+            {
+                Label: 缩放乘数分母（值越大消耗越小）
+                Tooltip:
+                    '''
+                    数值越大，处理的图像越小
+                    如果卡顿，可以尝试增大此值
+                    普通 GPU 4K 分辨率建议设为 4
+                    高端 GPU 可直接设为 1
+                    设为 1 则完全按照原分辨率渲染
+                    缩小会影响模糊范围，所以需要结合调整下方值
+                    '''
+            }
+            BlurIterationCount:
+            {
+                Label: 迭代次数（值越大消耗越大）
+                Tooltip:
+                    '''
+                    数值越大，处理模糊的次数越多，同时会变得越模糊
+                    如果卡顿，可以尝试降低此值
+                    '''
+            }
+            IterationOffsetMultiplier:
+            {
+                Label: 采样偏移乘数（性能无关）
+                Tooltip: 值越大越模糊，但同时越容易出现条纹
+            }
+            BlurMixingNumber:
+            {
+                Label: 颜色混合数（值越大消耗越大）
+                Tooltip: 值越大越颜色采样越多
+            }
+        }
+    }
+}

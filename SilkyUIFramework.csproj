@@ -9,15 +9,12 @@
 
     <ItemGroup>
         <PackageReference Include="Solaestas.tModLoader.ModBuilder" Version="1.6.1" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
     </ItemGroup>
 
     <ItemGroup>
         <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
         <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <AdditionalFiles Remove="Assets\Shader\BlurEffect.fx" />
     </ItemGroup>
 
     <!-- <ItemGroup>

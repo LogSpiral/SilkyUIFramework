@@ -82,6 +82,27 @@ public partial class UIElementGroup : UIView
 
     #endregion
 
+    public UIView SelectedElement { get; protected set; }
+
+    public virtual void SelectChild(UIView selectTarget)
+    {
+        if (!Elements.Contains(selectTarget)) return;
+
+        SelectedElement?.HandleDeselected();
+        SelectedElement = selectTarget;
+        SelectedElement?.HandleSelected();
+    }
+
+    public override void OnLeftMouseDown(UIMouseEvent evt)
+    {
+        if (evt.Source != this && evt.Previous is { Selectable: true })
+        {
+            SelectChild(evt.Previous);
+        }
+
+        base.OnLeftMouseDown(evt);
+    }
+
     #region Update UpdateStatus Draw
 
     public override void HandleUpdate(GameTime gameTime)

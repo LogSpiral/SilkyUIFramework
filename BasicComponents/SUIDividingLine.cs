@@ -6,6 +6,7 @@ public class SUIDividingLine : UIView
     {
         //ZIndex = 1f;
         BackgroundColor = bgColor;
+        Selectable = false;
     }
 
     public static SUIDividingLine Horizontal(Color? bgColor = null)

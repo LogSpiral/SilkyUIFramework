@@ -3,6 +3,7 @@
 public class UIMouseEvent(UIView source, Vector2 position)
 {
     public UIView Source { get; } = source;
+    public UIView Previous { get; set; } = source;
     public Vector2 MousePosition { get; } = position;
 }
 

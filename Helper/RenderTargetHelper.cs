@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework.Helper;
 
 public static class RenderTargetHelper
 {

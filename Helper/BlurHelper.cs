@@ -1,9 +1,30 @@
-﻿namespace SilkyUIFramework.Graphics2D;
+﻿namespace SilkyUIFramework.Helper;
 
 public enum BlurMixingNumber { One, Two, Three, Four, Five }
 
 public static class BlurHelper
 {
+    /// <summary>
+    /// 把指定源 RenderTarget 绘制到指定 RenderTarget 并进行模糊 (batch 应处于关闭状态)
+    /// </summary>
+    public static void KawaseBlur(RenderTarget2D sourceRenderTarget, RenderTarget2D BlurRenderTarget,
+        int blurIterationCount, float iterationOffsetMultiplier, float blurZoomMultiplierDenominator, BlurMixingNumber blurMixingNumber)
+    {
+        var batch = Main.spriteBatch;
+        var device = Main.graphics.GraphicsDevice;
+
+        var original = device.GetRenderTargets();
+        device.SetRenderTarget(BlurRenderTarget);
+
+        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
+        batch.Draw(sourceRenderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, BlurRenderTarget.Size() / Main.screenTarget.Size(), 0, 0f);
+        batch.End();
+
+        original.RestoreRenderTargets(device);
+
+        KawaseBlur(BlurRenderTarget, blurIterationCount, iterationOffsetMultiplier, blurMixingNumber);
+    }
+
     public static float[] GenerateGeometricSequence(int n, float radio)
     {
         if (n <= 0) return [];
@@ -38,7 +59,6 @@ public static class BlurHelper
 
         var original = device.GetRenderTargets();
 
-
         var renderTargetSwap = RenderTargetPool.Instance.Rent(renderTarget.Width, renderTarget.Height);
 
         ModAsset.BlurEffect.Value.Parameters["uPixelSize"].SetValue(Vector2.One / new Vector2(renderTarget.Width, renderTarget.Height));
@@ -50,7 +70,6 @@ public static class BlurHelper
         for (int i = 0; i < offsets.Length; i++)
         {
             device.SetRenderTarget(renderTargetSwap);
-            device.Clear(Color.Transparent);
 
             effect.Parameters["uBlurRadius"].SetValue(offsets[i]);
             blurX.Apply();
@@ -63,19 +82,7 @@ public static class BlurHelper
         }
         batch.End();
 
-
-        if (original is null || original.Length == 0)
-        {
-            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            device.SetRenderTarget(null);
-            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.DiscardContents;
-        }
-        else
-        {
-            var records = original.RecordUsage();
-            device.SetRenderTargets(original);
-            records.RestoreUsage();
-        }
+        original.RestoreRenderTargets(device);
 
         RenderTargetPool.Instance.Return(renderTargetSwap);
     }

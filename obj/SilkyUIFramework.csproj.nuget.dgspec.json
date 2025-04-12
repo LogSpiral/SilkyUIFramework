@@ -50,6 +50,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "SixLabors.ImageSharp": {
+              "target": "Package",
+              "version": "[3.1.7, )"
+            },
             "Solaestas.tModLoader.ModBuilder": {
               "target": "Package",
               "version": "[1.6.1, )"

@@ -1,90 +1,187 @@
 ﻿namespace SilkyUIFramework;
 
 /// <summary>
-/// 模糊效果处理系统，继承自ModSystem
-/// 负责创建和管理模糊渲染目标，并在UI层最底层添加模糊效果
+/// 模糊效果处理系统，继承自 ModSystem
+/// 负责创建和管理模糊渲染目标
 /// </summary>
-internal class BlurMakeSystem : ModSystem
+public class BlurMakeSystem : ModSystem
 {
-    public static bool EnableBlur { get; set; } = true;
+    public static bool EnableBlur { get; internal set; } = true;
+
+    /// <summary>
+    /// 单点模糊, 每个 UI 都单独计算模糊
+    /// </summary>
+    public static bool SingleBlur { get; internal set; } = false;
+
+    /// <summary>
+    /// 开启复古和迷幻效果后将不可用
+    /// </summary>
+    public static bool BlurAvailable => EnableBlur && Lighting.NotRetro;
+
     public static float BlurZoomMultiplierDenominator
     {
-        get; set => field = Math.Max(value, 1f);
+        get; internal set => field = Math.Max(value, 1f);
     } = 2f;
 
-    /// <summary>
-    /// 模糊迭代次数
-    /// </summary>
-    public static int BlurIterationCount { get; set; } = 3;
+    /// <summary> 模糊迭代次数 </summary>
+    public static int BlurIterationCount { get; internal set; } = 3;
 
-    /// <summary>
-    /// 模糊偏移乘数
-    /// </summary>
-    public static float IterationOffsetMultiplier { get; set; } = 2f;
-    public static BlurMixingNumber BlurMixingNumber { get; set; } = BlurMixingNumber.Three;
+    /// <summary> 模糊偏移乘数 </summary>
+    public static float IterationOffsetMultiplier { get; internal set; } = 2f;
+    public static BlurMixingNumber BlurMixingNumber { get; internal set; } = BlurMixingNumber.Three;
 
     /// <summary>
     /// 静态模糊渲染目标，用于存储模糊后的画面
     /// </summary>
     public static RenderTarget2D BlurRenderTarget { get; private set; }
-    public override void Unload() => BlurRenderTarget?.Dispose();
 
-    /// <summary>
-    /// 修改界面层的方法，在界面层列表最前面插入模糊层
-    /// </summary>
-    /// <param name="layers">游戏界面层列表</param>
-    public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
+    public static RenderTarget2D UserInterfaceRenderTarget { get; private set; }
+
+    public override void Unload()
     {
-        if (!EnableBlur) return;
+        Main.RunOnMainThread(() => BlurRenderTarget?.Dispose());
+    }
 
-        var width = (int)Math.Ceiling(Main.screenTarget.Width / BlurZoomMultiplierDenominator);
-        var height = (int)Math.Ceiling(Main.screenTarget.Height / BlurZoomMultiplierDenominator);
-        // 如果模糊渲染目标为空或尺寸不匹配，则重新创建
+    public override void Load()
+    {
+        On_Main.DrawPlayerChatBubbles += On_Main_DrawPlayerChatBubbles;
+
+        On_Main.DrawInterface += On_Main_DrawInterface;
+    }
+
+    private void On_Main_DrawPlayerChatBubbles(On_Main.orig_DrawPlayerChatBubbles orig, Main self)
+    {
+        if (BlurAvailable)
+        {
+            WatchRenderTarget();
+
+            if (SingleBlur)
+            {
+                var batch = Main.spriteBatch;
+                var device = Main.graphics.GraphicsDevice;
+
+                OriginalRenderTargetBindings = device.GetRenderTargets();
+                device.SetRenderTarget(UserInterfaceRenderTarget);
+
+                batch.End();
+
+                batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
+                batch.Draw(Main.screenTarget, Vector2.Zero, null, Color.White);
+            }
+        }
+
+        orig(self);
+    }
+
+    private void On_Main_DrawInterface(On_Main.orig_DrawInterface orig, Main self, GameTime gameTime)
+    {
+        if (!BlurAvailable)
+        {
+            orig(self, gameTime);
+            return;
+        }
+
+        var batch = Main.spriteBatch;
+
+        if (!SingleBlur)
+        {
+            KawaseBlur(Main.screenTarget);
+            orig(self, gameTime);
+            return;
+        }
+
+        orig(self, gameTime);
+
+        var device = Main.graphics.GraphicsDevice;
+        OriginalRenderTargetBindings.RestoreRenderTargets(device);
+
+        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
+        batch.Draw(UserInterfaceRenderTarget, Vector2.Zero, null, Color.White);
+        batch.End();
+    }
+
+    private static void WatchRenderTarget()
+    {
+        var originalWidth = Main.screenTarget.Width;
+        var originalHeight = Main.screenTarget.Height;
+
+        var width = (int)Math.Ceiling(originalWidth / BlurZoomMultiplierDenominator);
+        var height = (int)Math.Ceiling(originalHeight / BlurZoomMultiplierDenominator);
+
+        var device = Main.graphics.GraphicsDevice;
+
         if (BlurRenderTarget is null || BlurRenderTarget.Width != width || BlurRenderTarget.Height != height)
         {
-            BlurRenderTarget?.Dispose(); // 释放旧的渲染目标
-            // 创建新的渲染目标，使用颜色表面格式，无深度缓冲
-            BlurRenderTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            BlurRenderTarget?.Dispose();
+            BlurRenderTarget = new RenderTarget2D(
+                Main.graphics.GraphicsDevice, width, height, false, device.PresentationParameters.BackBufferFormat, DepthFormat.None);
         }
 
-        // 在层列表最前面插入模糊层
-        layers.Insert(0, new BlurMakeLayer(BlurRenderTarget));
-    }
+        if (!SingleBlur) return;
 
-    /// <summary>
-    /// 模糊效果层实现类
-    /// </summary>
-    public class BlurMakeLayer(RenderTarget2D blurRenderTarget) : GameInterfaceLayer("BlurMakeLayer", InterfaceScaleType.UI)
-    {
-        // 模糊渲染目标属性
-        public RenderTarget2D BlurRenderTarget { get; } = blurRenderTarget;
-
-        /// <summary>
-        /// 绘制方法，实现模糊效果
-        /// </summary>
-        /// <returns>总是返回 true，表示绘制成功</returns>
-        public override bool DrawSelf()
+        if (UserInterfaceRenderTarget is null || UserInterfaceRenderTarget.Width != originalWidth || UserInterfaceRenderTarget.Height != originalHeight)
         {
-            var batch = Main.spriteBatch;
-            batch.End(); // 结束当前批处理
-
-            var device = Main.graphics.GraphicsDevice;
-
-            var original = device.GetRenderTargets();
-            device.SetRenderTarget(BlurRenderTarget);
-
-            batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
-            batch.Draw(Main.screenTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, BlurRenderTarget.Size() / Main.screenTarget.Size(), 0, 0f);
-            batch.End();
-
-            original.RestoreRenderTargets(device);
-
-            BlurHelper.KawaseBlur(BlurRenderTarget, BlurIterationCount, BlurZoomMultiplierDenominator, BlurMixingNumber);
-
-            // 重新开始批处理，为后续绘制做准备
-            batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
-
-            return true;
+            UserInterfaceRenderTarget?.Dispose();
+            UserInterfaceRenderTarget = new RenderTarget2D
+                (Main.graphics.GraphicsDevice, originalWidth, originalHeight, false, device.PresentationParameters.BackBufferFormat, DepthFormat.None);
         }
     }
+
+    private static RenderTargetBinding[] OriginalRenderTargetBindings { get; set; }
+
+    public static void KawaseBlur()
+    {
+        BlurHelper.KawaseBlur(UserInterfaceRenderTarget, BlurRenderTarget, BlurIterationCount, IterationOffsetMultiplier, BlurZoomMultiplierDenominator, BlurMixingNumber);
+    }
+
+    public static void KawaseBlur(RenderTarget2D renderTarget)
+    {
+        BlurHelper.KawaseBlur(renderTarget, BlurRenderTarget, BlurIterationCount, IterationOffsetMultiplier, BlurZoomMultiplierDenominator, BlurMixingNumber);
+    }
+
+    ///// <summary>
+    ///// 模糊实现和设置 RenderTarget
+    ///// </summary>
+    //public class BlurMakeLayer() : GameInterfaceLayer("BlurMakeLayer", InterfaceScaleType.UI)
+    //{
+    //    /// <summary>
+    //    /// 绘制方法，实现模糊效果
+    //    /// </summary>
+    //    /// <returns>总是返回 true，表示绘制成功</returns>
+    //    public override bool DrawSelf()
+    //    {
+    //        if (!BlurAvailable) return true;
+
+    //        var batch = Main.spriteBatch;
+
+    //        if (!SingleBlur)
+    //        {
+    //            batch.End();
+    //            KawaseBlur(Main.screenTarget);
+    //            batch.Begin();
+    //        }
+
+    //        return true;
+    //    }
+    //}
+
+    ///// <summary>
+    ///// 恢复 RenderTarget，并渲染当前画面
+    ///// </summary>
+    //public class RestoreRenderTargetLayer() : GameInterfaceLayer("RestoreRenderTargetLayer", InterfaceScaleType.UI)
+    //{
+    //    public override bool DrawSelf()
+    //    {
+    //        var device = Main.graphics.GraphicsDevice;
+    //        OriginalRenderTargetBindings.RestoreRenderTargets(device);
+
+    //        var batch = Main.spriteBatch;
+    //        batch.End();
+
+    //        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
+    //        batch.Draw(UserInterfaceRenderTarget, Vector2.Zero, null, Color.White);
+
+    //        return true;
+    //    }
+    //}
 }

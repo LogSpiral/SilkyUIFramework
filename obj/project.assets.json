@@ -21,6 +21,22 @@
           "build/BepInEx.AssemblyPublicizer.MSBuild.props": {}
         }
       },
+      "SixLabors.ImageSharp/3.1.7": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/SixLabors.ImageSharp.props": {}
+        }
+      },
       "Solaestas.tModLoader.ModBuilder/1.6.1": {
         "type": "package",
         "dependencies": {
@@ -60,6 +76,22 @@
         "lib/netstandard2.1/AsmResolver.dll",
         "lib/netstandard2.1/BepInEx.AssemblyPublicizer.MSBuild.dll",
         "lib/netstandard2.1/BepInEx.AssemblyPublicizer.dll"
+      ]
+    },
+    "SixLabors.ImageSharp/3.1.7": {
+      "sha512": "9fIOOAsyLFid6qKypM2Iy0Z3Q9yoanV8VoYAHtI2sYGMNKzhvRTjgFDHonIiVe+ANtxIxM6SuqUzj0r91nItpA==",
+      "type": "package",
+      "path": "sixlabors.imagesharp/3.1.7",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "build/SixLabors.ImageSharp.props",
+        "lib/net6.0/SixLabors.ImageSharp.dll",
+        "lib/net6.0/SixLabors.ImageSharp.xml",
+        "sixlabors.imagesharp.128.png",
+        "sixlabors.imagesharp.3.1.7.nupkg.sha512",
+        "sixlabors.imagesharp.nuspec"
       ]
     },
     "Solaestas.tModLoader.ModBuilder/1.6.1": {
@@ -111,6 +143,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "SixLabors.ImageSharp >= 3.1.7",
       "Solaestas.tModLoader.ModBuilder >= 1.6.1",
       "tModLoader.CodeAssist >= 0.1.*"
     ]
@@ -165,6 +198,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "SixLabors.ImageSharp": {
+            "target": "Package",
+            "version": "[3.1.7, )"
+          },
           "Solaestas.tModLoader.ModBuilder": {
             "target": "Package",
             "version": "[1.6.1, )"

@@ -23,11 +23,21 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = Localization\en-US_Mods.SilkyUIFramework.hjson
 
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Localization/zh-Hans_Mods.SilkyUIFramework.hjson]
+build_metadata.AdditionalFiles.Pack = true
+build_metadata.AdditionalFiles.ModPath = Localization\zh-Hans_Mods.SilkyUIFramework.hjson
+
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.vs/SilkyUIFramework/ColorByRegexConfig.txt]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = .vs\SilkyUIFramework\ColorByRegexConfig.txt
 build_metadata.AdditionalFiles.ModPath = .vs\SilkyUIFramework\ColorByRegexConfig.txt
+
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/.vs/SilkyUIFramework/v17/HierarchyCache.v1.txt]
+build_metadata.AdditionalFiles.Pack = true
+build_metadata.AdditionalFiles.Pack = true
+build_metadata.AdditionalFiles.ModPath = .vs\SilkyUIFramework\v17\HierarchyCache.v1.txt
+build_metadata.AdditionalFiles.ModPath = .vs\SilkyUIFramework\v17\HierarchyCache.v1.txt
 
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/build.txt]
 build_metadata.AdditionalFiles.Pack = true
@@ -52,6 +62,10 @@ build_metadata.AdditionalFiles.ModPath = Assets\Images\PreviewBorder.png
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/icon.png]
 build_metadata.AdditionalFiles.Pack = true
 build_metadata.AdditionalFiles.ModPath = icon.png
+
+[C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Assets/Shader/BlurEffect.fx]
+build_metadata.AdditionalFiles.Pack = false
+build_metadata.AdditionalFiles.ModPath = Assets\Shader\BlurEffect.fx
 
 [C:/Users/48766/Documents/My Games/Terraria/tModLoader/ModSources/SilkyUIFramework/Graphics2D/ColorBlock.fx]
 build_metadata.AdditionalFiles.Pack = false

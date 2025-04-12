@@ -174,8 +174,8 @@ public class UITextView : UIView
         if (WordWrap)
         {
             // 进行换行
-            TextSnippetHelper.WordWrapString(converted, FinalSnippets,
-                TextColor, Font, maxWidth, MaxWordLength, MaxLines);
+            TextSnippetHelper.WordWrapString(converted,
+                FinalSnippets, Color.White, Font, maxWidth, MaxWordLength, MaxLines);
         }
         else
         {
@@ -225,7 +225,7 @@ public class UITextView : UIView
         (SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
     {
         DrawColorCodedString(spriteBatch, Font, finalSnippets,
-            textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out _, -1f);
+            textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out _, -1f, ignoreColors: true);
     }
 
     protected virtual float GetFontOffset()

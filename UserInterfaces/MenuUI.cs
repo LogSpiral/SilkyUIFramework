@@ -1,5 +1,4 @@
-﻿
-namespace SilkyUIFramework.UserInterfaces;
+﻿namespace SilkyUIFramework.UserInterfaces;
 
 #if DEBUG
 
@@ -29,22 +28,30 @@ public class MenuUI : BasicBody
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        //var device = Main.graphics.GraphicsDevice;
-        //var batch = Main.spriteBatch;
-        //var screenTarget = Main.screenTarget;
-
-        //batch.End();
-
-        //BlurHelper.KawaseBlur(screenTarget, 4, 2f, BlurType.Three);
-
-        //batch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp,
-        //    null, SilkyUI.RasterizerStateForOverflowHidden, null, Matrix.Identity);
-
         RectangleRender.ShadowColor = SUIColor.Border * 0.15f; // HoverTimer.Lerp(0f, 0.25f);
         RectangleRender.ShadowSize = 0f; // HoverTimer.Lerp(0f, 20f);
         RectangleRender.ShadowBlurSize = 0f; // HoverTimer.Lerp(0f, 20f);
 
         base.UpdateStatus(gameTime);
+    }
+
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        if (BlurMakeSystem.BlurAvailable)
+        {
+            if (BlurMakeSystem.SingleBlur)
+            {
+                var batch = Main.spriteBatch;
+                batch.End();
+                BlurMakeSystem.KawaseBlur();
+                batch.Begin();
+            }
+
+            SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget,
+                Bounds.Position * Main.UIScale, Bounds.Size * Main.UIScale, BorderRadius * Main.UIScale, Matrix.Identity);
+        }
+
+        base.Draw(gameTime, spriteBatch);
     }
 }
 

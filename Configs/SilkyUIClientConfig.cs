@@ -27,9 +27,12 @@ public class SilkyUIClientConfig : ModConfig
     [DefaultValue(true)]
     public bool EnableBlur;
 
+    [DefaultValue(false)]
+    public bool SingleBlur;
+
     [Slider]
     [DefaultValue(2f)]
-    [Range(1f, 4f)]
+    [Range(1f, 8f)]
     [Increment(0.5f)]
     public float BlurZoomMultiplierDenominator;
 
@@ -55,6 +58,7 @@ public class SilkyUIClientConfig : ModConfig
         UITextView.MouseTextOffset = MouseTextOffset;
 
         BlurMakeSystem.EnableBlur = EnableBlur;
+        BlurMakeSystem.SingleBlur = SingleBlur;
         BlurMakeSystem.BlurZoomMultiplierDenominator = BlurZoomMultiplierDenominator;
         BlurMakeSystem.BlurIterationCount = BlurIterationCount;
         BlurMakeSystem.IterationOffsetMultiplier = IterationOffsetMultiplier;
