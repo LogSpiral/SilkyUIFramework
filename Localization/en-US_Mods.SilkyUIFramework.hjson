@@ -1,56 +1,66 @@
-{
-    Configs:
-    {
-        SilkyUIClientConfig:
-        {
-            DisplayName: Client Configuration
-            DeathTextOffset:
-            {
-                Label: DeathText Offset
-                Tooltip: ""
-            }
-            EnableBlur:
-            {
-                Label: Enable Blur Effect (Not Effective in Retro Mode)
-                Tooltip: "For high-resolution screens, it is recommended to increase the denominator of the zoom multiplier.  "
-            }
-            SingleBlur:
-            {
-                Label: Independent Window Blur
-                Tooltip: Each UI element blurs separately for better effects, but may have compatibility issues.
-            }
-            BlurZoomMultiplierDenominator:
-            {
-                Label: Zoom Multiplier Denominator (Higher Values Reduce Consumption)
-                Tooltip:
-                    '''
-                    The larger the value, the smaller the processed image.  
-                    If experiencing lag, try increasing this value.  
-                    For standard GPUs with 4K resolution, a value of 4 is recommended.  
-                    High-end GPUs can be set directly to 1.  
-                    Setting it to 1 renders at the original resolution.  
-                    Reducing this value affects the blur range, so adjustments may be needed below.  
-                    '''
-            }
-            BlurIterationCount:
-            {
-                Label: Iteration Count (Higher Values Increase Consumption)
-                Tooltip:
-                    '''
-                    The larger the value, the more times the blur process is applied, resulting in stronger blurring.  
-                    If experiencing lag, try reducing this value.  
-                    '''
-            }
-            IterationOffsetMultiplier:
-            {
-                Label: Sampling Offset Multiplier (Performance Independent)
-                Tooltip: Higher values result in stronger blurring but may cause streaking.
-            }
-            BlurMixingNumber:
-            {
-                Label: Color Mixing Number (Higher Values Increase Consumption)
-                Tooltip: Higher values increase color sampling.
-            }
-        }
-    }
+Configs: {
+	SilkyUIClientConfig: {
+		DisplayName: Client Configuration
+
+		DeathTextOffset: {
+			Label: DeathText Offset
+			Tooltip: ""
+		}
+
+		EnableBlur: {
+			Label: Enable Blur Effect (Not Effective in Retro Mode)
+			Tooltip: "For high-resolution screens, it is recommended to increase the denominator of the zoom multiplier.  "
+		}
+
+		SingleBlur: {
+			Label: Independent Window Blur
+			Tooltip: Each UI element blurs separately for better effects, but may have compatibility issues.
+		}
+
+		BlurZoomMultiplierDenominator: {
+			Label: Zoom Multiplier Denominator (Higher Values Reduce Consumption)
+			Tooltip:
+				'''
+				The larger the value, the smaller the processed image.  
+				If experiencing lag, try increasing this value.  
+				For standard GPUs with 4K resolution, a value of 4 is recommended.  
+				High-end GPUs can be set directly to 1.  
+				Setting it to 1 renders at the original resolution.  
+				Reducing this value affects the blur range, so adjustments may be needed below.  
+				'''
+		}
+
+		BlurIterationCount: {
+			Label: Iteration Count (Higher Values Increase Consumption)
+			Tooltip:
+				'''
+				The larger the value, the more times the blur process is applied, resulting in stronger blurring.  
+				If experiencing lag, try reducing this value.  
+				'''
+		}
+
+		IterationOffsetMultiplier: {
+			Label: Sampling Offset Multiplier (Performance Independent)
+			Tooltip: Higher values result in stronger blurring but may cause streaking.
+		}
+
+		BlurMixingNumber: {
+			Label: Color Mixing Number (Higher Values Increase Consumption)
+			Tooltip: Higher values increase color sampling.
+		}
+
+		MouseTextOffset: {
+			Label: Mouse Text Offset
+			Tooltip: ""
+		}
+	}
+
+	BlurMixingNumber: {
+		Tooltip: ""
+		One.Label: One
+		Two.Label: Two
+		Three.Label: Three
+		Four.Label: Four
+		Five.Label: Five
+	}
 }
