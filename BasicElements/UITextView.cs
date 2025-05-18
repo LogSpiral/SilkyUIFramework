@@ -110,6 +110,7 @@ public class UITextView : UIView
     public Vector2 TextPercentOffset { get; set; } = Vector2.Zero;
     public Vector2 TextPercentOrigin { get; set; } = Vector2.Zero;
     public Vector2 TextAlign { get; set; } = Vector2.Zero;
+    public bool IgnoreTextColor { get; set; } = false;
 
     #endregion
 
@@ -225,7 +226,7 @@ public class UITextView : UIView
         (SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
     {
         DrawColorCodedString(spriteBatch, Font, finalSnippets,
-            textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out _, -1f, ignoreColors: true);
+            textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out _, -1f, ignoreColors: IgnoreTextColor);
     }
 
     protected virtual float GetFontOffset()
