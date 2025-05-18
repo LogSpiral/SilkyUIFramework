@@ -13,12 +13,6 @@ public enum MouseButtonType
     Right
 }
 
-public enum MouseEventType
-{
-    Down,
-    Up
-}
-
 public class MouseStatus
 {
     private readonly bool[] _buttons = new bool[3];
@@ -126,8 +120,10 @@ public class SilkyUI
                 MouseHoverTarget?.OnMouseEnter(new UIMouseEvent(MouseHoverTarget, MousePosition));
             }
 
+            var mouseButtons = Enum.GetValues(typeof(MouseButtonType)).Cast<MouseButtonType>().ToArray();
+
             // 遍历三种鼠标按键：左键、右键和中键
-            foreach (MouseButtonType mouseButton in Enum.GetValues(typeof(MouseButtonType)))
+            foreach (MouseButtonType mouseButton in mouseButtons)
             {
                 if (_mouseStatus[mouseButton])
                 {
@@ -141,14 +137,16 @@ public class SilkyUI
 
                         // 设置焦点元素
                         if (!hasFocusTarget) SetFocus(MouseHoverTarget);
-                        HandleMouseEvent(MouseEventType.Down, mouseButton);
+                        HandleMousePressEvent(mouseButton);
+                        LastMouseTargets[mouseButton] = MouseHoverTarget;
                     }
                 }
                 else
                 {
                     if (_lastMouseStatus[mouseButton])
                     {
-                        HandleMouseEvent(MouseEventType.Up, mouseButton);
+                        HandleMouseReleaseEvent(mouseButton);
+                        LastMouseTargets[mouseButton] = MouseHoverTarget;
                     }
                 }
             }
@@ -159,79 +157,76 @@ public class SilkyUI
                 MouseHoverTarget?.OnMouseWheel(new UIScrollWheelEvent(MouseHoverTarget, MousePosition,
                     PlayerInput.ScrollWheelDeltaForUI));
             }
-            // UI 中的普通更新
+
             BasicBody.HandleUpdate(gameTime);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            SilkyUIFramework.Instance.Logger.Error("SilkyUI Update Error", ex);
         }
 
         return true;
     }
 
-    #region HandleMouseEvent
+    #region Handle Mouse Event
 
-    #region Switch Mouse Events
-
-    private static Action<UIMouseEvent> GetMouseDownEvent(MouseButtonType mouseButtonType, UIView element)
+    private void HandleMousePressEvent(MouseButtonType mouseButton)
     {
-        if (element is null) return null;
-        return mouseButtonType switch
-        {
-            MouseButtonType.Left => element.OnLeftMouseDown,
-            MouseButtonType.Right => element.OnRightMouseDown,
-            MouseButtonType.Middle => element.OnMiddleMouseDown,
-            _ => null,
-        };
-    }
+        if (MouseHoverTarget is null) return;
 
-    private static Action<UIMouseEvent> GetMouseUpEvent(MouseButtonType mouseButtonType, UIView element)
-    {
-        if (element is null) return null;
-        return mouseButtonType switch
-        {
-            MouseButtonType.Left => element.OnLeftMouseUp,
-            MouseButtonType.Right => element.OnRightMouseUp,
-            MouseButtonType.Middle => element.OnMiddleMouseUp,
-            _ => null,
-        };
-    }
-
-    private static Action<UIMouseEvent> GetMouseClickEvent(MouseButtonType mouseButtonType, UIView element)
-    {
-        if (element is null) return null;
-        return mouseButtonType switch
-        {
-            MouseButtonType.Left => element.OnLeftMouseClick,
-            MouseButtonType.Right => element.OnRightMouseClick,
-            MouseButtonType.Middle => element.OnMiddleMouseClick,
-            _ => null,
-        };
-    }
-
-    #endregion
-
-    private void HandleMouseEvent(MouseEventType eventType, MouseButtonType mouseButton)
-    {
-
-        switch (eventType)
+        switch (mouseButton)
         {
             default:
-            case MouseEventType.Down:
-                GetMouseDownEvent(mouseButton, MouseHoverTarget)?.Invoke(new UIMouseEvent(MouseHoverTarget, MousePosition));
                 break;
-            case MouseEventType.Up:
-                GetMouseUpEvent(mouseButton, LastMouseTargets[mouseButton])?.Invoke(new UIMouseEvent(LastMouseTargets[mouseButton], MousePosition));
+            case MouseButtonType.Left:
+                MouseHoverTarget.OnLeftMouseDown(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                break;
+            case MouseButtonType.Middle:
+                MouseHoverTarget.OnMiddleMouseDown(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                break;
+            case MouseButtonType.Right:
+                MouseHoverTarget.OnRightMouseDown(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                break;
+        }
+    }
 
-                if (LastMouseTargets[mouseButton] == MouseHoverTarget)
-                {
-                    GetMouseClickEvent(mouseButton, MouseHoverTarget)?.Invoke(new UIMouseEvent(MouseHoverTarget, MousePosition));
-                }
+    private void HandleMouseReleaseEvent(MouseButtonType mouseButton)
+    {
+        if (MouseHoverTarget is null) return;
+
+        switch (mouseButton)
+        {
+            default:
+                break;
+            case MouseButtonType.Left:
+                MouseHoverTarget.OnLeftMouseUp(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                break;
+            case MouseButtonType.Middle:
+                MouseHoverTarget.OnMiddleMouseUp(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                break;
+            case MouseButtonType.Right:
+                MouseHoverTarget.OnRightMouseUp(new UIMouseEvent(MouseHoverTarget, MousePosition));
                 break;
         }
 
-        LastMouseTargets[mouseButton] = MouseHoverTarget;
+        // 抬起时如果鼠标仍然在目标元素上，则触发点击事件
+        if (LastMouseTargets[mouseButton] == MouseHoverTarget)
+        {
+            switch (mouseButton)
+            {
+                default:
+                    break;
+                case MouseButtonType.Left:
+                    MouseHoverTarget.OnLeftMouseClick(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                    break;
+                case MouseButtonType.Middle:
+                    MouseHoverTarget.OnMiddleMouseClick(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                    break;
+                case MouseButtonType.Right:
+                    MouseHoverTarget.OnRightMouseClick(new UIMouseEvent(MouseHoverTarget, MousePosition));
+                    break;
+            }
+        }
     }
 
     #endregion

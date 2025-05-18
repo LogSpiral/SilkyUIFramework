@@ -99,6 +99,7 @@ public abstract partial class BasicBody : UIElementGroup
     {
         var newScreenSize = GraphicsDeviceHelper.GetBackBufferSizeByUIScale();
         if (oldScreenSize == newScreenSize) return;
+
         OnScreenSizeChanged(newScreenSize, oldScreenSize);
         oldScreenSize = newScreenSize;
     }

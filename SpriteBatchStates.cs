@@ -1,26 +1,26 @@
-namespace SilkyUIFramework;
+ï»¿namespace SilkyUIFramework;
 
 public class RenderStates
 {
     private RenderStates() { }
 
     /// <summary>
-    /// »ìºÏÄ£Ê½
+    /// æ··åˆæ¨¡å¼
     /// </summary>
     public BlendState BlendState { get; private set; }
 
     /// <summary>
-    /// ²ÉÑù×´Ì¬
+    /// é‡‡æ ·çŠ¶æ€
     /// </summary>
     public SamplerState SamplerState { get; private set; }
 
     /// <summary>
-    /// Éî¶È
+    /// æ·±åº¦
     /// </summary>
     public DepthStencilState DepthStencilState { get; private set; }
 
     /// <summary>
-    /// ¹âÕ¤»¯
+    /// å…‰æ …åŒ–
     /// </summary>
     public RasterizerState RasterizerState { get; private set; }
     public Matrix Matrix { get; private set; }
