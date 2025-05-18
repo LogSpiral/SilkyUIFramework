@@ -60,7 +60,11 @@ public partial class UIElementGroup
     {
         ClassifyChildren();
 
-        if (LayoutChildren.Count <= 0) return;
+        if (LayoutChildren.Count <= 0)
+        {
+            FlexLines.Clear();
+            return;
+        }
 
         float? spaceWidth = FitWidth ? null : InnerBounds.Width;
         float? spaceHeight = FitHeight ? null : InnerBounds.Height;
@@ -128,7 +132,7 @@ public partial class UIElementGroup
                 if (FitWidth)
                     DefineInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
                 if (FitHeight)
-                    DefineInnerBoundsHeight(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
+                    DefineInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
 
                 break;
             }
@@ -138,7 +142,7 @@ public partial class UIElementGroup
                 if (FitWidth)
                     DefineInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
                 if (FitHeight)
-                    DefineInnerBoundsHeight(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
+                    DefineInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
 
                 break;
             }
