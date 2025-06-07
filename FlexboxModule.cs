@@ -2,61 +2,72 @@
 
 public static class FlexboxModule
 {
-    public static void WrapRow(this List<UIView> elements, List<FlexLine> flexLines, float maxMainAxisSize, float gap)
+    #region extensions List<UIView>
+    extension(List<UIView> elements)
     {
-        flexLines.Clear();
-        var element = elements[0];
-        var flexLine = new FlexLine(element, element.OuterBounds.Width, element.OuterBounds.Height);
-
-        for (var i = 1; i < elements.Count; i++)
+        /// <summary>
+        /// 对一组元素以行模式进行换行
+        /// </summary>
+        public void WrapRow(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
         {
-            element = elements[i];
+            flexLines.Clear();
+            var element = elements[0];
+            var flexLine = new FlexLine(element, element.OuterBounds.Width, element.OuterBounds.Height);
 
-            var mainAxisSize = element.OuterBounds.Width;
-            var crossAxisSize = element.OuterBounds.Height;
-
-            if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
+            for (var i = 1; i < elements.Count; i++)
             {
-                flexLines.Add(flexLine);
-                flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
-                continue;
+                element = elements[i];
+
+                var mainAxisSize = element.OuterBounds.Width;
+                var crossAxisSize = element.OuterBounds.Height;
+
+                if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
+                {
+                    flexLines.Add(flexLine);
+                    flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
+                    continue;
+                }
+
+                flexLine.Elements.Add(element);
+                flexLine.MainSize += mainAxisSize + gap;
+                flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
             }
 
-            flexLine.Elements.Add(element);
-            flexLine.MainSize += mainAxisSize + gap;
-            flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
+            flexLines.Add(flexLine);
         }
 
-        flexLines.Add(flexLine);
-    }
-
-    public static void WrapColumn(this List<UIView> elements, List<FlexLine> flexLines, float maxMainAxisSize, float gap)
-    {
-        flexLines.Clear();
-        var element = elements[0];
-        var flexLine = new FlexLine(element, element.OuterBounds.Height, element.OuterBounds.Width);
-
-        for (var i = 1; i < elements.Count; i++)
+        /// <summary>
+        /// 对一组元素以列模式进行换行
+        /// </summary>
+        public void WrapColumn(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
         {
-            element = elements[i];
+            flexLines.Clear();
+            var element = elements[0];
+            var flexLine = new FlexLine(element, element.OuterBounds.Height, element.OuterBounds.Width);
 
-            var mainAxisSize = element.OuterBounds.Height;
-            var crossAxisSize = element.OuterBounds.Width;
-
-            if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
+            for (var i = 1; i < elements.Count; i++)
             {
-                flexLines.Add(flexLine);
-                flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
-                continue;
+                element = elements[i];
+
+                var mainAxisSize = element.OuterBounds.Height;
+                var crossAxisSize = element.OuterBounds.Width;
+
+                if (flexLine.MainSize + mainAxisSize + gap > maxMainAxisSize)
+                {
+                    flexLines.Add(flexLine);
+                    flexLine = new FlexLine(element, mainAxisSize, crossAxisSize);
+                    continue;
+                }
+
+                flexLine.Elements.Add(element);
+                flexLine.MainSize += mainAxisSize + gap;
+                flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
             }
 
-            flexLine.Elements.Add(element);
-            flexLine.MainSize += mainAxisSize + gap;
-            flexLine.CrossSize = MathF.Max(flexLine.CrossSize, crossAxisSize);
+            flexLines.Add(flexLine);
         }
-
-        flexLines.Add(flexLine);
     }
+    #endregion
 
     public static void MeasureSize(this List<FlexLine> flexLines, float gap, out float mainAxisSize, out float crossAxisSize)
     {
@@ -74,23 +85,23 @@ public static class FlexboxModule
 
     public static void RefreshMainSizeByRow(this List<FlexLine> flexLines, float gap)
     {
-        Parallel.ForEach(flexLines, flexLine =>
+        foreach (var flexLine in flexLines)
         {
             flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
-        });
+        }
     }
 
     public static void RefreshMainSizeByColumn(this List<FlexLine> flexLines, float gap)
     {
-        Parallel.ForEach(flexLines, flexLine =>
+        foreach (var flexLine in flexLines)
         {
             flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(gap);
-        });
+        }
     }
 
     public static void GrowOrShrinkByRow(this List<FlexLine> flexLines, Size innerSize, float gap)
     {
-        Parallel.ForEach(flexLines, flexLine =>
+        foreach (var flexLine in flexLines)
         {
             var remaining = innerSize.Width - flexLine.MainSize;
             switch (remaining)
@@ -144,13 +155,13 @@ public static class FlexboxModule
             }
 
             flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
-        });
+        }
     }
 
     public static void GrowOrShrinkByColumn(this List<FlexLine> flexLines, Size innerSize, float gap)
     {
         // 主轴 grow 或 shrink
-        Parallel.ForEach(flexLines, flexLine =>
+        foreach (var flexLine in flexLines)
         {
             var remaining = innerSize.Height - flexLine.MainSize;
 
@@ -213,7 +224,7 @@ public static class FlexboxModule
                 }
                 default: break;
             }
-        });
+        }
     }
 
     public static void ResizeCrossAxis(this List<FlexLine> flexLines,
@@ -349,58 +360,3 @@ public static class FlexboxModule
         CrossAlignment.Stretch or CrossAlignment.Start or _ => 0f,
     };
 }
-
-#region enums
-
-public enum FlexDirection
-{
-    Row,
-    Column,
-}
-
-/// <summary> 主轴对其方式 </summary>
-public enum MainAlignment
-{
-    /// <summary> 总体靠左 </summary>
-    Start,
-
-    /// <summary> 总体靠右 </summary>
-    End,
-
-    /// <summary> 总体居中 </summary>
-    Center,
-
-    /// <summary> 平分空间 </summary>
-    SpaceEvenly,
-
-    /// <summary> 两端对齐 </summary>
-    SpaceBetween,
-}
-
-/// <summary> 交叉轴对齐方式 </summary>
-public enum CrossAlignment
-{
-    /// <summary> 总体靠上 </summary>
-    Start,
-
-    /// <summary> 总体居中 </summary>
-    Center,
-
-    /// <summary> 总体靠下 </summary>
-    End,
-
-    /// <summary> 拉伸 </summary>
-    Stretch,
-}
-
-public enum CrossContentAlignment
-{
-    Start,
-    Center,
-    End,
-    SpaceEvenly,
-    SpaceBetween,
-    Stretch,
-}
-
-#endregion

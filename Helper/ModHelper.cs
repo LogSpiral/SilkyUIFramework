@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SilkyUIFramework.Helper;
+namespace SilkyUIFramework.Helpers;
 
 public static class ModHelper
 {

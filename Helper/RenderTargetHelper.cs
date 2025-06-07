@@ -1,43 +1,47 @@
-﻿namespace SilkyUIFramework.Helper;
+﻿namespace SilkyUIFramework.Helpers;
 
 public static class RenderTargetHelper
 {
-    public static void RestoreRenderTargets(this RenderTargetBinding[] original, GraphicsDevice device)
+    extension(RenderTargetBinding[] bindings)
     {
-        if (original is null || original.Length == 0)
-        {
-            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            device.SetRenderTarget(null);
-            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.DiscardContents;
-        }
-        else
-        {
-            var records = original.RecordUsage();
-            device.SetRenderTargets(original);
-            records.RestoreUsage();
-        }
-    }
 
-
-    /// <summary>
-    /// 记录原来 RenderTargetUsage, 并全部设为 PreserveContents 防止设置新的 RenderTarget 时候消失
-    /// </summary>
-    public static Dictionary<RenderTargetBinding, RenderTargetUsage?> RecordUsage(this RenderTargetBinding[] bindings)
-    {
-        if (bindings is null || bindings.Length == 0) return null;
-
-        var rtUsageRecords = new Dictionary<RenderTargetBinding, RenderTargetUsage?>();
-        foreach (var item in bindings)
+        public void RestoreRenderTargets(GraphicsDevice device)
         {
-            if (item.RenderTarget is RenderTarget2D rt)
+            if (bindings is null || bindings.Length == 0)
             {
-                rtUsageRecords[item] = rt.RenderTargetUsage;
-                rt.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+                device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+                device.SetRenderTarget(null);
+                device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.DiscardContents;
             }
-            else rtUsageRecords[item] = null;
+            else
+            {
+                var records = bindings.RecordUsage();
+                device.SetRenderTargets(bindings);
+                records.RestoreUsage();
+            }
         }
 
-        return rtUsageRecords;
+
+        /// <summary>
+        /// 记录原来 RenderTargetUsage, 并全部设为 PreserveContents 防止设置新的 RenderTarget 时候消失
+        /// </summary>
+        public Dictionary<RenderTargetBinding, RenderTargetUsage?> RecordUsage()
+        {
+            if (bindings is null || bindings.Length == 0) return null;
+
+            var rtUsageRecords = new Dictionary<RenderTargetBinding, RenderTargetUsage?>();
+            foreach (var item in bindings)
+            {
+                if (item.RenderTarget is RenderTarget2D rt)
+                {
+                    rtUsageRecords[item] = rt.RenderTargetUsage;
+                    rt.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+                }
+                else rtUsageRecords[item] = null;
+            }
+
+            return rtUsageRecords;
+        }
     }
 
     /// <summary>

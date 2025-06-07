@@ -2,6 +2,10 @@ using Terraria.UI.Chat;
 
 namespace SilkyUIFramework;
 
+/// <summary>
+/// 光标片段，用于 EditText 中闪烁的光标
+/// </summary>
+/// <param name="editText"></param>
 public class CursorSnippet(SUIEditText editText) : TextSnippet
 {
     public override float GetStringLength(DynamicSpriteFont font) => 0f;
@@ -11,6 +15,7 @@ public class CursorSnippet(SUIEditText editText) : TextSnippet
         SpriteBatch spriteBatch, Vector2 position = new(), Color color = new(), float scale = 1)
     {
         size = new Vector2(0, 20f) * editText.TextScale;
+
         if (editText.CanDrawCursor)
         {
             spriteBatch?.Draw(TextureAssets.MagicPixel.Value, position,

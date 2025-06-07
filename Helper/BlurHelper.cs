@@ -1,7 +1,10 @@
-﻿namespace SilkyUIFramework.Helper;
+﻿namespace SilkyUIFramework.Helpers;
 
 public enum BlurMixingNumber { One, Two, Three, Four, Five }
 
+/// <summary>
+/// 实现模糊效果的帮助类
+/// </summary>
 public static class BlurHelper
 {
     /// <summary>

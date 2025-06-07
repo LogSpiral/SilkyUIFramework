@@ -6,7 +6,7 @@ global using SilkyUIFramework.Attributes;
 global using SilkyUIFramework.BasicElements;
 global using SilkyUIFramework.Extensions;
 global using SilkyUIFramework.Graphics2D;
-global using SilkyUIFramework.Helper;
+global using SilkyUIFramework.Helpers;
 global using Terraria;
 global using Terraria.Audio;
 global using Terraria.GameContent;

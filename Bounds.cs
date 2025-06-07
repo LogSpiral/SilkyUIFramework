@@ -20,12 +20,12 @@ public struct Bounds
         _height = height;
     }
 
-    public Bounds(Vector2 position, Vector2 size)
+    public Bounds(Vector2 position, Size size)
     {
         _x = position.X;
         _y = position.Y;
-        _width = size.X;
-        _height = size.Y;
+        _width = size.Width;
+        _height = size.Height;
     }
 
     public float X { readonly get => _x; set => _x = value; }

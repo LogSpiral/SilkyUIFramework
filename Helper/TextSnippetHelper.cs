@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.Helper;
+namespace SilkyUIFramework.Helpers;
 
 public static class TextSnippetHelper
 {

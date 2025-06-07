@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.Helper;
+﻿namespace SilkyUIFramework.Helpers;
 
 public class NineGrid
 {

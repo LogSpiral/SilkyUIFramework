@@ -2,7 +2,7 @@ namespace SilkyUIFramework;
 
 public class FlexLine
 {
-    public readonly List<UIView> Elements;
+    public List<UIView> Elements { get; }
 
     public FlexLine(UIView firstElement, float mainSize = 0, float crossSize = 0)
     {

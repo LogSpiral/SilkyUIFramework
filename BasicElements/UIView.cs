@@ -322,13 +322,20 @@ public partial class UIView
             OuterBounds.Y = Math.Min(OuterBounds.Y, container.Y + container.Height - OuterBounds.Height - Sticky.W);
     }
 
-    protected internal Bounds Bounds;
-    protected internal Bounds InnerBounds;
-    protected internal Bounds OuterBounds;
+    /// <summary>
+    /// 布局计算后的最终值，为了方便编自定义布局，公开此字段
+    /// </summary>
+    public Bounds Bounds;
 
-    public Bounds GetBounds() => Bounds;
-    public Bounds GetInnerBounds() => InnerBounds;
-    public Bounds GetOuterBounds() => OuterBounds;
+    /// <summary>
+    /// 布局计算后的最终值，为了方便编自定义布局，公开此字段
+    /// </summary>
+    public Bounds InnerBounds;
+
+    /// <summary>
+    /// 布局计算后的最终值，为了方便编自定义布局，公开此字段
+    /// </summary>
+    public Bounds OuterBounds;
 
     public event Action<GameTime> OnUpdateStatus;
 

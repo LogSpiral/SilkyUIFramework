@@ -53,9 +53,9 @@ public class SUIDraggableView : UIElementGroup
             if (ConstrainInParent && ControlTarget.Parent != null)
             {
                 // 获取父元素的内部边界  
-                var parentBounds = ControlTarget.Parent.GetInnerBounds();
+                var parentBounds = ControlTarget.Parent.InnerBounds;
                 // 获取控制目标的外部边界（不包含拖拽偏移）  
-                var targetBounds = ControlTarget.GetOuterBounds();
+                var targetBounds = ControlTarget.OuterBounds;
                 var originalX = targetBounds.X - ControlTarget.DragOffset.X;
                 var originalY = targetBounds.Y - ControlTarget.DragOffset.Y;
 
