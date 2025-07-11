@@ -35,6 +35,13 @@ public class UITextView : UIView
     private int _maxLines = -1;
     private float _textScale = 1f;
 
+    public delegate void InputHandler(ref string text);
+
+    /// <summary>
+    /// 当输入内容更改时触发
+    /// </summary>
+    public event InputHandler OnInput;
+
     public event Action OnTextChanged;
 
     public string Text
@@ -42,8 +49,15 @@ public class UITextView : UIView
         get => _text;
         set
         {
-            if (_text.Equals(value)) return;
-            _text = value;
+            var text = value ?? "";
+
+            if (text != _text)
+                OnInput?.Invoke(ref text);
+
+            text ??= "";
+
+            if (_text.Equals(text)) return;
+            _text = text;
             MarkLayoutDirty();
             OnTextChanged?.Invoke();
         }
@@ -225,6 +239,7 @@ public class UITextView : UIView
     protected virtual void DrawTextSelf
         (SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
     {
+        
         DrawColorCodedString(spriteBatch, Font, finalSnippets,
             textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out _, -1f, ignoreColors: IgnoreTextColor);
     }
@@ -251,7 +266,7 @@ public class UITextView : UIView
         foreach (var offset in ShadowOffsets)
         {
             DrawColorCodedString(spriteBatch, font, snippets, position + offset * spread, baseColor,
-                rotation, origin, baseScale, out var _, maxWidth, ignoreColors: true);
+                rotation, origin, baseScale, out _, maxWidth, ignoreColors: true);
         }
     }
 

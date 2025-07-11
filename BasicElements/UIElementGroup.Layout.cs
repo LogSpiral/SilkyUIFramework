@@ -327,12 +327,14 @@ public partial class UIElementGroup
                     if (FlexWrap)
                     {
                         var maxMainAxisSize = innerSize.Height;
-                        LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Height);
+                        LayoutChildren.WrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
                     }
                     else
                     {
                         FlexLines.RefreshMainSizeByColumn(Gap.Width);
                     }
+
+                    FlexLines.ResizeCrossAxis(CrossContentAlignment, InnerBounds.Width, Gap.Width);
 
                     FlexLines.GrowOrShrinkByColumn(innerSize, Gap.Height);
                     break;
