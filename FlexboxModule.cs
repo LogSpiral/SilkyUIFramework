@@ -8,7 +8,7 @@ public static class FlexboxModule
         /// <summary>
         /// 对一组元素以行模式进行换行
         /// </summary>
-        public void WrapRow(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
+        public void FlexWrapRow(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
         {
             flexLines.Clear();
             var element = elements[0];
@@ -39,7 +39,7 @@ public static class FlexboxModule
         /// <summary>
         /// 对一组元素以列模式进行换行
         /// </summary>
-        public void WrapColumn(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
+        public void FlexWrapColumn(List<FlexLine> flexLines, float maxMainAxisSize, float gap)
         {
             flexLines.Clear();
             var element = elements[0];
@@ -83,23 +83,23 @@ public static class FlexboxModule
         crossAxisSize += (flexLines.Count - 1) * gap;
     }
 
-    public static void RefreshMainSizeByRow(this List<FlexLine> flexLines, float gap)
+    public static void RefreshMainSizeByRowMode(this List<FlexLine> flexLines, float gap)
     {
         foreach (var flexLine in flexLines)
         {
-            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
+            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.GetFenceGap(gap);
         }
     }
 
-    public static void RefreshMainSizeByColumn(this List<FlexLine> flexLines, float gap)
+    public static void RefreshMainSizeByColumnMode(this List<FlexLine> flexLines, float gap)
     {
         foreach (var flexLine in flexLines)
         {
-            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(gap);
+            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(gap);
         }
     }
 
-    public static void GrowOrShrinkByRow(this List<FlexLine> flexLines, Size innerSize, float gap)
+    public static void GrowOrShrinkByRowMode(this List<FlexLine> flexLines, Size innerSize, float gap)
     {
         foreach (var flexLine in flexLines)
         {
@@ -154,11 +154,11 @@ public static class FlexboxModule
                 default: break;
             }
 
-            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.FenceGap(gap);
+            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.GetFenceGap(gap);
         }
     }
 
-    public static void GrowOrShrinkByColumn(this List<FlexLine> flexLines, Size innerSize, float gap)
+    public static void GrowOrShrinkByColumnMode(this List<FlexLine> flexLines, Size innerSize, float gap)
     {
         // 主轴 grow 或 shrink
         foreach (var flexLine in flexLines)
@@ -190,7 +190,7 @@ public static class FlexboxModule
                         totalGrow -= item.Element.FlexGrow;
                     }
 
-                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(gap);
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(gap);
 
                     break;
                 }
@@ -219,7 +219,7 @@ public static class FlexboxModule
                         totalShrink -= item.Element.FlexShrink;
                     }
 
-                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(gap);
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(gap);
                     break;
                 }
                 default: break;

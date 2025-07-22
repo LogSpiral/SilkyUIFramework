@@ -84,9 +84,19 @@ public class SilkyUI
         var lastBasicBody = BasicBody;
         BasicBody = basicBody;
 
-        lastBasicBody?.HandleUnmounted();
+        lastBasicBody?.SetSilkyUI(null);
+        BasicBody?.SetSilkyUI(this);
+
+        lastBasicBody?.HandleExitTree();
+        BasicBody?.HandleEnterTree();
+    }
+
+    /// <summary>
+    /// 用于持续检测元素初始化状态以及初始化
+    /// </summary>
+    public void PreUpdate()
+    {
         BasicBody?.Initialize();
-        BasicBody?.HandleMounted(this);
     }
 
     public bool Update(GameTime gameTime, bool hasHoverTarget, bool hasFocusTarget)

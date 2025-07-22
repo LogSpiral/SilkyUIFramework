@@ -98,6 +98,7 @@ public class SilkyUIManager
                     CurrentSilkyUI = silkyUI;
                     if (silkyUI is not null)
                     {
+                        silkyUI.PreUpdate();
                         if (silkyUI.Update(gameTime, MouseHoverTarget != null, MouseFocusTarget != null))
                         {
                             if (silkyUI.MouseHoverTarget != null)

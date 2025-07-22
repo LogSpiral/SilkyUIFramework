@@ -1,7 +1,24 @@
 ﻿using System.Text.RegularExpressions;
 using Terraria.UI.Chat;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SilkyUIFramework.BasicElements;
+
+public class ContentChangingEventArgs(string newText, string oldText) : EventArgs
+{
+    public string NewText { get; set; } = newText;
+    public string OldText { get; } = oldText;
+}
+
+
+public class ContentChangedEventArgs(string text) : EventArgs
+{
+    public string Text { get; } = text;
+}
+
+
+public delegate string ContentChangingEventHandler(object sender, ContentChangingEventArgs e);
+public delegate void ContentChangedEventHandler(object sender, ContentChangedEventArgs e);
 
 public class UITextView : UIView
 {
@@ -29,36 +46,58 @@ public class UITextView : UIView
 
     private DynamicSpriteFont _font = FontAssets.MouseText.Value;
 
-    private string _text = string.Empty;
-    private bool _wordWrap;
-    private int _maxWordLength = 19;
-    private int _maxLines = -1;
-    private float _textScale = 1f;
+    /// <summary>
+    /// 当输入内容更改时触发
+    /// </summary>
+    public event ContentChangingEventHandler ContentChanging;
 
-    public event Action OnTextChanged;
+    /// <summary>
+    /// 当内容更改后触发
+    /// </summary>
+    public event ContentChangedEventHandler ContentChanged;
 
-    public string Text
+    /// <summary>
+    /// 当输入内容更改时触发
+    /// </summary>
+    /// <returns>新值</returns>
+    protected virtual string OnContentChanging(string newText, string oldText) { return newText; }
+
+    /// <summary>
+    /// 当内容更改后触发
+    /// </summary>
+    protected virtual void OnContentChanged(string text) { }
+
+    public virtual string Text
     {
-        get => _text;
+        get => field;
         set
         {
-            if (_text.Equals(value)) return;
-            _text = value;
+            if (field?.Equals(value) ?? value is null) return;
+
+            if (ContentChanging != null)
+                value = ContentChanging.Invoke(this, new ContentChangingEventArgs(value, field));
+            value = OnContentChanging(value, field);
+
+            if (field?.Equals(value) ?? value is null) return;
+
+            field = value;
             MarkLayoutDirty();
-            OnTextChanged?.Invoke();
+
+            ContentChanged?.Invoke(this, new ContentChangedEventArgs(field));
+            OnContentChanged(field);
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// 是否自动换行
     /// </summary>
     public bool WordWrap
     {
-        get => _wordWrap;
+        get => field;
         set
         {
-            if (_wordWrap == value) return;
-            _wordWrap = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
@@ -68,42 +107,40 @@ public class UITextView : UIView
     /// </summary>
     public int MaxWordLength
     {
-        get => _maxWordLength;
+        get => field;
         set
         {
-            if (_maxWordLength == value) return;
-            _maxWordLength = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
-    }
+    } = 19;
 
     public int MaxLines
     {
-        get => _maxLines;
+        get => field;
         set
         {
-            if (_maxLines == value) return;
-            _maxLines = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
-    }
+    } = -1;
 
     public float TextScale
     {
-        get => _textScale;
+        get => field;
         set
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (_textScale == value) return;
-            _textScale = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
-    }
+    } = 1f;
 
     public Color TextColor { get; set; } = Color.White;
-
     public float TextBorder { get; set; } = 2f;
-
     public Color TextBorderColor { get; set; } = Color.Black;
 
     public Vector2 TextOffset { get; set; } = Vector2.Zero;

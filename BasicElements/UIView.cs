@@ -49,6 +49,36 @@ public partial class UIView
 
     #region Parent Remove() ContainsPoint() GetElementAt()
 
+    /// <summary>
+    /// 获取元素的祖先
+    /// </summary>
+    /// <returns>祖先</returns>
+    public UIElementGroup GetAncestors()
+    {
+        if (Parent is null) return null;
+        var currentAncestors = Parent;
+
+        while (currentAncestors.Parent is not null)
+        {
+            currentAncestors = currentAncestors.Parent;
+        }
+
+        return currentAncestors;
+    }
+
+    /// <summary>
+    /// 元素是否在 UI 树中
+    /// </summary>
+    public bool IsInsideTree
+    {
+        get
+        {
+            if (SilkyUI is null || GetAncestors() is not { } ancestors) return false;
+
+            return SilkyUI.BasicBody == ancestors;
+        }
+    }
+
     public UIElementGroup Parent { get; protected internal set; }
 
     public virtual void Remove() => Parent?.RemoveChild(this);
@@ -68,35 +98,53 @@ public partial class UIView
 
     private bool _initialized = false;
 
-    public void Initialize()
+    /// <summary>
+    /// 初始化元素
+    /// </summary>
+    internal virtual void Initialize()
     {
-        if (_initialized) return;
-        OnInitialize();
-        _initialized = true;
+        if (!_initialized)
+        {
+            // 确保只初始化一次
+            _initialized = true;
+            OnInitialize();
+        }
     }
 
     protected virtual void OnInitialize() { }
 
     public SilkyUI SilkyUI { get; private set; }
 
-    public virtual void HandleMounted(SilkyUI silkyUI)
+    public virtual void SetSilkyUI(SilkyUI silkyUI)
     {
         SilkyUI = silkyUI;
-        OnMounted();
     }
 
-    public virtual void HandleUnmounted()
+    internal virtual void HandleEnterTree()
+    {
+        OnEnterTree();
+    }
+
+    internal virtual void HandleExitTree()
     {
         SilkyUI = null;
-        OnUnmounted();
+
+        OnExitTree();
     }
 
-    protected virtual void OnMounted()
+    /// <summary>
+    /// 当元素加入UI节点树中时调用
+    /// </summary>
+    protected virtual void OnEnterTree()
     {
 
     }
 
-    protected virtual void OnUnmounted()
+
+    /// <summary>
+    /// 当元素移出UI节点树中时调用
+    /// </summary>
+    protected virtual void OnExitTree()
     {
 
     }

@@ -89,7 +89,7 @@ public partial class UIElementGroup
                 else
                 {
                     var maxMainAxisSize = (FlexWrap && !FitWidth) ? InnerBounds.Width : MaxInnerWidth;
-                    LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Width);
+                    LayoutChildren.FlexWrapRow(FlexLines, maxMainAxisSize, Gap.Width);
                 }
 
                 break;
@@ -104,7 +104,7 @@ public partial class UIElementGroup
                 else
                 {
                     var maxMainAxisSize = (FlexWrap && !FitHeight) ? InnerBounds.Height : MaxInnerHeight;
-                    LayoutChildren.WrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
+                    LayoutChildren.FlexWrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
                 }
 
                 break;
@@ -179,7 +179,7 @@ public partial class UIElementGroup
             {
                 foreach (var flexLine in FlexLines)
                 {
-                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.FenceGap(Gap.Height);
+                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(Gap.Height);
                 }
                 break;
             }
@@ -216,15 +216,15 @@ public partial class UIElementGroup
                     if (FlexWrap)
                     {
                         var maxMainAxisSize = innerSize.Width;
-                        LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Width);
+                        LayoutChildren.FlexWrapRow(FlexLines, maxMainAxisSize, Gap.Width);
                     }
                     else
                     {
-                        FlexLines.RefreshMainSizeByRow(Gap.Width);
+                        FlexLines.RefreshMainSizeByRowMode(Gap.Width);
                     }
 
                     // 拉伸或者压缩宽度
-                    FlexLines.GrowOrShrinkByRow(innerSize, Gap.Width);
+                    FlexLines.GrowOrShrinkByRowMode(innerSize, Gap.Width);
                     break;
                 }
                 case FlexDirection.Column:
@@ -327,14 +327,14 @@ public partial class UIElementGroup
                     if (FlexWrap)
                     {
                         var maxMainAxisSize = innerSize.Height;
-                        LayoutChildren.WrapRow(FlexLines, maxMainAxisSize, Gap.Height);
+                        LayoutChildren.FlexWrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
                     }
                     else
                     {
-                        FlexLines.RefreshMainSizeByColumn(Gap.Width);
+                        FlexLines.RefreshMainSizeByColumnMode(Gap.Width);
                     }
 
-                    FlexLines.GrowOrShrinkByColumn(innerSize, Gap.Height);
+                    FlexLines.GrowOrShrinkByColumnMode(innerSize, Gap.Height);
                     break;
                 }
             }

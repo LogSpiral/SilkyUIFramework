@@ -19,7 +19,7 @@ public class FlexLine
 
     public float CrossSpace { get; set; }
 
-    public float FenceGap(float gap) => (Elements.Count - 1) * gap;
+    public float GetFenceGap(float gap) => (Elements.Count - 1) * gap;
 
     public static FlexLine SingleRow(List<UIView> elements, float gap)
     {

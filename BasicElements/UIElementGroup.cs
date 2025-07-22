@@ -7,27 +7,55 @@ public partial class UIElementGroup : UIView
 {
     public bool OverflowHidden { get; set; }
 
-    protected List<UIView> Elements { get; } = [];
-    public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
-    public IReadOnlyList<UIView> Children => Elements;
-
-    public sealed override void HandleMounted(SilkyUI silkyUI)
+    /// <summary>
+    /// 需要持续调用，以保证所有元素都被初始化
+    /// </summary>
+    internal sealed override void Initialize()
     {
-        base.HandleMounted(silkyUI);
+        base.Initialize();
 
-        foreach (var el in Children)
+        foreach (var item in GetValidChildren())
         {
-            el.HandleMounted(silkyUI);
+            item.Initialize();
         }
     }
 
-    public sealed override void HandleUnmounted()
+    protected List<UIView> Elements { get; } = [];
+
+    /// <summary>
+    /// 获取有效子元素
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
+    public IReadOnlyList<UIView> Children => Elements;
+
+    public override void SetSilkyUI(SilkyUI silkyUI)
     {
-        base.HandleUnmounted();
+        base.SetSilkyUI(silkyUI);
+
+        foreach (var item in Elements)
+        {
+            item.SetSilkyUI(silkyUI);
+        }
+    }
+
+    internal sealed override void HandleEnterTree()
+    {
+        base.HandleEnterTree();
 
         foreach (var el in Children)
         {
-            el.HandleUnmounted();
+            el.HandleEnterTree();
+        }
+    }
+
+    internal sealed override void HandleExitTree()
+    {
+        base.HandleExitTree();
+
+        foreach (var el in Children)
+        {
+            el.HandleExitTree();
         }
     }
 
@@ -38,7 +66,6 @@ public partial class UIElementGroup : UIView
     {
         base.CleanupDirtyMark();
 
-        // 仅针对
         foreach (var child in LayoutChildren)
         {
             child.CleanupDirtyMark();
@@ -54,11 +81,15 @@ public partial class UIElementGroup : UIView
         child.Remove();
         Elements.Add(child);
         child.Parent = this;
+
         MarkLayoutDirty();
         MarkPositionDirty();
+
         ChildrenOrderIsDirty = true;
 
-        if (SilkyUI != null) child.HandleMounted(SilkyUI);
+        child.SetSilkyUI(SilkyUI);
+        if (SilkyUI != null)
+            child.HandleEnterTree();
     }
 
     public virtual void RemoveChild(UIView child)
@@ -69,7 +100,9 @@ public partial class UIElementGroup : UIView
         MarkLayoutDirty();
         MarkPositionDirty();
         ChildrenOrderIsDirty = true;
-        child.HandleUnmounted();
+
+        child.SetSilkyUI(null);
+        child.HandleExitTree();
     }
 
     public virtual void RemoveAllChildren()
