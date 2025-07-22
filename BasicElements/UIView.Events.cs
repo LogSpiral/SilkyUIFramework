@@ -1,15 +1,15 @@
 ﻿namespace SilkyUIFramework.BasicElements;
 
+public delegate void MouseEventHandler(UIView sender, UIMouseEvent evt);
+public delegate void MouseWheelEventHandler(UIView sender, UIScrollWheelEvent evt);
+public delegate void SelectionEventHandler(UIView sender);
+
 public partial class UIView
 {
     public bool LeftMousePressed { get; set; }
     public bool RightMousePressed { get; set; }
     public bool MiddleMousePressed { get; set; }
     public bool IsFocus { get; protected set; }
-
-    public delegate void MouseEventHandler(UIMouseEvent evt, UIView listeningElement);
-    public delegate void MouseWheelEventHandler(UIScrollWheelEvent evt, UIView listeningElement);
-    public delegate void SelectionEventHandler(UIView listeningElement);
 
     // 鼠标事件
     public event MouseEventHandler LeftMouseDown;
@@ -64,7 +64,7 @@ public partial class UIView
     public virtual void OnLeftMouseDown(UIMouseEvent evt)
     {
         LeftMousePressed = true;
-        LeftMouseDown?.Invoke(evt, this);
+        LeftMouseDown?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnLeftMouseDown(evt);
     }
@@ -72,14 +72,14 @@ public partial class UIView
     public virtual void OnLeftMouseUp(UIMouseEvent evt)
     {
         LeftMousePressed = false;
-        LeftMouseUp?.Invoke(evt, this);
+        LeftMouseUp?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnLeftMouseUp(evt);
     }
 
     public virtual void OnLeftMouseClick(UIMouseEvent evt)
     {
-        LeftMouseClick?.Invoke(evt, this);
+        LeftMouseClick?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnLeftMouseClick(evt);
     }
@@ -87,7 +87,7 @@ public partial class UIView
     public virtual void OnRightMouseDown(UIMouseEvent evt)
     {
         RightMousePressed = true;
-        RightMouseDown?.Invoke(evt, this);
+        RightMouseDown?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnRightMouseDown(evt);
     }
@@ -95,14 +95,14 @@ public partial class UIView
     public virtual void OnRightMouseUp(UIMouseEvent evt)
     {
         RightMousePressed = false;
-        RightMouseUp?.Invoke(evt, this);
+        RightMouseUp?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnRightMouseUp(evt);
     }
 
     public virtual void OnRightMouseClick(UIMouseEvent evt)
     {
-        RightMouseClick?.Invoke(evt, this);
+        RightMouseClick?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnRightMouseClick(evt);
     }
@@ -110,7 +110,7 @@ public partial class UIView
     public virtual void OnMiddleMouseDown(UIMouseEvent evt)
     {
         MiddleMousePressed = true;
-        MiddleMouseDown?.Invoke(evt, this);
+        MiddleMouseDown?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMiddleMouseDown(evt);
     }
@@ -118,14 +118,14 @@ public partial class UIView
     public virtual void OnMiddleMouseUp(UIMouseEvent evt)
     {
         MiddleMousePressed = false;
-        MiddleMouseUp?.Invoke(evt, this);
+        MiddleMouseUp?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMiddleMouseUp(evt);
     }
 
     public virtual void OnMiddleMouseClick(UIMouseEvent evt)
     {
-        MiddleMouseClick?.Invoke(evt, this);
+        MiddleMouseClick?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMiddleMouseClick(evt);
     }
@@ -134,7 +134,7 @@ public partial class UIView
     public virtual void OnGotFocus(UIMouseEvent evt)
     {
         IsFocus = true;
-        GotFocus?.Invoke(evt, this);
+        GotFocus?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnGotFocus(evt);
     }
@@ -142,7 +142,7 @@ public partial class UIView
     public virtual void OnLostFocus(UIMouseEvent evt)
     {
         IsFocus = false;
-        LostFocus?.Invoke(evt, this);
+        LostFocus?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnLostFocus(evt);
     }
@@ -151,7 +151,7 @@ public partial class UIView
     public virtual void OnMouseEnter(UIMouseEvent evt)
     {
         IsMouseHovering = true;
-        MouseEnter?.Invoke(evt, this);
+        MouseEnter?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMouseEnter(evt);
     }
@@ -159,21 +159,21 @@ public partial class UIView
     public virtual void OnMouseLeave(UIMouseEvent evt)
     {
         IsMouseHovering = false;
-        MouseLeave?.Invoke(evt, this);
+        MouseLeave?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMouseLeave(evt);
     }
 
     public virtual void OnMouseMove(UIMouseEvent evt)
     {
-        MouseMove?.Invoke(evt, this);
+        MouseMove?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMouseMove(evt);
     }
 
     public virtual void OnMouseWheel(UIScrollWheelEvent evt)
     {
-        MouseWheel?.Invoke(evt, this);
+        MouseWheel?.Invoke(this, evt);
         evt.Previous = this;
         Parent?.OnMouseWheel(evt);
     }

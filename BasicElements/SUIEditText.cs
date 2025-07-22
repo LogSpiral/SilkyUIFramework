@@ -247,4 +247,100 @@ public class SUIEditText : UITextView
         Text = Text.Insert(CursorIndex, text);
         CursorIndex += text.Length;
     }
+
+    /// <summary>
+    /// 当开始输入操作时触发
+    /// </summary>
+    public event MouseEventHandler StartTakingInput;
+
+    /// <summary>
+    /// 当结束输入操作时触发
+    /// </summary>
+    public event EventHandler<ValueChangedEventArgs<string>> EndTakingInput;
+
+    private string LastInputText { get; set; }
+
+    #region 螺线的鼠标定位光标，先搁置。
+
+    // 虽然和GotFocus事件定位重复了，但是我感觉还是专门整个事件来管理开始和结束输入比较好
+
+    public override void OnGotFocus(UIMouseEvent evt)
+    {
+        base.OnGotFocus(evt);
+
+        RePositioningCursorIndex(evt.MousePosition);
+        LastInputText = Text;
+        StartTakingInput?.Invoke(this, evt);
+    }
+    public override void OnLostFocus(UIMouseEvent evt)
+    {
+        base.OnLostFocus(evt);
+        EndTakingInput?.Invoke(this, new(LastInputText, Text));
+    }
+
+    void RePositioningCursorIndex(Vector2 mousePosition)
+    {
+        if (mousePosition.X > Bounds.X + Bounds.Width)
+            CursorIndex = Text.Length;
+        else if (mousePosition.X < Bounds.X)
+            CursorIndex = 0;
+        else
+        {
+            // TODO 螺线瞎写的定位，应该要改
+
+            //int resultIndex = 0;
+
+            var innerSize = (Vector2)InnerBounds.Size;
+
+            var textSize = TextSize;
+            // 无字符时会出问题，加上这行就好了
+            textSize.Y = Math.Max(Font.LineSpacing, textSize.Y);
+
+            var textPos =
+                InnerBounds.Position
+                + TextOffset
+                + TextPercentOffset * innerSize
+                + TextAlign * (innerSize - textSize * TextScale)
+                - TextPercentOrigin * TextSize * TextScale;
+            var fontOffset = GetFontOffset();
+            textPos.Y += TextScale * fontOffset;
+
+            /*var curPos = textPos;
+            var list = FinalSnippets;
+            foreach (var line in FinalSnippets)
+            {
+                var text = line.Text;
+                Vector2 size = Font.MeasureString(text) * TextScale;
+                var area = new Bounds(textPos.X, textPos.Y, size.X, size.Y);
+                if (!area.Contains(mousePosition))
+                {
+                    if (text.Contains('\n'))
+                    {
+                        curPos.X = textPos.X;
+                        curPos.Y += size.Y;
+                    }
+                    else
+                        curPos.X += textPos.X;
+                    resultIndex += text.Length;
+                    continue;
+                }
+                float x = textPos.X;
+                int n = 0;
+                for (; x < mousePosition.X; n++)
+                {
+                    x += Font.MeasureString(text[n].ToString()).X * TextScale;
+                }
+                resultIndex += n;
+            }*/
+
+            int textLength = Text.Length;
+            int n = 0;
+            for (; textPos.X < mousePosition.X && n < textLength; n++)
+                textPos.X += Font.MeasureString(Text[n].ToString()).X * TextScale;
+
+            CursorIndex = n;
+        }
+    }
+
+    #endregion
 }

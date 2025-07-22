@@ -17,8 +17,8 @@ public class ContentChangedEventArgs(string text) : EventArgs
 }
 
 
-public delegate string ContentChangingEventHandler(object sender, ContentChangingEventArgs e);
-public delegate void ContentChangedEventHandler(object sender, ContentChangedEventArgs e);
+public delegate string ContentChangingEventHandler(UITextView sender, ContentChangingEventArgs e);
+public delegate void ContentChangedEventHandler(UITextView sender, ContentChangedEventArgs e);
 
 public class UITextView : UIView
 {
