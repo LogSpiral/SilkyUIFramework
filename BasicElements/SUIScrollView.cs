@@ -1,11 +1,29 @@
 ﻿namespace SilkyUIFramework.BasicElements;
 
+/// <summary> 滚动方向 </summary>
+public enum Direction
+{
+    Horizontal,
+    Vertical,
+}
+
 public class SUIScrollView : UIElementGroup
 {
     public readonly Direction Direction;
 
+    /// <summary>
+    /// 滚动条
+    /// </summary>
     public readonly SUIScrollbar ScrollBar;
+
+    /// <summary>
+    /// 遮罩层
+    /// </summary>
     public readonly SUIScrollMask Mask;
+
+    /// <summary>
+    /// 容器
+    /// </summary>
     public readonly SUIScrollContainer Container;
 
     public SUIScrollView(Direction direction = Direction.Vertical)
@@ -18,9 +36,10 @@ public class SUIScrollView : UIElementGroup
             HiddenBox = HiddenBox.Inner,
             FlexGrow = 1f,
             FlexShrink = 1f,
+            Width = new Dimension(0f, 1f),
+            Height = new Dimension(0f, 1f)
         };
         Mask.Join(this);
-        Mask.SetSize(0f, 0f, 1f, 1f);
 
         Container = new SUIScrollContainer(this)
         {
@@ -30,18 +49,19 @@ public class SUIScrollView : UIElementGroup
             FlexWrap = true,
             FitWidth = false,
             FitHeight = true,
+            Width = new Dimension(0f, 1f),
+            Height = new Dimension(0f, 1f),
+            Gap = new Size(8f)
         }.Join(Mask);
-        Container.SetWidth(0f, 1f);
-        Container.SetHeight(0f, 1f);
-        Container.SetGap(8f);
 
         ScrollBar = new SUIScrollbar(direction, Container)
         {
             BorderRadius = new Vector4(2f),
             BackgroundColor = Color.Black * 0.25f,
             FitWidth = false,
+            Width = new Dimension(8f),
+            Height = new Dimension(0f, 1f)
         }.Join(this);
-        ScrollBar.SetSize(8f, 0f, 0f, 1f);
         ScrollBar.OnCurrentScrollPositionChanged += Container.UpdateScrollPosition;
 
         switch (Direction)
@@ -60,24 +80,37 @@ public class SUIScrollView : UIElementGroup
 
     public override void OnMouseWheel(UIScrollWheelEvent evt)
     {
+        if (evt.Scrolled) return;
+
         switch (Direction)
         {
             case Direction.Horizontal:
+            {
+                if (evt.ScrollDelta > 0)
+                {
+                    if (ScrollBar.HScrolledToTop) break;
+                }
+                else if (ScrollBar.HScrolledToEnd) break;
+
                 ScrollBar.HScrollBy(-evt.ScrollDelta);
+                evt.Scrolled = true;
                 break;
+            }
             default:
             case Direction.Vertical:
+            {
+                if (evt.ScrollDelta > 0)
+                {
+                    if (ScrollBar.VScrolledToTop) break;
+                }
+                else if (ScrollBar.VScrolledToEnd) break;
+
                 ScrollBar.VScrollBy(-evt.ScrollDelta);
+                evt.Scrolled = true;
                 break;
+            }
         }
 
         base.OnMouseWheel(evt);
     }
-}
-
-/// <summary> 滚动方向 </summary>
-public enum Direction
-{
-    Horizontal,
-    Vertical,
 }

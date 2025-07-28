@@ -1,4 +1,5 @@
-﻿using SilkyUIFramework.Animation;
+﻿using Humanizer;
+using SilkyUIFramework.Animation;
 
 namespace SilkyUIFramework.BasicElements;
 
@@ -61,6 +62,12 @@ public class SUIScrollbar : UIView
     /// 纵向滚动指定距离
     /// </summary>
     public void VScrollBy(float value) => TargetScrollPosition += new Vector2(0, value);
+
+    public bool HScrolledToTop => TargetScrollPosition.X <= 0;
+    public bool HScrolledToEnd => TargetScrollPosition.X >= GetScrollRange().X;
+
+    public bool VScrolledToTop => TargetScrollPosition.Y <= 0;
+    public bool VScrolledToEnd => TargetScrollPosition.Y >= GetScrollRange().Y;
 
     #endregion
 

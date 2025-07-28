@@ -96,13 +96,6 @@ public partial class UIView
     private Dimension _maxHeight = new(ushort.MaxValue * 100);
     private Dimension _height;
 
-    public Dimension MinWidth => _minWidth;
-    public Dimension MaxWidth => _maxWidth;
-    public Dimension Width => _width;
-    public Dimension MinHeight => _minHeight;
-    public Dimension MaxHeight => _maxHeight;
-    public Dimension Height => _height;
-
     #endregion
 
     #region SetDimension
@@ -140,6 +133,59 @@ public partial class UIView
     {
         SetWidth(widthPixels, widthPercent);
         SetHeight(heightPixels, heightPercent);
+    }
+
+    public Dimension Width
+    {
+        get => _width;
+        set
+        {
+            SetWidth(value.Pixels, value.Percent);
+        }
+    }
+
+    public Dimension MinWidth
+    {
+        get => _minWidth;
+        set
+        {
+            SetMinWidth(value.Pixels, value.Percent);
+        }
+    }
+
+    public Dimension MaxWidth
+    {
+        get => _maxWidth;
+        set
+        {
+            SetMaxWidth(value.Pixels, value.Percent);
+        }
+    }
+    public Dimension Height
+    {
+        get => _height;
+        set
+        {
+            SetHeight(value.Pixels, value.Percent);
+        }
+    }
+
+    public Dimension MinHeight
+    {
+        get => _minHeight;
+        set
+        {
+            SetMinHeight(value.Pixels, value.Percent);
+        }
+    }
+
+    public Dimension MaxHeight
+    {
+        get => _maxHeight;
+        set
+        {
+            SetMaxHeight(value.Pixels, value.Percent);
+        }
     }
 
     #endregion
