@@ -1,4 +1,5 @@
 ﻿using log4net;
+using MonoMod.Cil;
 using Terraria.ModLoader.Core;
 
 namespace SilkyUIFramework;
@@ -28,20 +29,30 @@ public class SilkyUISystem : ModSystem
         PlayerInput.SetZoom_Unscaled();
     }
 
-    private void On_Main_DrawMenu(On_Main.orig_DrawMenu orig, Main self, GameTime gameTime)
+    private void IL_Main_DrawMenu(ILContext il)
     {
-        orig(self, gameTime);
-        Main.spriteBatch.Begin();
-        SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache);
-        Main.spriteBatch.End();
+        var c = new ILCursor(il);
+
+        if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor))))
+        {
+            return;
+        }
+
+        if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0)))
+        {
+            return;
+        }
+
+        c.EmitDelegate(() =>
+        {
+            SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache);
+        });
     }
 
     public override void Load()
     {
-        //On_Main.UpdateUIStates += On_Main_UpdateUIStates;
-
         On_Main.DoUpdate_HandleInput += On_Main_DoUpdate_HandleInput;
-        On_Main.DrawMenu += On_Main_DrawMenu;
+        IL_Main.DrawMenu += IL_Main_DrawMenu;
 
         Assemblies = ModLoader.Mods.Select(mod => mod.Code);
         ServiceProvider = BuildServiceProvider();
