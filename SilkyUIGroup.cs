@@ -110,13 +110,11 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
         {
             if (silkyUI.BasicBody.GetType().GetCustomAttribute<RegisterGlobalUIAttribute>() is not { } globalUI) continue;
 
-            var transformMatrix = Main.UIScaleMatrix;
-
-            silkyUI.TransformMatrix = transformMatrix;
+            silkyUI.TransformMatrix = Main.UIScaleMatrix;
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred,
-                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, transformMatrix);
+                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, silkyUI.TransformMatrix);
 
             CurrentUI = silkyUI;
             silkyUI.Draw(gameTime, Main.spriteBatch);
@@ -124,7 +122,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred,
-                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, transformMatrix);
+                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, silkyUI.TransformMatrix);
         }
     }
 }

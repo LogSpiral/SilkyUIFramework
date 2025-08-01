@@ -6,6 +6,8 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
 
     public Margin(float uniform) : this(uniform, uniform, uniform, uniform) { }
 
+    public Margin(float hUniform, float vUniform) : this(hUniform, vUniform, hUniform, vUniform) { }
+
     public float Left { get; } = left;
     public float Top { get; } = top;
     public float Right { get; } = right;

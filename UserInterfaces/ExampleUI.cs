@@ -1,10 +1,12 @@
 ﻿namespace SilkyUIFramework.UserInterfaces;
 
-#if false
+#if DEBUG && true
 
 [RegisterGlobalUI("ExampleUI", 0)]
-internal class ExampleUI : BasicBody
+internal class ExampleUI(MenuUI menuUI) : BasicBody
 {
+    private readonly MenuUI MenuUI = menuUI;
+
     public SUIDraggableView DraggableView { get; protected set; }
 
     protected override void OnInitialize()
@@ -80,7 +82,7 @@ internal class ExampleUI : BasicBody
 
         var textView2 = new UITextView()
         {
-            Text = "YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM YGCHXBM",
+            Text = "人是铁，饭是钢，一顿不吃饿的慌。",
             FitWidth = false,
             WordWrap = true,
             Padding = 2,
@@ -97,7 +99,24 @@ internal class ExampleUI : BasicBody
                 Border = 2f,
                 BorderColor = borderColor * 0.5f,
                 BackgroundColor = backgroundColor * 0.25f,
+                DisplayItemInfo = false,
             }.Join(blockContainer.Container);
+            block.RightMouseDown += (sender, evt) =>
+            {
+                block.DisplayItemInfo = false;
+                List<string> list = [$"{block.Item.Name}", "重命名", "收藏", "删除", "人是铁，饭是钢，一顿不吃饿的慌。"];
+
+                while (Main.rand.NextBool(7, 10))
+                {
+                    list.Add(Main.rand.Next(1111, 11110000).ToString());
+                }
+
+                MenuUI.OpenMenu(block.Bounds.Center, list, (text, index) =>
+                {
+                    Main.NewText($"{text} {index}");
+                });
+            };
+
             block.DisplayItemStack = true;
             block.Item = new Item(i + 1);
             block.Item.stack = block.Item.maxStack;

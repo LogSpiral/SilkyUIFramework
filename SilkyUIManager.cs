@@ -3,16 +3,10 @@
 namespace SilkyUIFramework;
 
 [Service(ServiceLifetime.Singleton)]
-public partial class SilkyUIManager
+public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logger)
 {
-    private ILog Logger { get; }
-    private IServiceProvider ServiceProvider { get; }
-
-    public SilkyUIManager(IServiceProvider serviceProvider, ILog logger)
-    {
-        Logger = logger;
-        ServiceProvider = serviceProvider;
-    }
+    private ILog Logger { get; } = logger;
+    private IServiceProvider ServiceProvider { get; } = serviceProvider;
 
 
     #region Fields and Propertices
@@ -64,9 +58,6 @@ public partial class SilkyUIManager
     /// </summary>
     public void UpdateUI(GameTime gameTime)
     {
-        MouseHoverGroup = null;
-        MouseFocusGroup = null;
-
         CurrentSilkyUIGroup = null;
 
         // 它是绘制顺序, 所以事件处理要倒序
@@ -108,7 +99,7 @@ public partial class SilkyUIManager
         }
 
         // 游戏内全局 UI
-        index = layers.FindIndex(layers => layers.Name.Equals("Vanilla: Radial Hotbars"));
+        index = layers.FindIndex(layers => layers.Name.Equals("Vanilla: Mouse Text"));
         if (index >= 0)
         {
             var silkyUILayer = new LegacyGameInterfaceLayer("SilkyUI: GlobalUI", delegate
