@@ -1,60 +1,207 @@
-﻿using Terraria.ModLoader.Core;
+﻿using log4net;
+using Terraria.ModLoader.Core;
 
 namespace SilkyUIFramework;
 
-// ReSharper disable once ClassNeverInstantiated.Global
 public class SilkyUISystem : ModSystem
 {
     public static SilkyUISystem Instance => ModContent.GetInstance<SilkyUISystem>();
 
-    private bool _initialized;
+    public ILog Logger { get; private set; }
 
-    public override void PostSetupContent() => Initialize();
+    /// <summary>
+    /// 服务提供者，用于依赖注入
+    /// </summary>
+    public static ServiceProvider ServiceProvider { get; private set; }
 
-    private void Initialize()
+    public IEnumerable<Assembly> Assemblies { get; private set; }
+
+    public SilkyUIManager SilkyUIManager { get; private set; }
+
+    #region Load Unload
+
+    private void On_Main_DoUpdate_HandleInput(On_Main.orig_DoUpdate_HandleInput orig, Main self)
     {
-        if (_initialized) return;
+        orig(self);
+        PlayerInput.SetZoom_UI();
+        SilkyUIManager?.UpdateGlobalUI(Main.gameTimeCache);
+        PlayerInput.SetZoom_Unscaled();
+    }
 
-        // 获取所有 Mod 的程序集
-        var assemblies = ModLoader.Mods.Select(mod => mod.Code);
+    private void On_Main_DrawMenu(On_Main.orig_DrawMenu orig, Main self, GameTime gameTime)
+    {
+        orig(self, gameTime);
+        Main.spriteBatch.Begin();
+        SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache);
+        Main.spriteBatch.End();
+    }
 
-        foreach (var types in assemblies.Select(AssemblyManager.GetLoadableTypes))
+    public override void Load()
+    {
+        //On_Main.UpdateUIStates += On_Main_UpdateUIStates;
+
+        On_Main.DoUpdate_HandleInput += On_Main_DoUpdate_HandleInput;
+        On_Main.DrawMenu += On_Main_DrawMenu;
+
+        Assemblies = ModLoader.Mods.Select(mod => mod.Code);
+        ServiceProvider = BuildServiceProvider();
+
+        Logger = ServiceProvider.GetRequiredService<ILog>();
+        SilkyUIManager = ServiceProvider.GetRequiredService<SilkyUIManager>();
+    }
+
+    public override void Unload()
+    {
+        Assemblies = null;
+        ServiceProvider?.Dispose();
+        ServiceProvider = null;
+    }
+
+    #endregion
+
+    #region ServiceProvider 服务提供商
+
+    private ServiceProvider BuildServiceProvider()
+    {
+        var serviceCollection = new ServiceCollection();
+
+        serviceCollection.AddSingleton(sp => SilkyUIFramework.Instance.Logger);
+        serviceCollection.AddSingleton(sp => Instance);
+
+        foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
         {
+            RegisterServices(serviceCollection, types);
+
+            // 扫描 UI
             foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
             {
-                if (type.GetCustomAttribute<RegisterUIAttribute>() is { } attribute)
+                if (type.GetCustomAttribute<RegisterUIAttribute>() != null ||
+                    type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
                 {
-                    SilkyUIManager.Instance.RegisterUI(type, attribute);
+                    serviceCollection.AddTransient(type);
                 }
             }
         }
 
-        _initialized = true;
+        return serviceCollection.BuildServiceProvider();
+    }
+
+    private static void RegisterServices(IServiceCollection services, Type[] types)
+    {
+        foreach (var type in types)
+        {
+            if (type.GetCustomAttribute<ServiceAttribute>() is not { } serviceAttribute) continue;
+
+            RegisterService(services, serviceAttribute.Lifetime, type);
+
+            var interfaces = type.GetInterfaces();
+
+            foreach (var serviceType in interfaces)
+            {
+                RegisterService(services, serviceAttribute.Lifetime, serviceType, type);
+            }
+        }
+    }
+
+    private static void RegisterService(
+        IServiceCollection services, ServiceLifetime lifetime, Type serviceType)
+    {
+        switch (lifetime)
+        {
+            case ServiceLifetime.Transient:
+                services.AddTransient(serviceType);
+                break;
+            case ServiceLifetime.Scoped:
+                services.AddScoped(serviceType);
+                break;
+            case ServiceLifetime.Singleton:
+                services.AddSingleton(serviceType);
+                break;
+        }
+    }
+
+    private static void RegisterService(
+        IServiceCollection services, ServiceLifetime lifetime, Type serviceType, Type implementationType)
+    {
+        switch (lifetime)
+        {
+            case ServiceLifetime.Transient:
+                services.AddTransient(serviceType, implementationType);
+                break;
+            case ServiceLifetime.Scoped:
+                services.AddScoped(serviceType, implementationType);
+                break;
+            case ServiceLifetime.Singleton:
+                services.AddSingleton(serviceType, implementationType);
+                break;
+        }
+    }
+
+    #endregion
+
+    public override void PostSetupContent()
+    {
+        foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
+        {
+            ScanRegisterUI(types);
+        }
+
+        SilkyUIManager.InitializeGlobalUI();
+    }
+
+    private void ScanRegisterUI(Type[] types)
+    {
+        Logger.Info($"开始扫描游戏 UI");
+        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
+        {
+            if (type.GetCustomAttribute<RegisterUIAttribute>() is { } attribute)
+            {
+                SilkyUIManager.RegisterUI(type, attribute.LayerNode);
+            }
+        }
+
+        Logger.Info("开始扫描全局 UI");
+        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
+        {
+            if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
+            {
+                SilkyUIManager.RegisterGlobalUI(type);
+            }
+        }
     }
 
     public override void UpdateUI(GameTime gameTime)
     {
-        SilkyUIManager.Instance.UpdateUI(gameTime);
+        SilkyUIManager.UpdateUI(gameTime);
     }
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
     {
-        SilkyUIManager.Instance.ModifyInterfaceLayers(layers);
+        SilkyUIManager.ModifyInterfaceLayers(layers);
     }
 }
 
 public class SilkyUIPlayer : ModPlayer
 {
-    public override void OnEnterWorld() => SetupSilkyUI();
-
-    private static void SetupSilkyUI()
+    public override void OnEnterWorld()
     {
-        if (SilkyUIManager.Instance is not { } manager) return;
+        if (SilkyUISystem.Instance.SilkyUIManager is not { } manager) return;
 
-        foreach (var ui in manager.SilkyUILayerNodes.SelectMany(uis => uis.Value))
+        foreach (var (layerNode, group) in manager.SilkyUILayerNodes)
         {
-            if (!manager.BasicBodyMappingTable.TryGetValue(ui, out var type)) continue;
-            ui.SetBody(Activator.CreateInstance(type) as BasicBody);
+            group.Clear();
+
+            if (!manager.SilkyUIType.TryGetValue(layerNode, out var types)) continue;
+
+            foreach (var type in types)
+            {
+                var silkyUI = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUI>();
+
+                silkyUI.Priority = type.GetCustomAttribute<RegisterUIAttribute>().Priority;
+                silkyUI.SetBody(SilkyUISystem.ServiceProvider.GetRequiredService(type) as BasicBody);
+
+                group.Add(silkyUI);
+            }
         }
     }
 }

@@ -1,10 +1,14 @@
-﻿namespace SilkyUIFramework.UserInterfaces;
+﻿using log4net;
+
+namespace SilkyUIFramework.UserInterfaces;
 
 #if false
 
-[RegisterUI("Vanilla: Radial Hotbars", "SilkyUI: MenuUI", int.MinValue)]
-public class MenuUI : BasicBody
+[RegisterGlobalUI("MenuUI", 1)]
+public class MenuUI(ILog logger) : BasicBody
 {
+    private ILog Logger { get; } = logger;
+
     public SUIDraggableView DraggableView { get; private set; }
 
     protected override void OnInitialize()
@@ -21,9 +25,9 @@ public class MenuUI : BasicBody
         DraggableView.SetHeight(40f, 0f);
     }
 
-    public void Open()
+    protected override void Update(GameTime gameTime)
     {
-        DraggableView.DragOffset = new Vector2(0f, 0f);
+        base.Update(gameTime);
     }
 
     protected override void UpdateStatus(GameTime gameTime)
@@ -37,19 +41,19 @@ public class MenuUI : BasicBody
 
     protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        if (BlurMakeSystem.BlurAvailable)
-        {
-            if (BlurMakeSystem.SingleBlur)
-            {
-                var batch = Main.spriteBatch;
-                batch.End();
-                BlurMakeSystem.KawaseBlur();
-                batch.Begin();
-            }
+        //if (BlurMakeSystem.BlurAvailable)
+        //{
+        //    if (BlurMakeSystem.SingleBlur)
+        //    {
+        //        var batch = Main.spriteBatch;
+        //        batch.End();
+        //        BlurMakeSystem.KawaseBlur();
+        //        batch.Begin();
+        //    }
 
-            SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget,
-                Bounds.Position * Main.UIScale, Bounds.Size * Main.UIScale, BorderRadius * Main.UIScale, Matrix.Identity);
-        }
+        //    SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget,
+        //        Bounds.Position * Main.UIScale, Bounds.Size * Main.UIScale, BorderRadius * Main.UIScale, Matrix.Identity);
+        //}
 
         base.Draw(gameTime, spriteBatch);
     }

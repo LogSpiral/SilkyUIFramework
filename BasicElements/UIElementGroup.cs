@@ -29,26 +29,22 @@ public partial class UIElementGroup : UIView
     public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
     public IReadOnlyList<UIView> Children => Elements;
 
-    public override void SetSilkyUI(SilkyUI silkyUI)
+    /// <summary>
+    /// 处理元素进入 UI 树
+    /// </summary>
+    internal sealed override void HandleEnterTree(SilkyUI silkyUI)
     {
-        base.SetSilkyUI(silkyUI);
-
-        foreach (var item in Elements)
-        {
-            item.SetSilkyUI(silkyUI);
-        }
-    }
-
-    internal sealed override void HandleEnterTree()
-    {
-        base.HandleEnterTree();
+        base.HandleEnterTree(silkyUI);
 
         foreach (var el in Children)
         {
-            el.HandleEnterTree();
+            el.HandleEnterTree(silkyUI);
         }
     }
 
+    /// <summary>
+    /// 处理元素退出 UI 树
+    /// </summary>
     internal sealed override void HandleExitTree()
     {
         base.HandleExitTree();
@@ -87,9 +83,19 @@ public partial class UIElementGroup : UIView
 
         ChildrenOrderIsDirty = true;
 
-        child.SetSilkyUI(SilkyUI);
-        if (SilkyUI != null)
-            child.HandleEnterTree();
+        try
+        {
+            if (SilkyUI != null)
+                child.HandleEnterTree(SilkyUI);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+        finally
+        {
+            child.Initialize();
+        }
     }
 
     public virtual void RemoveChild(UIView child)
@@ -101,7 +107,6 @@ public partial class UIElementGroup : UIView
         MarkPositionDirty();
         ChildrenOrderIsDirty = true;
 
-        child.SetSilkyUI(null);
         child.HandleExitTree();
     }
 

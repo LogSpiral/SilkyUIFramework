@@ -1,6 +1,4 @@
-﻿using Terraria.Map;
-
-namespace SilkyUIFramework.Hooks;
+﻿namespace SilkyUIFramework.Hooks;
 
 #if false
 internal class DebugHook : ModSystem

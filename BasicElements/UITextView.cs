@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using Terraria.UI.Chat;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SilkyUIFramework.BasicElements;
 

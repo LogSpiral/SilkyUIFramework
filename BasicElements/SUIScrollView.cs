@@ -80,7 +80,7 @@ public class SUIScrollView : UIElementGroup
 
     public override void OnMouseWheel(UIScrollWheelEvent evt)
     {
-        if (evt.Scrolled) return;
+        if (evt.ScrollingElement != null) return;
 
         switch (Direction)
         {
@@ -93,7 +93,7 @@ public class SUIScrollView : UIElementGroup
                 else if (ScrollBar.HScrolledToEnd) break;
 
                 ScrollBar.HScrollBy(-evt.ScrollDelta);
-                evt.Scrolled = true;
+                evt.ScrollingElement = this;
                 break;
             }
             default:
@@ -106,7 +106,7 @@ public class SUIScrollView : UIElementGroup
                 else if (ScrollBar.VScrolledToEnd) break;
 
                 ScrollBar.VScrollBy(-evt.ScrollDelta);
-                evt.Scrolled = true;
+                evt.ScrollingElement = this;
                 break;
             }
         }

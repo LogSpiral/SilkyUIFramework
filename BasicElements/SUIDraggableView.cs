@@ -23,7 +23,9 @@ public class SUIDraggableView : UIElementGroup
     {
         if (evt.Source == this)
         {
-            MouseDragOffset = new Vector2(Main.mouseX, Main.mouseY) - ControlTarget.DragOffset;
+            MouseDragOffset = evt.MousePosition - ControlTarget.DragOffset;
+
+            Main.NewText($"{MouseDragOffset} {evt.MousePosition} {ControlTarget.DragOffset}");
             Dragging = true;
         }
 
@@ -43,6 +45,9 @@ public class SUIDraggableView : UIElementGroup
         {
             var x = Main.mouseX - MouseDragOffset.X;
             var y = Main.mouseY - MouseDragOffset.Y;
+
+            Main.NewText(Main.MouseScreen);
+
             if (DragIncrement.X != 0) x -= x % DragIncrement.X;
             if (DragIncrement.Y != 0) y -= y % DragIncrement.Y;
 

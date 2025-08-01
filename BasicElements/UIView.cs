@@ -105,7 +105,6 @@ public partial class UIView
     {
         if (!_initialized)
         {
-            // 确保只初始化一次
             _initialized = true;
             OnInitialize();
         }
@@ -115,20 +114,15 @@ public partial class UIView
 
     public SilkyUI SilkyUI { get; private set; }
 
-    public virtual void SetSilkyUI(SilkyUI silkyUI)
+    internal virtual void HandleEnterTree(SilkyUI silkyUI)
     {
         SilkyUI = silkyUI;
-    }
-
-    internal virtual void HandleEnterTree()
-    {
         OnEnterTree();
     }
 
     internal virtual void HandleExitTree()
     {
         SilkyUI = null;
-
         OnExitTree();
     }
 

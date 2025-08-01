@@ -2,7 +2,7 @@
 
 #if false
 
-[RegisterUI("Vanilla: Radial Hotbars", "SilkyUI: ExampleUI")]
+[RegisterGlobalUI("ExampleUI", 0)]
 internal class ExampleUI : BasicBody
 {
     public SUIDraggableView DraggableView { get; protected set; }

@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using SilkyUIFramework.Animation;
+﻿using SilkyUIFramework.Animation;
 
 namespace SilkyUIFramework.BasicElements;
 
