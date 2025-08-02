@@ -53,7 +53,7 @@ public partial class UIView
     /// 获取元素的祖先
     /// </summary>
     /// <returns>祖先</returns>
-    public UIElementGroup GetAncestors()
+    public UIElementGroup GetAncestor()
     {
         if (Parent is null) return null;
         var currentAncestors = Parent;
@@ -73,7 +73,7 @@ public partial class UIView
     {
         get
         {
-            if (SilkyUI is null || GetAncestors() is not { } ancestors) return false;
+            if (SilkyUI is null || GetAncestor() is not { } ancestors) return false;
 
             return SilkyUI.BasicBody == ancestors;
         }

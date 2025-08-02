@@ -6,7 +6,12 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
 
     public Margin(float uniform) : this(uniform, uniform, uniform, uniform) { }
 
-    public Margin(float hUniform, float vUniform) : this(hUniform, vUniform, hUniform, vUniform) { }
+    public Margin(float horizontal, float vertical) : this(horizontal, vertical, horizontal, vertical) { }
+
+    public void Deconstruct(out float left, out float top, out float right, out float bottom)
+    {
+        left = Left; top = Top; right = Right; bottom = Bottom;
+    }
 
     public float Left { get; } = left;
     public float Top { get; } = top;
@@ -16,7 +21,7 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
     public float Horizontal => Left + Right;
     public float Vertical => Top + Bottom;
 
-    public static implicit operator Margin(float margin) => new Margin(margin);
+    public static implicit operator Margin(float margin) => new(margin);
 
     public Margin With(float? left = null, float? top = null, float? right = null, float? bottom = null) =>
         new(left ?? Left, top ?? Top, right ?? Right, bottom ?? Bottom);
@@ -29,7 +34,7 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
 
     public static bool operator ==(Margin left, Margin right) => left.Equals(right);
 
-    public static bool operator !=(Margin left, Margin right) => left.Equals(right);
+    public static bool operator !=(Margin left, Margin right) => !left.Equals(right);
 
     public override bool Equals(object obj) => obj is Margin margin && Equals(margin);
 
@@ -40,6 +45,10 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
 
     public override string ToString()
     {
-        return $"{nameof(Left)}: {Left}, {nameof(Top)}: {Top}, {nameof(Right)}: {Right}, {nameof(Bottom)}: {Bottom}";
+        if (Left == Top && Top == Right && Right == Bottom)
+            return $"Margin({Left})";
+        if (Left == Right && Top == Bottom)
+            return $"Margin({Left}, {Top})";
+        return $"Margin({Left}, {Top}, {Right}, {Bottom})";
     }
 }

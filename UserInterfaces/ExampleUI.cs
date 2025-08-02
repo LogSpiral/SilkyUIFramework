@@ -1,11 +1,11 @@
 ﻿namespace SilkyUIFramework.UserInterfaces;
 
-#if DEBUG && true
+#if DEBUG && false
 
 [RegisterGlobalUI("ExampleUI", 0)]
-internal class ExampleUI(MenuUI menuUI) : BasicBody
+internal class ExampleUI(IMouseMenu menuUI) : BasicBody
 {
-    private readonly MenuUI MenuUI = menuUI;
+    private readonly IMouseMenu MenuUI = menuUI;
 
     public SUIDraggableView DraggableView { get; protected set; }
 
@@ -94,26 +94,33 @@ internal class ExampleUI(MenuUI menuUI) : BasicBody
             // 创建并添加
             var block = new SUIItemSlot
             {
-                ItemInteractive = true,
+                ItemInteractive = false,
+                DisplayItemInfo = false,
                 BorderRadius = new Vector4(8f),
                 Border = 2f,
                 BorderColor = borderColor * 0.5f,
                 BackgroundColor = backgroundColor * 0.25f,
-                DisplayItemInfo = false,
             }.Join(blockContainer.Container);
             block.RightMouseDown += (sender, evt) =>
             {
-                block.DisplayItemInfo = false;
-                List<string> list = [$"{block.Item.Name}", "重命名", "收藏", "删除", "人是铁，饭是钢，一顿不吃饿的慌。"];
+                List<string> list = [$"复制", "删除"];
 
-                while (Main.rand.NextBool(7, 10))
+                MenuUI.OpenMenu(MouseAnchor.TopLeft, block.Bounds.Center, list, (content, index) =>
                 {
-                    list.Add(Main.rand.Next(1111, 11110000).ToString());
-                }
-
-                MenuUI.OpenMenu(block.Bounds.Center, list, (text, index) =>
-                {
-                    Main.NewText($"{text} {index}");
+                    switch (content)
+                    {
+                        case "复制":
+                        {
+                            Main.LocalPlayer.QuickSpawnItem(null, block.Item.type, block.Item.maxStack);
+                            break;
+                        }
+                        case "删除":
+                        {
+                            block.Remove();
+                            break;
+                        }
+                    }
+                    return true;
                 });
             };
 

@@ -54,8 +54,8 @@ public class SUIItemSlot : UIView
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        HandleItemSlotLeftClick();
         base.OnLeftMouseDown(evt);
+        HandleItemSlotLeftClick();
     }
 
     /// <summary>
@@ -96,16 +96,16 @@ public class SUIItemSlot : UIView
 
     public override void OnRightMouseDown(UIMouseEvent evt)
     {
-        RightMousePressedTimer = 0;
         base.OnRightMouseDown(evt);
+        RightMousePressedTimer = 0;
     }
 
     protected override void Update(GameTime gameTime)
     {
+        base.Update(gameTime);
         HandleItemSlotRightLongPress();
         if (RightMousePressed)
             RightMousePressedTimer++;
-        base.Update(gameTime);
     }
 
     protected virtual void HandleItemSlotRightLongPress()

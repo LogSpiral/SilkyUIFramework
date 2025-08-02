@@ -62,19 +62,19 @@ public partial class SilkyUISystem
 
         foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
         {
-            RegisterServices(serviceCollection, types);
+            ScanRegisterServices(serviceCollection, types);
 
             // 扫描 UI
             foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
             {
                 if (type.GetCustomAttribute<RegisterUIAttribute>() != null)
                 {
-                    serviceCollection.AddTransient(type);
+                    RegisterService(serviceCollection, ServiceLifetime.Transient, type);
                 }
 
                 if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
                 {
-                    serviceCollection.AddSingleton(type);
+                    RegisterService(serviceCollection, ServiceLifetime.Singleton, type);
                 }
             }
         }
@@ -82,54 +82,49 @@ public partial class SilkyUISystem
         return serviceCollection.BuildServiceProvider();
     }
 
-    private static void RegisterServices(IServiceCollection services, Type[] types)
+    /// <summary> 注册服务 </summary>
+    private static void ScanRegisterServices(IServiceCollection services, Type[] types)
     {
         foreach (var type in types)
         {
             if (type.GetCustomAttribute<ServiceAttribute>() is not { } serviceAttribute) continue;
 
             RegisterService(services, serviceAttribute.Lifetime, type);
+        }
+    }
 
-            var interfaces = type.GetInterfaces();
+    private static void RegisterService(
+        IServiceCollection services, ServiceLifetime lifetime, Type implType)
+    {
+        var interfaces = implType.GetInterfaces();
 
-            foreach (var serviceType in interfaces)
+        switch (lifetime)
+        {
+            case ServiceLifetime.Transient:
+                services.AddTransient(implType);
+                break;
+            case ServiceLifetime.Scoped:
+                services.AddScoped(implType);
+                break;
+            case ServiceLifetime.Singleton:
+                services.AddSingleton(implType);
+                break;
+        }
+
+        foreach (var serviceType in interfaces)
+        {
+            switch (lifetime)
             {
-                RegisterService(services, serviceAttribute.Lifetime, serviceType, type);
+                case ServiceLifetime.Transient:
+                    services.AddTransient(serviceType, sp => sp.GetRequiredService(implType));
+                    break;
+                case ServiceLifetime.Scoped:
+                    services.AddScoped(serviceType, sp => sp.GetRequiredService(implType));
+                    break;
+                case ServiceLifetime.Singleton:
+                    services.AddSingleton(serviceType, sp => sp.GetRequiredService(implType));
+                    break;
             }
-        }
-    }
-
-    private static void RegisterService(
-        IServiceCollection services, ServiceLifetime lifetime, Type serviceType)
-    {
-        switch (lifetime)
-        {
-            case ServiceLifetime.Transient:
-                services.AddTransient(serviceType);
-                break;
-            case ServiceLifetime.Scoped:
-                services.AddScoped(serviceType);
-                break;
-            case ServiceLifetime.Singleton:
-                services.AddSingleton(serviceType);
-                break;
-        }
-    }
-
-    private static void RegisterService(
-        IServiceCollection services, ServiceLifetime lifetime, Type serviceType, Type implementationType)
-    {
-        switch (lifetime)
-        {
-            case ServiceLifetime.Transient:
-                services.AddTransient(serviceType, implementationType);
-                break;
-            case ServiceLifetime.Scoped:
-                services.AddScoped(serviceType, implementationType);
-                break;
-            case ServiceLifetime.Singleton:
-                services.AddSingleton(serviceType, implementationType);
-                break;
         }
     }
 
