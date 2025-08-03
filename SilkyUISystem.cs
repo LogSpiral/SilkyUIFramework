@@ -14,6 +14,11 @@ public partial class SilkyUISystem : ModSystem
     /// </summary>
     public static ServiceProvider ServiceProvider { get; private set; }
 
+    public static IMouseMenu GetRequiredService<IMouseMenu>()
+    {
+        return ServiceProvider.GetRequiredService<IMouseMenu>();
+    }
+
     public IEnumerable<Assembly> Assemblies { get; private set; }
 
     public SilkyUIManager SilkyUIManager { get; private set; }

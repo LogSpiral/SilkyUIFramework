@@ -103,7 +103,6 @@ public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
 
     protected override void Update(GameTime gameTime)
     {
-        MenuContainer.BackgroundColor = SUIColor.Background * 0.75f;
         base.Update(gameTime);
     }
 

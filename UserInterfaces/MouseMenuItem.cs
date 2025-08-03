@@ -42,7 +42,7 @@ public class MouseMenuItem : UIElementGroup
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        BackgroundColor = Color.Black * HoverTimer.Lerp(0.25f, 0.5f);
+        BackgroundColor = Color.Black * HoverTimer.Lerp(0.25f, 0.4f);
         base.UpdateStatus(gameTime);
     }
 }

@@ -14,22 +14,15 @@ public partial class SilkyUISystem
             orig(self);
             PlayerInput.SetZoom_UI();
             SilkyUIManager?.UpdateGlobalUI(Main.gameTimeCache);
-            PlayerInput.SetZoom_Unscaled();
+            PlayerInput.SetZoom_World();
         };
 
         IL_Main.DrawMenu += il =>
         {
             var c = new ILCursor(il);
 
-            if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor))))
-            {
-                return;
-            }
-
-            if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0)))
-            {
-                return;
-            }
+            if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor)))) return;
+            if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0))) return;
 
             // 绘制全局 UI
             c.EmitDelegate(() =>
