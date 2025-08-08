@@ -5,6 +5,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 {
     private SilkyUIManager SilkyUIManager { get; } = silkyUIManager;
 
+
     private readonly List<SilkyUI> _originalSilkyUIs = [];
 
     private readonly List<SilkyUI> _silkyUIs = [];
@@ -46,7 +47,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
     public void Order()
     {
-        var order = _originalSilkyUIs.OrderByDescending(value => value.Priority).ToList();
+        var order = _originalSilkyUIs.OrderByDescending(value => value.Priority).ToArray();
 
         _originalSilkyUIs.Clear();
         _silkyUIs.Clear();
@@ -92,7 +93,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
     {
         foreach (var silkyUI in _silkyUIs)
         {
-            if (silkyUI.BasicBody.GetType().GetCustomAttribute<RegisterUIAttribute>() is not { } registerUI) continue;
+            if (silkyUI.BasicBody.GetRegisterUI() is not { } registerUI) continue;
 
             var silkyUILayer = new SilkyUILayer(this, silkyUI, registerUI.Name, registerUI.InterfaceScaleType);
 
@@ -108,7 +109,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
         foreach (var silkyUI in reversedList)
         {
-            if (silkyUI.BasicBody.GetType().GetCustomAttribute<RegisterGlobalUIAttribute>() is not { } globalUI) continue;
+            if (silkyUI.BasicBody.GetRegisterGlobalUI() is not { } globalUI) continue;
 
             silkyUI.TransformMatrix = Main.UIScaleMatrix;
 

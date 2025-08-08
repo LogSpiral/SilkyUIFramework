@@ -15,12 +15,12 @@ public class MouseMenuItem : UIElementGroup
 
         FitWidth = true; FitHeight = true;
 
-        Padding = new Margin(8f, 4f);
+        Padding = new Margin(8f, 4f, 25f, 4f);
         BorderRadius = new Vector4(4f);
 
         TextView = new UITextView()
         {
-            MinWidth = new Dimension(100f),
+            MinWidth = new Dimension(125f),
             Text = content,
             TextScale = 0.8f,
         }.Join(this);

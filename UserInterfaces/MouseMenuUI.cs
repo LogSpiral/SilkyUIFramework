@@ -18,7 +18,7 @@ public enum MouseAnchor
     BottomRight,
 }
 
-[RegisterGlobalUI("MenuUI", 1)]
+[RegisterGlobalUI("MouseMenuUI", 1000)]
 public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
 {
     private ILog Logger { get; } = logger;
@@ -75,7 +75,7 @@ public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
                 FitHeight = true,
             },
             Container = {
-                FlexWrap = true,
+                FlexWrap = false,
                 FitWidth = true,
                 FitHeight = true,
                 FlexDirection = FlexDirection.Column,
@@ -118,12 +118,7 @@ public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
         UseRenderTarget = SwitchTimer.IsUpdating;
         Opacity = SwitchTimer.Lerp(0f, 1f);
 
-        var bounds = MenuContainer.Bounds;
-        //var center = bounds.Center * Main.UIScale;
         RenderTargetMatrix = Matrix.CreateTranslation(0, SwitchTimer.Lerp(10f, 0), 0);
-        //Matrix.CreateTranslation(-center.X, -center.Y, 0) *
-        //Matrix.CreateScale(SwitchTimer.Lerp(0.95f, 1f), SwitchTimer.Lerp(0.95f, 1f), 1) *
-        //Matrix.CreateTranslation(center.X, center.Y, 0);
 
         base.UpdateStatus(gameTime);
     }
