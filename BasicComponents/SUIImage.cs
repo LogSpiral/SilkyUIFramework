@@ -15,7 +15,6 @@ public class SUIImage : UIView
         get => _texture2D;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
             OnTextureChanged(this, value, _texture2D);
             _texture2D = value;
         }
@@ -50,10 +49,15 @@ public class SUIImage : UIView
 
     public Rectangle? SourceRectangle { get; set; }
 
+    public SUIImage()
+    {
+        SetSize(30f, 30f);
+        FitWidth = false;
+        FitHeight = false;
+    }
+
     public SUIImage(Asset<Texture2D> texture)
     {
-        ArgumentNullException.ThrowIfNull(texture);
-
         Texture2D = texture;
         FitWidth = true;
         FitHeight = true;
@@ -80,7 +84,7 @@ public class SUIImage : UIView
     {
         base.Draw(gameTime, spriteBatch);
 
-        if (Texture2D.Value is null) return;
+        if (Texture2D.Value == null) return;
 
         var position = InnerBounds.Position;
         var size = (Vector2)InnerBounds.Size;
