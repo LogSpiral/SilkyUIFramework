@@ -3,7 +3,7 @@
 #if DEBUG && false
 
 [RegisterGlobalUI("ExampleUI", 0)]
-internal class ExampleUI(IMouseMenu menuUI) : BasicBody
+public partial class ExampleUI(IMouseMenu menuUI) : BasicBody
 {
     private readonly IMouseMenu MenuUI = menuUI;
 
@@ -11,6 +11,8 @@ internal class ExampleUI(IMouseMenu menuUI) : BasicBody
 
     protected override void OnInitialize()
     {
+        InitializeComponent();
+
         FitWidth = true;
         FitHeight = true;
         SetGap(10f);

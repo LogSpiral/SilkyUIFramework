@@ -1,8 +1,11 @@
-﻿namespace SilkyUIFramework;
+﻿using SilkyUIFramework.Helper;
+
+namespace SilkyUIFramework;
 
 /// <summary>
 /// 似乎在密谋着什么，再等等...
 /// </summary>
+[XmlElementMapping("ElementGroup")]
 public partial class UIElementGroup : UIView
 {
     public bool OverflowHidden { get; set; }
@@ -25,7 +28,6 @@ public partial class UIElementGroup : UIView
     /// <summary>
     /// 获取有效子元素
     /// </summary>
-    /// <returns></returns>
     public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
     public IReadOnlyList<UIView> Children => Elements;
 
@@ -72,7 +74,7 @@ public partial class UIElementGroup : UIView
 
     public virtual bool HasChild(UIView child) => Elements.Contains(child);
 
-    public virtual void AppendChild(UIView child)
+    public virtual void Add(UIView child)
     {
         child.Remove();
         Elements.Add(child);
@@ -83,20 +85,32 @@ public partial class UIElementGroup : UIView
 
         ChildrenOrderIsDirty = true;
 
-        try
+        RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
+        RuntimeHelper.ErrorCapture(child.Initialize);
+    }
+
+    public virtual void Add(IEnumerable<UIView> childs)
+    {
+        foreach (var child in childs)
         {
-            if (SilkyUI != null)
-                child.HandleEnterTree(SilkyUI);
+            child.Remove();
+            Elements.Add(child);
+            child.Parent = this;
         }
-        catch (Exception)
+
+        MarkLayoutDirty();
+        MarkPositionDirty();
+
+        ChildrenOrderIsDirty = true;
+
+        foreach (var child in childs)
         {
-            throw;
-        }
-        finally
-        {
-            child.Initialize();
+            RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
+            RuntimeHelper.ErrorCapture(child.Initialize);
         }
     }
+
+    public virtual void AppendChild(UIView child) => Add(child);
 
     public virtual void RemoveChild(UIView child)
     {

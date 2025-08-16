@@ -18,11 +18,11 @@ public enum MouseAnchor
     BottomRight,
 }
 
-[RegisterGlobalUI("MouseMenuUI", 1000)]
-public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
-{
-    private ILog Logger { get; } = logger;
+#if true
 
+[RegisterGlobalUI("MouseMenuUI", 1000)]
+public partial class MouseMenuUI(ILog Logger) : BasicBody, IMouseMenu
+{
     public static bool ShowUI { get; set; }
     public override bool Enabled
     {
@@ -35,56 +35,32 @@ public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
     }
     public override bool IsInteractable => SwitchTimer.IsForward;
 
-    private UIElementGroup MenuContainer { get; set; }
-    private SUIScrollView ScrollView { get; set; }
-
     protected override void OnInitialize()
     {
-        Enabled = false;
+        InitializeComponent();
 
-        SetSize(0f, 0f, 1f, 1f);
+        Logger.Info("MouseMenuUI loading completed content.");
 
         SetLeft(0f, 0f, 0f);
         SetTop(0f, 0f, 0f);
 
-        Border = 0;
-        BorderColor = Color.Transparent;
-        BackgroundColor = Color.Transparent;
+        // Microsoft.Xna.Framework.Vector4
 
-        MenuContainer = new UIElementGroup()
-        {
-            FitWidth = true,
-            FitHeight = true,
-            Border = 2,
-            BorderRadius = new Vector4(8f),
-            BorderColor = SUIColor.Border * 0.5f,
-            BackgroundColor = SUIColor.Background * 0.5f,
-        }.Join(this);
+        MenuContainer.BorderColor = SUIColor.Border * 0.75f;
+        MenuContainer.BackgroundColor = SUIColor.Background * 0.75f;
 
-        ScrollView = new SUIScrollView(Direction.Vertical)
-        {
-            FitWidth = true,
-            FitHeight = true,
-            Padding = new Margin(4f),
-            Width = new Dimension(0f, 1f),
-            Height = new Dimension(0f, 1f),
-            Gap = new Size(4f),
-            Mask = {
-                MaxHeight = new Dimension(300f, 0f),
-                FitWidth = true,
-                FitHeight = true,
-            },
-            Container = {
-                FlexWrap = false,
-                FitWidth = true,
-                FitHeight = true,
-                FlexDirection = FlexDirection.Column,
-                MainAlignment = MainAlignment.Start,
-                CrossContentAlignment = CrossContentAlignment.Stretch,
-                CrossAlignment = CrossAlignment.Stretch,
-                Gap = new Size(4f),
-            }
-        }.Join(MenuContainer);
+        ScrollView.Mask.MaxHeight = new Dimension(300f, 0f);
+        ScrollView.Mask.FitWidth = true;
+        ScrollView.Mask.FitHeight = true;
+
+        ScrollView.Container.FlexWrap = false;
+        ScrollView.Container.FitWidth = true;
+        ScrollView.Container.FitHeight = true;
+        ScrollView.Container.FlexDirection = FlexDirection.Column;
+        ScrollView.Container.MainAlignment = MainAlignment.Start;
+        ScrollView.Container.CrossContentAlignment = CrossContentAlignment.Stretch;
+        ScrollView.Container.CrossAlignment = CrossAlignment.Stretch;
+        ScrollView.Container.Gap = new Size(4f);
     }
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
@@ -183,3 +159,5 @@ public class MouseMenuUI(ILog logger) : BasicBody, IMouseMenu
         }
     }
 }
+
+#endif

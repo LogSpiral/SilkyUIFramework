@@ -3,6 +3,7 @@ using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.BasicElements;
 
+[XmlElementMapping("EditText")]
 public class SUIEditText : UITextView
 {
     private float _cursorFlashTimer;

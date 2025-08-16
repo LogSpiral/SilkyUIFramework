@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Body Class="SilkyUIFramework.UserInterfaces.MouseMenuUI" Enabled="false"
+	Border="0" BorderColor="#00000000" BackgroundColor="#00000000" Width="100%" Height="100%"
+	FitWidth="false">
+	<ElementGroup Name="MenuContainer" BackgroundColor="rgba(0, 155, 255, 0.5)"
+		FlexDirection="Column" FitWidth="true" FitHeight="true" Border="2" BorderRadius="8">
+		<ScrollView Name="ScrollView"
+			FitWidth="true" FitHeight="true"
+			Padding="4" Gap="4" Width="100%" Height="100%">
+		</ScrollView>
+	</ElementGroup>
+</Body>

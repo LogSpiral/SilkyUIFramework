@@ -30,11 +30,10 @@ public class MouseMenuItem : UIElementGroup
     {
         if (MouseMenuCallback?.Invoke(Content, MenuIndex) ?? true)
         {
-            var ancestor = GetAncestor();
-            if (ancestor is MouseMenuUI menuUI)
-            {
-                menuUI.Enabled = false;
-            }
+            //if (GetAncestor() is MouseMenuUI menuUI)
+            //{
+            //    menuUI.Enabled = false;
+            //}
         }
 
         base.OnLeftMouseDown(evt);
