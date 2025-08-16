@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Class 填写对应类名 -->
+<Body
+	Class="SilkyUIFramework.UserInterfaces.Test.TestUI"
+	Left="0.5#" Top="0.75#" FlexDirection="Row"
+	FitWidth="true" FitHeight="true" BorderRadius="4" Padding="8">
+	<!-- Name 属性设置后，会在类中生成一个属性，名为 Name 属性的值 -->
+	<!-- 此属性会在 InitializeComponent(); 中初始化并将这个对象赋给属性 -->
+	<ElementGroup Name="Container" FitWidth="true" FitHeight="true" Gap="8">
+		
+	</ElementGroup>
+</Body>

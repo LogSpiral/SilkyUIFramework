@@ -15,8 +15,11 @@ public class SUIImage : UIView
         get => _texture2D;
         set
         {
-            OnTextureChanged(this, value, _texture2D);
+            if (value == _texture2D) return;
             _texture2D = value;
+
+            if (FitWidth || FitHeight) MarkLayoutDirty();
+            OnTextureChanged(this, value, _texture2D);
         }
     }
     public Vector2 ImageOriginalSize

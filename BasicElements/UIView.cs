@@ -42,6 +42,8 @@ public partial class UIView
     {
         LayoutIsDirty = true;
         PositionIsDirty = true;
+
+        // 如果元素是自由定位的，则不需要通知父元素
         if (Positioning.IsFree()) return;
         Parent?.NotifyParentChildDirty();
     }
