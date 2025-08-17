@@ -37,9 +37,9 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
                 {
                     return new Dimension(pixels, 0f);
                 }
-                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd("%"), out var percent))
+                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var percent))
                 {
-                    return new Dimension(0f, percent);
+                    return new Dimension(0f, percent / 100f);
                 }
 
                 goto default;
@@ -47,7 +47,7 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
             case 2:
             {
                 if (!float.TryParse(parts[0].TrimEnd("px"), out var pixels)) goto default;
-                if (!float.TryParse(parts[1].TrimEnd("%"), out var percent)) goto default;
+                if (!float.TryParse(parts[1].TrimEnd('%'), out var percent)) goto default;
                 return new Dimension(pixels, percent / 100f);
             }
             default: throw new FormatException($"Cannot parse '{s}' as Dimension.");
@@ -77,7 +77,7 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
                 }
                 else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd("%"), out var percent))
                 {
-                    result = new Dimension(0f, percent);
+                    result = new Dimension(0f, percent / 100f);
                     return true;
                 }
 

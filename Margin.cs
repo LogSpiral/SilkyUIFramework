@@ -74,8 +74,8 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
             case 4:
                 if (!float.TryParse(parts[0], out var l) ||
                     !float.TryParse(parts[1], out var t) ||
-                    !float.TryParse(parts[1], out var r) ||
-                    !float.TryParse(parts[1], out var b))
+                    !float.TryParse(parts[2], out var r) ||
+                    !float.TryParse(parts[3], out var b))
                     throw new FormatException("Size must be a valid floating-point number.");
                 return new Margin(l, t, r, b);
             default:
@@ -106,8 +106,8 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
             case 4:
                 if (!float.TryParse(parts[0], out var l) ||
                     !float.TryParse(parts[1], out var t) ||
-                    !float.TryParse(parts[1], out var r) ||
-                    !float.TryParse(parts[1], out var b))
+                    !float.TryParse(parts[2], out var r) ||
+                    !float.TryParse(parts[3], out var b))
                     return false;
                 result = new Margin(l, t, r, b);
                 return true;

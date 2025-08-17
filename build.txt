@@ -1,4 +1,4 @@
 displayName = SilkyUI
 author = 太阳照常升起
-version = 0.1.4.1
+version = 0.1.20250818.1
 hideCode = false

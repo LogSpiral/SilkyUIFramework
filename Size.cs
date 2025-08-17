@@ -126,7 +126,6 @@ public readonly struct Size(float width, float height) : IEquatable<Size>, IPars
         switch (parts.Length)
         {
             case 1:
-                // Single value, assume square size
                 if (!float.TryParse(parts[0], out var size))
                     throw new FormatException("Size must be a valid floating-point number.");
                 return new Size(size);

@@ -8,20 +8,19 @@ public class SUIImage : UIView
 
     public delegate void TextureChangeEventHandler(SUIImage sender, Asset<Texture2D> newTexture2D, Asset<Texture2D> oldTexture2D);
 
-    private Asset<Texture2D> _texture2D;
-
     public Asset<Texture2D> Texture2D
     {
-        get => _texture2D;
+        get;
         set
         {
-            if (value == _texture2D) return;
-            _texture2D = value;
+            if (value == field) return;
+            field = value;
 
             if (FitWidth || FitHeight) MarkLayoutDirty();
-            OnTextureChanged(this, value, _texture2D);
+            OnTextureChanged(this, value, field);
         }
     }
+
     public Vector2 ImageOriginalSize
     {
         get

@@ -46,7 +46,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
 
     public override string ToString()
     {
-        return $"{Pixels}px, {Percent}%, {Alignment}";
+        return $"{Pixels}px, {Percent}%, {Alignment}#";
     }
 
     public static Anchor Parse(string s, IFormatProvider provider)
@@ -66,12 +66,12 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 else if (parts[0].EndsWith('%'))
                 {
                     var value = float.Parse(parts[0].TrimEnd('%'), provider);
-                    return new Anchor(0f, value, 0f);
+                    return new Anchor(0f, value / 100f, 0f);
                 }
                 else if (parts[0].EndsWith('#'))
                 {
                     var value = float.Parse(parts[0].TrimEnd('#'), provider);
-                    return new Anchor(0f, 0f, value);
+                    return new Anchor(0f, 0f, value / 100f);
                 }
 
                 throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
@@ -82,7 +82,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 var arg2 = float.Parse(parts[1].TrimEnd('%'), provider);
                 var arg3 = float.Parse(parts[2].TrimEnd('#'), provider);
 
-                return new Anchor(arg1, arg2, arg3);
+                return new Anchor(arg1, arg2 / 100f, arg3 / 100f);
             }
             default:
                 throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
@@ -106,12 +106,12 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 }
                 else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var arg2))
                 {
-                    result = new Anchor(0f, arg2, 0f);
+                    result = new Anchor(0f, arg2 / 100f, 0f);
                     return true;
                 }
-                else if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var arg3))
+                else if (parts[0].EndsWith('#') && float.TryParse(parts[0].TrimEnd('#'), out var arg3))
                 {
-                    result = new Anchor(0f, arg3, 0f);
+                    result = new Anchor(0f, arg3 / 100f, 0f);
                     return true;
                 }
 
@@ -123,7 +123,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                     float.TryParse(parts[1].TrimEnd('%'), out var arg2) &&
                     float.TryParse(parts[0].TrimEnd("px"), out var arg3))
                 {
-                    result = new Anchor(arg1, arg2, arg3);
+                    result = new Anchor(arg1, arg2 / 100f, arg3 / 100f);
                     return true;
                 }
 

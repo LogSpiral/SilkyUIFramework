@@ -172,7 +172,17 @@ public class AnimationTimer(float speed = 5f, float timerMax = 100f)
 
     public Vector2 Lerp(Vector2 vector21, Vector2 vector22)
     {
-        return new Vector2(Lerp(vector21.X, vector22.X), Lerp(vector21.Y, vector22.Y));
+        return Vector2.Lerp(vector21, vector22, Schedule);
+    }
+
+    public Vector3 Lerp(Vector3 vector31, Vector3 vector32)
+    {
+        return Vector3.Lerp(vector31, vector32, Schedule);
+    }
+
+    public Vector4 Lerp(Vector4 vector41, Vector4 vector42)
+    {
+        return Vector4.Lerp(vector41, vector42, Schedule);
     }
 
     public float Lerp(float value1, float value2)
