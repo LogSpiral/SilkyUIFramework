@@ -1,5 +1,6 @@
 ﻿namespace SilkyUIFramework.BasicElements;
 
+[XmlElementMapping("ItemSlot")]
 public class SUIItemSlot : UIView
 {
     public static bool PlayerInUseItem => Main.LocalPlayer?.ItemAnimationActive ?? false;

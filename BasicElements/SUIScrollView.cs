@@ -7,6 +7,7 @@ public enum Direction
     Vertical,
 }
 
+[XmlElementMapping("ScrollView")]
 public class SUIScrollView : UIElementGroup
 {
     public readonly Direction Direction;

@@ -12,7 +12,7 @@ public partial class SilkyUISystem : ModSystem
     /// <summary>
     /// 服务提供者，用于依赖注入
     /// </summary>
-    public static ServiceProvider ServiceProvider { get; private set; }
+    public static IServiceProvider ServiceProvider { get; private set; }
 
     public static IMouseMenu GetRequiredService<IMouseMenu>()
     {

@@ -1,6 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SilkyUIFramework;
 
-public readonly struct Margin(float left, float top, float right, float bottom) : IEquatable<Margin>
+public readonly struct Margin(float left, float top, float right, float bottom) : IEquatable<Margin>, IParsable<Margin>
 {
     public static Margin Zero { get; } = new(0f, 0f, 0f, 0f);
 
@@ -50,5 +52,67 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
         if (Left == Right && Top == Bottom)
             return $"Margin({Left}, {Top})";
         return $"Margin({Left}, {Top}, {Right}, {Bottom})";
+    }
+
+    public static Margin Parse(string s, IFormatProvider provider)
+    {
+        if (string.IsNullOrEmpty(s))
+            throw new ArgumentNullException(nameof(s), "Size string cannot be null or empty.");
+
+        var parts = s.Split(' ');
+        switch (parts.Length)
+        {
+            case 1:
+                // Single value, assume square size
+                if (!float.TryParse(parts[0], out var size))
+                    throw new FormatException("Size must be a valid floating-point number.");
+                return new Margin(size);
+            case 2:
+                if (!float.TryParse(parts[0], out var h) || !float.TryParse(parts[1], out var v))
+                    throw new FormatException("Size must be a valid floating-point number.");
+                return new Margin(h, v);
+            case 4:
+                if (!float.TryParse(parts[0], out var l) ||
+                    !float.TryParse(parts[1], out var t) ||
+                    !float.TryParse(parts[2], out var r) ||
+                    !float.TryParse(parts[3], out var b))
+                    throw new FormatException("Size must be a valid floating-point number.");
+                return new Margin(l, t, r, b);
+            default:
+                throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
+        }
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Margin result)
+    {
+        result = Zero;
+        if (string.IsNullOrEmpty(s))
+            return false;
+
+        var parts = s.Split(' ');
+        switch (parts.Length)
+        {
+            case 1:
+                // Single value, assume square size
+                if (!float.TryParse(parts[0], out var size))
+                    return false;
+                result = new Margin(size);
+                return true;
+            case 2:
+                if (!float.TryParse(parts[0], out var h) || !float.TryParse(parts[1], out var v))
+                    return false;
+                result = new Margin(h, v);
+                return true;
+            case 4:
+                if (!float.TryParse(parts[0], out var l) ||
+                    !float.TryParse(parts[1], out var t) ||
+                    !float.TryParse(parts[2], out var r) ||
+                    !float.TryParse(parts[3], out var b))
+                    return false;
+                result = new Margin(l, t, r, b);
+                return true;
+            default:
+                return false;
+        }
     }
 }

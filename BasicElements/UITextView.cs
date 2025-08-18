@@ -19,6 +19,8 @@ public class ContentChangedEventArgs(string text) : EventArgs
 public delegate string ContentChangingEventHandler(UITextView sender, ContentChangingEventArgs e);
 public delegate void ContentChangedEventHandler(UITextView sender, ContentChangedEventArgs e);
 
+
+[XmlElementMapping("TextView")]
 public class UITextView : UIView
 {
     public static readonly Vector2[] ShadowOffsets = [-Vector2.UnitX, Vector2.UnitX, -Vector2.UnitY, Vector2.UnitY];
@@ -168,13 +170,13 @@ public class UITextView : UIView
 
     public override void Prepare(float? width, float? height)
     {
-        ComputeWidthConstraint(width ?? 0);
-        ComputeHeightConstraint(height ?? 0);
+        CalculateWidthConstraints(width ?? 0);
+        CalculateHeightConstraints(height ?? 0);
 
         if (FitWidth)
         {
             RecalculateText(MaxInnerWidth);
-            DefineInnerBoundsWidth(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
+            SetInnerBoundsWidth(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
         }
         else
         {
@@ -184,7 +186,7 @@ public class UITextView : UIView
 
         if (FitHeight)
         {
-            DefineInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+            SetInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
         }
         else
         {
@@ -197,7 +199,7 @@ public class UITextView : UIView
         RecalculateText(InnerBounds.Width);
         if (FitHeight)
         {
-            DefineInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+            SetInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
         }
     }
 

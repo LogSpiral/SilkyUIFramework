@@ -8,18 +8,19 @@ public class SUIImage : UIView
 
     public delegate void TextureChangeEventHandler(SUIImage sender, Asset<Texture2D> newTexture2D, Asset<Texture2D> oldTexture2D);
 
-    private Asset<Texture2D> _texture2D;
-
     public Asset<Texture2D> Texture2D
     {
-        get => _texture2D;
+        get;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
-            OnTextureChanged(this, value, _texture2D);
-            _texture2D = value;
+            if (value == field) return;
+            field = value;
+
+            if (FitWidth || FitHeight) MarkLayoutDirty();
+            OnTextureChanged(this, value, field);
         }
     }
+
     public Vector2 ImageOriginalSize
     {
         get
@@ -50,10 +51,15 @@ public class SUIImage : UIView
 
     public Rectangle? SourceRectangle { get; set; }
 
+    public SUIImage()
+    {
+        SetSize(30f, 30f);
+        FitWidth = false;
+        FitHeight = false;
+    }
+
     public SUIImage(Asset<Texture2D> texture)
     {
-        ArgumentNullException.ThrowIfNull(texture);
-
         Texture2D = texture;
         FitWidth = true;
         FitHeight = true;
@@ -67,12 +73,12 @@ public class SUIImage : UIView
 
         if (FitWidth)
         {
-            DefineInnerBoundsWidth(Texture2D.Value.Width);
+            SetInnerBoundsWidth(Texture2D.Value.Width);
         }
 
         if (FitHeight)
         {
-            DefineInnerBoundsWidth(Texture2D.Value.Height);
+            SetInnerBoundsWidth(Texture2D.Value.Height);
         }
     }
 
@@ -80,7 +86,7 @@ public class SUIImage : UIView
     {
         base.Draw(gameTime, spriteBatch);
 
-        if (Texture2D.Value is null) return;
+        if (Texture2D.Value == null) return;
 
         var position = InnerBounds.Position;
         var size = (Vector2)InnerBounds.Size;

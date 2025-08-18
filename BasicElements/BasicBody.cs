@@ -135,7 +135,7 @@ public abstract partial class BasicBody : UIElementGroup
 
         if (LayoutIsDirty)
         {
-            var container = GetParentAvailableSpace();
+            var container = GetParentInnerSpace();
             Prepare(container.Width, container.Height);
             ResizeChildrenWidth();
             RecalculateHeight();

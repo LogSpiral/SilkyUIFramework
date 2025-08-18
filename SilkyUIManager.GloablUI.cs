@@ -16,6 +16,8 @@ public partial class SilkyUIManager
 
     public void InitializeGlobalUI()
     {
+        if (Main.netMode == NetmodeID.Server) return;
+
         GlobalSilkyUIGroup = ServiceProvider.GetService<SilkyUIGroup>();
 
         foreach (var type in GlobalBodyTypes)
@@ -32,6 +34,8 @@ public partial class SilkyUIManager
 
     public void UpdateGlobalUI(GameTime gameTime)
     {
+        if (Main.netMode == NetmodeID.Server) return;
+
         MouseHoverGroup = null;
         MouseFocusGroup = null;
 
@@ -44,6 +48,8 @@ public partial class SilkyUIManager
 
     public void DrawGlobalUI(GameTime gameTime)
     {
+        if (Main.netMode == NetmodeID.Server) return;
+
         GlobalSilkyUIGroup?.Order();
         GlobalSilkyUIGroup?.Draw(gameTime);
     }

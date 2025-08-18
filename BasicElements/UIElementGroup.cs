@@ -1,8 +1,11 @@
-﻿namespace SilkyUIFramework;
+﻿using SilkyUIFramework.Helper;
+
+namespace SilkyUIFramework;
 
 /// <summary>
 /// 似乎在密谋着什么，再等等...
 /// </summary>
+[XmlElementMapping("ElementGroup")]
 public partial class UIElementGroup : UIView
 {
     public bool OverflowHidden { get; set; }
@@ -78,7 +81,7 @@ public partial class UIElementGroup : UIView
 
     public virtual bool HasChild(UIView child) => Elements.Contains(child);
 
-    public virtual void AppendChild(UIView child)
+    public virtual void Add(UIView child)
     {
         child.Remove();
         Elements.Add(child);
@@ -89,17 +92,28 @@ public partial class UIElementGroup : UIView
 
         ChildrenOrderIsDirty = true;
 
-        try
+        RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
+        RuntimeHelper.ErrorCapture(child.Initialize);
+    }
+
+    public virtual void Add(IEnumerable<UIView> childs)
+    {
+        foreach (var child in childs)
         {
-            if (SilkyUI != null)
-                child.HandleEnterTree(SilkyUI);
+            child.Remove();
+            Elements.Add(child);
+            child.Parent = this;
         }
-        catch (Exception)
+
+        MarkLayoutDirty();
+        MarkPositionDirty();
+
+        ChildrenOrderIsDirty = true;
+
+        foreach (var child in childs)
         {
-            throw;
-        }
-        finally
-        {
+            RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
+            RuntimeHelper.ErrorCapture(child.Initialize);
             child.Initialize();
         }
     }
@@ -137,6 +151,8 @@ public partial class UIElementGroup : UIView
             AppendChildAt(child, idx);
         return idx;
     }
+
+    public virtual void AppendChild(UIView child) => Add(child);
 
     public virtual void RemoveChild(UIView child)
     {

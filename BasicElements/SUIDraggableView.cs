@@ -3,6 +3,7 @@
 /// <summary>
 /// 可拖动视图
 /// </summary>
+[XmlElementMapping("DraggableView")]
 public class SUIDraggableView : UIElementGroup
 {
     public bool Dragging { get; protected set; }
@@ -11,12 +12,16 @@ public class SUIDraggableView : UIElementGroup
     public bool OccupyMouseInterface { get; set; } = true;
     public bool ConstrainInParent { get; set; } = false;
 
-    public readonly UIElementGroup ControlTarget;
+    public UIElementGroup ControlTarget { get; set; }
 
-    public SUIDraggableView(UIElementGroup controlTarget)
+    public SUIDraggableView()
+    {
+        BackgroundColor = SUIColor.Background * 0.75f;
+    }
+
+    public SUIDraggableView(UIElementGroup controlTarget) : base()
     {
         ControlTarget = controlTarget;
-        BackgroundColor = SUIColor.Background * 0.75f;
     }
 
     public override void OnLeftMouseDown(UIMouseEvent evt)

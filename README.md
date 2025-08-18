@@ -17,3 +17,17 @@
 3. [x] position: sticky 实现
 4. [ ] Grid 布局设计与实现
 5. [x] 模糊效果实现
+
+XML 初始模板：
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Class 填写对应类名 -->
+<Body Class="SilkyUIFramework.UserInterfaces.MouseMenuUI">
+</Body>
+```
+
+支持的类:
+
+1. 实现 IParsable<TSelf> 的任意类，会调用 Parse 方法进行解析。
+2. float double char int string
+3. Vector2 Vector3 Vector4 Color

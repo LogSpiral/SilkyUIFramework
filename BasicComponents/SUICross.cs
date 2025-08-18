@@ -1,6 +1,7 @@
 ﻿namespace SilkyUIFramework.BasicComponents;
 
-public class SUICross(Color backgroundColor, Color borderColor) : UIView
+[XmlElementMapping("Cross")]
+public class SUICross : UIView
 {
     public float
         CrossSize = 24f,
@@ -8,13 +9,22 @@ public class SUICross(Color backgroundColor, Color borderColor) : UIView
         CrossBorder = 2;
 
     public Color
-        CrossBorderColor = borderColor,
-        CrossBorderHoverColor = borderColor,
-        CrossBackgroundColor = backgroundColor,
-        CrossBackgroundHoverColor = backgroundColor;
+        CrossBorderColor,
+        CrossBorderHoverColor,
+        CrossBackgroundColor,
+        CrossBackgroundHoverColor;
 
     public Vector2 CrossOffset = Vector2.Zero;
 
+    public SUICross() { }
+
+    public SUICross(Color backgroundColor, Color borderColor)
+    {
+        CrossBorderColor = borderColor;
+        CrossBorderHoverColor = borderColor;
+        CrossBackgroundColor = backgroundColor;
+        CrossBackgroundHoverColor = backgroundColor;
+    }
 
     public override void OnMouseLeave(UIMouseEvent evt)
     {

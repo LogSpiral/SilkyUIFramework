@@ -39,7 +39,7 @@ public partial class UIElementGroup
         {
             if (Positioning.IsFree())
             {
-                var container = GetParentAvailableSpace();
+                var container = GetParentInnerSpace();
                 Prepare(container.Width, container.Height);
                 ResizeChildrenWidth();
                 RecalculateHeight();

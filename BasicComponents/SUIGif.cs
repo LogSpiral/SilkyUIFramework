@@ -58,12 +58,12 @@ public class SUIGif : UIView
 
         if (FitWidth)
         {
-            DefineInnerBoundsWidth(GifRenderer.Width);
+            SetInnerBoundsWidth(GifRenderer.Width);
         }
 
         if (FitHeight)
         {
-            DefineInnerBoundsWidth(GifRenderer.Height);
+            SetInnerBoundsWidth(GifRenderer.Height);
         }
     }
 

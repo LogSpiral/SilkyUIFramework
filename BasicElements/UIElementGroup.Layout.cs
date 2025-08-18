@@ -130,9 +130,9 @@ public partial class UIElementGroup
             {
                 FlexLines.MeasureSize(Gap.Width, out var contentWidth, out var contentHeight);
                 if (FitWidth)
-                    DefineInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
+                    SetInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
                 if (FitHeight)
-                    DefineInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
+                    SetInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
 
                 break;
             }
@@ -140,9 +140,9 @@ public partial class UIElementGroup
             {
                 FlexLines.MeasureSize(Gap.Height, out var contentHeight, out var contentWidth);
                 if (FitWidth)
-                    DefineInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
+                    SetInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
                 if (FitHeight)
-                    DefineInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
+                    SetInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
 
                 break;
             }
@@ -166,7 +166,7 @@ public partial class UIElementGroup
                 if (FitHeight)
                 {
                     var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
-                    DefineInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
+                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
                 }
 
                 foreach (var flexLine in FlexLines)
@@ -271,7 +271,7 @@ public partial class UIElementGroup
                 if (FitHeight)
                 {
                     var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
-                    DefineInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
+                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
                 }
                 break;
             }
@@ -280,7 +280,7 @@ public partial class UIElementGroup
                 if (FitHeight)
                 {
                     var content = FlexLines.Max(line => line.MainSize);
-                    DefineInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
+                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
                 }
                 break;
             }

@@ -285,6 +285,8 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
     {
         if (BasicBody is not { Enabled: true }) return;
 
+        BasicBody.Initialize();
+
         // 更新 UI 的各种状态，比如动画
         BasicBody.HandleUpdateStatus(gameTime);
 

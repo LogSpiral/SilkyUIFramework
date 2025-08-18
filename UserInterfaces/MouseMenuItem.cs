@@ -15,12 +15,12 @@ public class MouseMenuItem : UIElementGroup
 
         FitWidth = true; FitHeight = true;
 
-        Padding = new Margin(8f, 4f);
+        Padding = new Margin(8f, 4f, 8f, 4f);
         BorderRadius = new Vector4(4f);
 
         TextView = new UITextView()
         {
-            MinWidth = new Dimension(100f),
+            MinWidth = new Dimension(125f),
             Text = content,
             TextScale = 0.8f,
         }.Join(this);
@@ -28,13 +28,9 @@ public class MouseMenuItem : UIElementGroup
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        if (MouseMenuCallback?.Invoke(Content, MenuIndex) ?? true)
+        if ((MouseMenuCallback?.Invoke(Content, MenuIndex) ?? true) && GetAncestor() is MouseMenuUI menu)
         {
-            var ancestor = GetAncestor();
-            if (ancestor is MouseMenuUI menuUI)
-            {
-                menuUI.Enabled = false;
-            }
+            menu.Enabled = false;
         }
 
         base.OnLeftMouseDown(evt);

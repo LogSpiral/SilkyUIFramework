@@ -1,9 +1,11 @@
-﻿namespace SilkyUIFramework;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SilkyUIFramework;
 
 /// <summary>
 /// 表示一个定位锚点，包含像素偏移、百分比偏移和对齐比例
 /// </summary>
-public readonly struct Anchor(float pixels = 0f, float percent = 0f, float alignment = 0f) : IEquatable<Anchor>
+public readonly struct Anchor(float pixels = 0f, float percent = 0f, float alignment = 0f) : IEquatable<Anchor>, IParsable<Anchor>
 {
     public float Pixels { get; } = pixels;
     public float Percent { get; } = percent;
@@ -44,6 +46,90 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
 
     public override string ToString()
     {
-        return $"{Pixels}px, {Percent}%, {Alignment}";
+        return $"{Pixels}px, {Percent}%, {Alignment}#";
+    }
+
+    public static Anchor Parse(string s, IFormatProvider provider)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
+
+        var parts = s.Split(' ');
+        switch (parts.Length)
+        {
+            case 1:
+            {
+                if (parts[0].EndsWith("px"))
+                {
+                    var value = float.Parse(parts[0].TrimEnd("px"), provider);
+                    return new Anchor(0f, value, 0f);
+                }
+                else if (parts[0].EndsWith('%'))
+                {
+                    var value = float.Parse(parts[0].TrimEnd('%'), provider);
+                    return new Anchor(0f, value / 100f, 0f);
+                }
+                else if (parts[0].EndsWith('#'))
+                {
+                    var value = float.Parse(parts[0].TrimEnd('#'), provider);
+                    return new Anchor(0f, 0f, value / 100f);
+                }
+
+                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
+            }
+            case 3:
+            {
+                var arg1 = float.Parse(parts[0].TrimEnd("px"), provider);
+                var arg2 = float.Parse(parts[1].TrimEnd('%'), provider);
+                var arg3 = float.Parse(parts[2].TrimEnd('#'), provider);
+
+                return new Anchor(arg1, arg2 / 100f, arg3 / 100f);
+            }
+            default:
+                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
+        }
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Anchor result)
+    {
+        result = new Anchor();
+        if (string.IsNullOrWhiteSpace(s)) return false;
+
+        var parts = s.Split(' ');
+        switch (parts.Length)
+        {
+            case 1:
+            {
+                if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var arg1))
+                {
+                    result = new Anchor(0f, arg1, 0f);
+                    return true;
+                }
+                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var arg2))
+                {
+                    result = new Anchor(0f, arg2 / 100f, 0f);
+                    return true;
+                }
+                else if (parts[0].EndsWith('#') && float.TryParse(parts[0].TrimEnd('#'), out var arg3))
+                {
+                    result = new Anchor(0f, arg3 / 100f, 0f);
+                    return true;
+                }
+
+                return false;
+            }
+            case 3:
+            {
+                if (float.TryParse(parts[0].TrimEnd("px"), out var arg1) &&
+                    float.TryParse(parts[1].TrimEnd('%'), out var arg2) &&
+                    float.TryParse(parts[0].TrimEnd("px"), out var arg3))
+                {
+                    result = new Anchor(arg1, arg2 / 100f, arg3 / 100f);
+                    return true;
+                }
+
+                return false;
+            }
+            default: return false;
+        }
     }
 }

@@ -41,8 +41,6 @@ public partial class SilkyUISystem
     public override void Unload()
     {
         Assemblies = null;
-
-        ServiceProvider?.Dispose();
         ServiceProvider = null;
     }
 

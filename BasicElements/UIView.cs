@@ -1,5 +1,8 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿using SilkyUIFramework.Helper;
 
+namespace SilkyUIFramework.BasicElements;
+
+[XmlElementMapping("View")]
 public partial class UIView
 {
     #region IgnoreMouseInteraction Invalid IsMouseHovering DirtyMark
@@ -39,6 +42,8 @@ public partial class UIView
     {
         LayoutIsDirty = true;
         PositionIsDirty = true;
+
+        // 如果元素是自由定位的，则不需要通知父元素
         if (Positioning.IsFree()) return;
         Parent?.NotifyParentChildDirty();
     }
@@ -103,11 +108,9 @@ public partial class UIView
     /// </summary>
     internal virtual void Initialize()
     {
-        if (!_initialized)
-        {
-            _initialized = true;
-            OnInitialize();
-        }
+        if (_initialized) return;
+        _initialized = true;
+        RuntimeHelper.ErrorCapture(OnInitialize);
     }
 
     protected virtual void OnInitialize() { }
@@ -117,31 +120,20 @@ public partial class UIView
     internal virtual void HandleEnterTree(SilkyUI silkyUI)
     {
         SilkyUI = silkyUI;
-        OnEnterTree();
+        RuntimeHelper.ErrorCapture(OnEnterTree);
     }
 
     internal virtual void HandleExitTree()
     {
         SilkyUI = null;
-        OnExitTree();
+        RuntimeHelper.ErrorCapture(OnExitTree);
     }
 
-    /// <summary>
-    /// 当元素加入UI节点树中时调用
-    /// </summary>
-    protected virtual void OnEnterTree()
-    {
+    /// <summary> 当元素加入UI树中时调用 </summary>
+    protected virtual void OnEnterTree() { }
 
-    }
-
-
-    /// <summary>
-    /// 当元素移出UI节点树中时调用
-    /// </summary>
-    protected virtual void OnExitTree()
-    {
-
-    }
+    /// <summary> 当元素移出UI树中时调用 </summary>
+    protected virtual void OnExitTree() { }
 
     /// <summary> 按条件获取祖先元素 </summary>
     public UIView GetAncestor(Func<UIView, bool> condition = null)
@@ -159,10 +151,13 @@ public partial class UIView
         return null;
     }
 
-    protected bool PositionIsDirty { get; set; } = true;
+    #region PositionIsDirty
 
+    protected bool PositionIsDirty { get; set; } = true;
     protected void MarkPositionDirty() => PositionIsDirty = true;
     protected void CleanupPositionDirtyMark() => PositionIsDirty = false;
+
+    #endregion
 
     public Positioning Positioning
     {
@@ -188,7 +183,8 @@ public partial class UIView
         {
             if (field == value) return;
             field = value;
-            // 仅当元素为 sticky 定位时, 才需要重新计算位置
+
+            // Sticky 定位时，重新计算位置
             if (Positioning == Positioning.Sticky) MarkPositionDirty();
         }
     }
@@ -200,6 +196,8 @@ public partial class UIView
         {
             if (field == value) return;
             field = value;
+
+            // Sticky 定位时，重新计算位置
             if (Positioning is Positioning.Sticky) MarkPositionDirty();
         }
     }
