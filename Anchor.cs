@@ -101,7 +101,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
             {
                 if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var arg1))
                 {
-                    result = new Anchor(0f, arg1, 0f);
+                    result = new Anchor(arg1, 0f, 0f);
                     return true;
                 }
                 else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var arg2))
@@ -111,7 +111,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 }
                 else if (parts[0].EndsWith('#') && float.TryParse(parts[0].TrimEnd('#'), out var arg3))
                 {
-                    result = new Anchor(0f, arg3 / 100f, 0f);
+                    result = new Anchor(0f, 0f, arg3 / 100f);
                     return true;
                 }
 
