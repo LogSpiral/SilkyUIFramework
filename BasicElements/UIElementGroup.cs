@@ -26,7 +26,13 @@ public partial class UIElementGroup : UIView
     /// 获取有效子元素
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
+    public IEnumerable<UIView> GetValidChildren()
+    {
+        HashSet<UIView> results = [];
+        foreach (var elem in Elements.Where(el => !el.Invalid))
+            results.Add(elem);
+        return results;
+    }
     public IReadOnlyList<UIView> Children => Elements;
 
     /// <summary>
@@ -96,6 +102,40 @@ public partial class UIElementGroup : UIView
         {
             child.Initialize();
         }
+    }
+
+    public virtual void AppendChildAt(UIView child, int index)
+    {
+        child.Remove();
+        Elements.Insert(Math.Min(index,Elements.Count), child);
+        child.Parent = this;
+
+        MarkLayoutDirty();
+        MarkPositionDirty();
+
+        ChildrenOrderIsDirty = true;
+
+        try
+        {
+            if (SilkyUI != null)
+                child.HandleEnterTree(SilkyUI);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+        finally
+        {
+            child.Initialize();
+        }
+    }
+
+    public int AppendChildAt(UIView child, UIView innerChild) 
+    {
+        var idx = Elements.IndexOf(innerChild);
+        if (idx != -1)
+            AppendChildAt(child, idx);
+        return idx;
     }
 
     public virtual void RemoveChild(UIView child)
