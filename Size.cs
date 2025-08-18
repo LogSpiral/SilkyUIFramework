@@ -119,50 +119,48 @@ public readonly struct Size(float width, float height) : IEquatable<Size>, IPars
 
     public static Size Parse(string s, IFormatProvider provider)
     {
-        if (string.IsNullOrEmpty(s))
-            throw new ArgumentNullException(nameof(s), "Size string cannot be null or empty.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
-                if (!float.TryParse(parts[0], out var size))
-                    throw new FormatException("Size must be a valid floating-point number.");
-                return new Size(size);
+                if (float.TryParse(parts[0], out var size))
+                    return new Size(size);
+                goto default;
             case 2:
-                if (!float.TryParse(parts[0], out var width) || !float.TryParse(parts[1], out var height))
-                    throw new FormatException("Size must be a valid floating-point number.");
-                return new Size(width, height);
-            default:
-                throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
+                if (float.TryParse(parts[0], out var width) && float.TryParse(parts[1], out var height))
+                    return new Size(width, height);
+                goto default;
+            default: throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
         }
     }
 
     public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Size result)
     {
         result = Zero;
-        if (string.IsNullOrEmpty(s))
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(s)) return false;
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
-                // Single value, assume square size
-                if (!float.TryParse(parts[0], out var size))
-                    return false;
-                result = new Size(size);
-                return true;
-            case 2:
-                if (!float.TryParse(parts[0], out var width) || !float.TryParse(parts[1], out var height))
-                    return false;
-                result = new Size(width, height);
-                return true;
-            default:
-                result = Zero;
+                if (float.TryParse(parts[0], out var size))
+                {
+                    result = new Size(size);
+                    return true;
+                }
                 return false;
+            case 2:
+                if (float.TryParse(parts[0], out var width) && float.TryParse(parts[1], out var height))
+                {
+                    result = new Size(width, height);
+                    return true;
+                }
+                return false;
+            default: return false;
         }
     }
 }

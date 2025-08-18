@@ -56,7 +56,8 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
@@ -100,7 +101,8 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
         result = new Anchor();
         if (string.IsNullOrWhiteSpace(s)) return false;
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
@@ -127,7 +129,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
             {
                 if (float.TryParse(parts[0].TrimEnd("px"), out var arg1) &&
                     float.TryParse(parts[1].TrimEnd('%'), out var arg2) &&
-                    float.TryParse(parts[2].TrimEnd("#"), out var arg3))
+                    float.TryParse(parts[2].TrimEnd('#'), out var arg3))
                 {
                     result = new Anchor(arg1, arg2 / 100f, arg3 / 100f);
                     return true;
