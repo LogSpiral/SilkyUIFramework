@@ -49,6 +49,9 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
         return $"{Pixels}px, {Percent}%, {Alignment}#";
     }
 
+    /// <summary>
+    /// 支持一个参数或三个参数，空格分割
+    /// </summary>
     public static Anchor Parse(string s, IFormatProvider provider)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
@@ -74,7 +77,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                     return new Anchor(0f, 0f, value / 100f);
                 }
 
-                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
+                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment#'");
             }
             case 3:
             {
@@ -85,10 +88,13 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 return new Anchor(arg1, arg2 / 100f, arg3 / 100f);
             }
             default:
-                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment'");
+                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment#'");
         }
     }
 
+    /// <summary>
+    /// 支持一个参数或三个参数，空格分割
+    /// </summary>
     public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Anchor result)
     {
         result = new Anchor();
@@ -121,7 +127,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
             {
                 if (float.TryParse(parts[0].TrimEnd("px"), out var arg1) &&
                     float.TryParse(parts[1].TrimEnd('%'), out var arg2) &&
-                    float.TryParse(parts[0].TrimEnd("px"), out var arg3))
+                    float.TryParse(parts[2].TrimEnd("#"), out var arg3))
                 {
                     result = new Anchor(arg1, arg2 / 100f, arg3 / 100f);
                     return true;
