@@ -61,7 +61,7 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
                 if (parts[0].EndsWith("px"))
                 {
                     var value = float.Parse(parts[0].TrimEnd("px"), provider);
-                    return new Anchor(0f, value, 0f);
+                    return new Anchor(value, 0f, 0f);
                 }
                 else if (parts[0].EndsWith('%'))
                 {
