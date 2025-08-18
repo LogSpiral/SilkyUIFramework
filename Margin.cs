@@ -56,28 +56,33 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
 
     public static Margin Parse(string s, IFormatProvider provider)
     {
-        if (string.IsNullOrEmpty(s))
-            throw new ArgumentNullException(nameof(s), "Size string cannot be null or empty.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
-                // Single value, assume square size
-                if (!float.TryParse(parts[0], out var size))
-                    throw new FormatException("Size must be a valid floating-point number.");
-                return new Margin(size);
+                if (float.TryParse(parts[0], out var size))
+                {
+                    return new Margin(size);
+                }
+                throw new FormatException("Size must be a valid floating-point number.");
             case 2:
-                if (!float.TryParse(parts[0], out var h) || !float.TryParse(parts[1], out var v))
-                    throw new FormatException("Size must be a valid floating-point number.");
-                return new Margin(h, v);
+                if (float.TryParse(parts[0], out var h) && float.TryParse(parts[1], out var v))
+                {
+                    return new Margin(h, v);
+                }
+                throw new FormatException("Size must be a valid floating-point number.");
             case 4:
-                if (!float.TryParse(parts[0], out var l) ||
-                    !float.TryParse(parts[1], out var t) ||
-                    !float.TryParse(parts[2], out var r) ||
-                    !float.TryParse(parts[3], out var b))
-                    throw new FormatException("Size must be a valid floating-point number.");
-                return new Margin(l, t, r, b);
+                if (float.TryParse(parts[0], out var l) &&
+                    float.TryParse(parts[1], out var t) &&
+                    float.TryParse(parts[2], out var r) &&
+                    float.TryParse(parts[3], out var b))
+                {
+                    return new Margin(l, t, r, b);
+                }
+                throw new FormatException("Size must be a valid floating-point number.");
             default:
                 throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
         }
@@ -86,33 +91,37 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
     public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Margin result)
     {
         result = Zero;
-        if (string.IsNullOrEmpty(s))
-            return false;
+        if (string.IsNullOrEmpty(s)) return false;
 
-        var parts = s.Split(' ');
+        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
         switch (parts.Length)
         {
             case 1:
-                // Single value, assume square size
-                if (!float.TryParse(parts[0], out var size))
-                    return false;
-                result = new Margin(size);
-                return true;
-            case 2:
-                if (!float.TryParse(parts[0], out var h) || !float.TryParse(parts[1], out var v))
-                    return false;
-                result = new Margin(h, v);
-                return true;
-            case 4:
-                if (!float.TryParse(parts[0], out var l) ||
-                    !float.TryParse(parts[1], out var t) ||
-                    !float.TryParse(parts[2], out var r) ||
-                    !float.TryParse(parts[3], out var b))
-                    return false;
-                result = new Margin(l, t, r, b);
-                return true;
-            default:
+                if (float.TryParse(parts[0], out var size))
+                {
+                    result = new Margin(size);
+                    return true;
+                }
                 return false;
+            case 2:
+                if (float.TryParse(parts[0], out var h) && float.TryParse(parts[1], out var v))
+                {
+                    result = new Margin(h, v);
+                    return true;
+                }
+                return false;
+            case 4:
+                if (float.TryParse(parts[0], out var l) &&
+                    float.TryParse(parts[1], out var t) &&
+                    float.TryParse(parts[2], out var r) &&
+                    float.TryParse(parts[3], out var b))
+                {
+                    result = new Margin(l, t, r, b);
+                    return true;
+                }
+                return false;
+            default: return false;
         }
     }
 }

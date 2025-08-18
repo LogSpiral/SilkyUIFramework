@@ -23,8 +23,7 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
 
     public static Dimension Parse(string s, IFormatProvider provider)
     {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new ArgumentException("Input string cannot be null or empty.", nameof(s));
+        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
 
         var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
@@ -46,9 +45,10 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
             }
             case 2:
             {
-                if (!float.TryParse(parts[0].TrimEnd("px"), out var pixels)) goto default;
-                if (!float.TryParse(parts[1].TrimEnd('%'), out var percent)) goto default;
-                return new Dimension(pixels, percent / 100f);
+                if (float.TryParse(parts[0].TrimEnd("px"), out var pixels) &&
+                    float.TryParse(parts[1].TrimEnd('%'), out var percent))
+                    return new Dimension(pixels, percent / 100f);
+                goto default;
             }
             default: throw new FormatException($"Cannot parse '{s}' as Dimension.");
         }
@@ -85,10 +85,13 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
             }
             case 2:
             {
-                if (!float.TryParse(parts[0].TrimEnd("px"), out var pixels)) goto default;
-                if (!float.TryParse(parts[1].TrimEnd("%"), out var percent)) goto default;
-                result = new Dimension(pixels, percent / 100f);
-                return true;
+                if (float.TryParse(parts[0].TrimEnd("px"), out var pixels) &&
+                    float.TryParse(parts[1].TrimEnd('%'), out var percent))
+                {
+                    result = new Dimension(pixels, percent / 100f);
+                    return true;
+                }
+                goto default;
             }
             default:
             {
