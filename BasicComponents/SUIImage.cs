@@ -2,6 +2,7 @@
 
 namespace SilkyUIFramework.BasicComponents;
 
+[XmlElementMapping("Image")]
 public class SUIImage : UIView
 {
     #region Texture2D

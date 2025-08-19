@@ -5,6 +5,7 @@ namespace SilkyUIFramework.BasicElements;
 /// <summary>
 /// 拨动开关
 /// </summary>
+[XmlElementMapping("ToggleSwitch")]
 public class SUIToggleSwitch : UIView
 {
     public SUIToggleSwitch()
