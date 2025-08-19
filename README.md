@@ -1,14 +1,23 @@
 ﻿<div align="center">
     <h1>Silky User Interface Framework</h1>
+    <img src="icon_workshop.png" width="200"/>
+    <h3>SilkyUI Framework</h3>
 </div>
 
-## 说明
+<hr/>
+
+<div align=center>
+    <h3>豆包生成的几个 LOGO</h3>
+    <img src="logo1.png" width="200"/>
+    <img src="logo3.jpg" width="200"/>
+    <img src="logo2.jpg" width="200"/>
+</div>
+
+### 说明
 
 [Flexbox 文档](FlexibleBoxModule.md)
 
 [CSS Flexible Box Layout Module Level 1](https://www.w3.org/TR/css-flexbox-1/)
-
-## 其他
 
 ### 待办
 

@@ -148,7 +148,7 @@ public class UITextView : UIView
     public Vector2 TextPercentOffset { get; set; } = Vector2.Zero;
     public Vector2 TextPercentOrigin { get; set; } = Vector2.Zero;
     public Vector2 TextAlign { get; set; } = Vector2.Zero;
-    public bool IgnoreTextColor { get; set; } = false;
+    public bool IgnoreTextColor { get; set; } = true;
 
     #endregion
 

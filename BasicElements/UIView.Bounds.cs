@@ -28,7 +28,7 @@ public partial class UIView
         }
     }
 
-    public void SetMargin(float margin) => Padding = new Margin(margin);
+    public void SetMargin(float margin) => Margin = new Margin(margin);
 
     public void SetMargin(float leftAndRight, float topAndBottom) =>
         Margin = new Margin(leftAndRight, topAndBottom, leftAndRight, topAndBottom);
