@@ -10,22 +10,22 @@ public enum Direction
 [XmlElementMapping("ScrollView")]
 public class SUIScrollView : UIElementGroup
 {
-    public readonly Direction Direction;
+    public Direction Direction { get; }
 
     /// <summary>
     /// 滚动条
     /// </summary>
-    public readonly SUIScrollbar ScrollBar;
+    public SUIScrollbar ScrollBar { get; }
 
     /// <summary>
     /// 遮罩层
     /// </summary>
-    public readonly SUIScrollMask Mask;
+    public SUIScrollMask Mask { get; }
 
     /// <summary>
     /// 容器
     /// </summary>
-    public readonly SUIScrollContainer Container;
+    public SUIScrollContainer Container { get; }
 
     public SUIScrollView(Direction direction = Direction.Vertical)
     {
