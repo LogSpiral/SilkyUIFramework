@@ -144,6 +144,8 @@ public partial class UIElementGroup : UIView
         }
     }
 
+    public int GetInnerChildIndex(UIView innerChild) => Elements.IndexOf(innerChild);
+
     public int AppendChildAt(UIView child, UIView innerChild) 
     {
         var idx = Elements.IndexOf(innerChild);
