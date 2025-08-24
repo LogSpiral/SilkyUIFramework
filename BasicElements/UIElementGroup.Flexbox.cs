@@ -6,55 +6,47 @@ public partial class UIElementGroup
 
     public bool FlexWrap
     {
-        get => _flexWrap;
+        get;
         set
         {
-            if (_flexWrap == value) return;
-            _flexWrap = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
-
-    private bool _flexWrap;
 
     public MainAlignment MainAlignment
     {
-        get => _mainAlignment;
+        get;
         set
         {
-            if (_mainAlignment == value) return;
-            _mainAlignment = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
-
-    private MainAlignment _mainAlignment;
 
     public CrossAlignment CrossAlignment
     {
-        get => _crossAlignment;
+        get;
         set
         {
-            if (_crossAlignment == value) return;
-            _crossAlignment = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
-
-    private CrossAlignment _crossAlignment = CrossAlignment.Stretch;
 
     public CrossContentAlignment CrossContentAlignment
     {
-        get => _crossContentAlignment;
+        get;
         set
         {
-            if (_crossContentAlignment == value) return;
-            _crossContentAlignment = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
-    }
-
-    private CrossContentAlignment _crossContentAlignment;
+    } = CrossContentAlignment.Stretch;
 
     #endregion
 
