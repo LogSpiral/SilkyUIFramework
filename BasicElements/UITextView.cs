@@ -36,16 +36,14 @@ public class UITextView : UIView
 
     public virtual DynamicSpriteFont Font
     {
-        get => _font ?? FontAssets.MouseText.Value;
+        get => field ?? FontAssets.MouseText.Value;
         set
         {
-            if (_font == value) return;
-            _font = value;
+            if (field == value) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
-
-    private DynamicSpriteFont _font = FontAssets.MouseText.Value;
 
     /// <summary>
     /// 当输入内容更改时触发

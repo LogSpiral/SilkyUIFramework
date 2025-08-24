@@ -12,16 +12,14 @@ public partial class UIElementGroup
 
     public LayoutType LayoutType
     {
-        get => _layoutType;
+        get;
         set
         {
-            if (value == _layoutType) return;
-            _layoutType = value;
+            if (value == field) return;
+            field = value;
             MarkLayoutDirty();
         }
     }
-
-    private LayoutType _layoutType;
 
     public FlexDirection FlexDirection
     {
@@ -38,7 +36,7 @@ public partial class UIElementGroup
 
     public Size Gap
     {
-        get => field;
+        get;
         set
         {
             if (field == value) return;
@@ -349,7 +347,7 @@ public partial class UIElementGroup
 
     protected virtual void ApplyLayout()
     {
-        if (_layoutType == LayoutType.Flexbox)
+        if (LayoutType == LayoutType.Flexbox)
         {
             ApplyFlexboxLayout();
         }

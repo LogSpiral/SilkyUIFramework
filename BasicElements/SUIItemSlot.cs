@@ -14,12 +14,19 @@ public class SUIItemSlot : UIView
         get => ItemInside;
         set
         {
-            if (ItemInside == value || ((ItemInside?.IsAir ?? true) && (value?.IsAir ?? true))) return;
+            if (ItemEqual(ItemInside, value)) return;
             var oldItem = ItemInside;
             ItemInside = value;
-            ItemChanged?.Invoke(this, new(oldItem, value));
+            OnItemChanged(oldItem, value);
         }
     }
+
+    protected virtual void OnItemChanged(Item oldItem, Item newItem)
+    {
+        ItemChanged?.Invoke(this, new(oldItem, newItem));
+    }
+
+    public static bool ItemEqual(Item a, Item b) => a == b || (a.IsAir && b.IsAir);
 
     /// <summary>
     /// 允许显示物品信息

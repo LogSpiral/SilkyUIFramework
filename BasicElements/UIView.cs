@@ -18,6 +18,8 @@ public partial class UIView
             if (field == value) return;
             field = value;
             MarkLayoutDirty();
+            if (Parent == null) return;
+            Parent.ChildrenOrderIsDirty = true;
         }
     }
     public int ZIndex
@@ -27,10 +29,8 @@ public partial class UIView
         {
             if (field == value) return;
             field = value;
-            if (Parent != null)
-            {
-                Parent.ChildrenOrderIsDirty = true;
-            }
+            if (Parent == null) return;
+            Parent.ChildrenOrderIsDirty = true;
         }
     }
 

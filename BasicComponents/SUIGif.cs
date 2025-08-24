@@ -6,20 +6,18 @@ public class SUIGif : UIView
 
     public delegate void GifRendererChangeEventHandler(SUIGif sender, GifRenderer newTexture2D, GifRenderer oldTexture2D);
 
-    private GifRenderer _gifRenderer;
-
     public GifRenderer GifRenderer
     {
-        get => _gifRenderer;
+        get;
         set
         {
             // ArgumentNullException.ThrowIfNull(value);
-            OnTextureChanged(this, value, _gifRenderer);
-            _gifRenderer = value;
+            OnTextureChanged(this, value, field);
+            field = value;
         }
     }
 
-    public Vector2 ImageOriginalSize => _gifRenderer is null ? Vector2.Zero : _gifRenderer.Size;
+    public Vector2 ImageOriginalSize => GifRenderer is null ? Vector2.Zero : GifRenderer.Size;
 
     public event GifRendererChangeEventHandler GifRendererChanged;
 
