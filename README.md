@@ -36,10 +36,9 @@
 
 ### 如何使用？
 
-SilkyUI Framework 是以前置 Mod 的方式在 tML 中使用的（为了不同 UI 之前的协同），
-所以需要将其设置为前置 Mod。
+SilkyUI Framework 是以前置 Mod 的方式在 tML 中使用的（为了不同 UI 之前的协同），所以需要将其设置为前置 Mod。
 
-> 由于使用了**增量生成器**，所以你还需要一同将生成器项目引用如你的 Mod 项目。
+> 由于使用了**增量生成器**，所以你还需要一同将生成器项目引入你的 Mod 项目。
 
 ### 设为前置 Mod
 
@@ -55,7 +54,7 @@ modReferences = SilkyUIFramework
 
 ```sh
 git clone https://github.com/487666123/SilkyUIFramework.git
-git clone https://github.com/487666123/SilkyUIAnalyzer
+git clone https://github.com/487666123/SilkyUIAnalyzer.git
 ```
 
 ### 引入这两个项目
