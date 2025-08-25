@@ -51,6 +51,14 @@ SilkyUI Framework 是以前置 Mod 的方式在 tML 中使用的（为了不同 
 
 > 由于使用了**增量生成器**，所以你还需要一同将生成器项目引用如你的 Mod 项目。
 
+### 设为前置 Mod
+
+在主 Mod 项目中的 build.txt 文件内添加模组引用
+
+```txt
+modReferences = SilkyUIFramework
+```
+
 ### 克隆必要项目
 
 在你的 ModSources 文件夹下运行以下两个 git clone 命令
