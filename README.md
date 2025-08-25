@@ -1,5 +1,4 @@
 ﻿<div align="center">
-    <h1>Silky User Interface Framework</h1>
     <img src="icon_workshop.png" width="200"/>
     <h3>SilkyUI Framework</h3>
 </div>
