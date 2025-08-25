@@ -18,8 +18,8 @@ public partial class UIView
             if (field == value) return;
             field = value;
             MarkLayoutDirty();
-            if (Parent == null) return;
-            Parent.ChildrenOrderIsDirty = true;
+
+            Parent?.ElementsOrderIsDirty = true;
         }
     }
     public int ZIndex
@@ -29,8 +29,8 @@ public partial class UIView
         {
             if (field == value) return;
             field = value;
-            if (Parent == null) return;
-            Parent.ChildrenOrderIsDirty = true;
+
+            Parent?.ElementsOrderIsDirty = true;
         }
     }
 
@@ -74,15 +74,7 @@ public partial class UIView
     /// <summary>
     /// 元素是否在 UI 树中
     /// </summary>
-    public bool IsInsideTree
-    {
-        get
-        {
-            if (SilkyUI is null || GetAncestor() is not { } ancestors) return false;
-
-            return SilkyUI.BasicBody == ancestors;
-        }
-    }
+    public bool IsInsideTree => SilkyUI?.BasicBody == GetAncestor();
 
     public UIElementGroup Parent { get; protected internal set; }
 
@@ -92,7 +84,7 @@ public partial class UIView
 
     public virtual UIView GetElementAt(Vector2 mousePosition)
     {
-        if (Invalid || IgnoreMouseInteraction) return null;
+        if (IgnoreMouseInteraction) return null;
 
         if (ContainsPoint(mousePosition)) return this;
 

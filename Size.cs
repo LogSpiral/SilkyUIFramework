@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace SilkyUIFramework;
 
@@ -117,50 +118,48 @@ public readonly struct Size(float width, float height) : IEquatable<Size>, IPars
 
     public override string ToString() => $"{Width}x{Height}";
 
+    // Parse 调用 TryParse
     public static Size Parse(string s, IFormatProvider provider)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
-
-        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        switch (parts.Length)
-        {
-            case 1:
-                if (float.TryParse(parts[0], out var size))
-                    return new Size(size);
-                goto default;
-            case 2:
-                if (float.TryParse(parts[0], out var width) && float.TryParse(parts[1], out var height))
-                    return new Size(width, height);
-                goto default;
-            default: throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
-        }
+        if (!TryParse(s, provider, out var result))
+            throw new FormatException($"Cannot parse '{s}' as Size.");
+        return result;
     }
 
-    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Size result)
+    // TryParse 核心逻辑
+    public static bool TryParse(string s, IFormatProvider provider, out Size result)
     {
         result = Zero;
-        if (string.IsNullOrWhiteSpace(s)) return false;
+
+        if (s is null)
+            throw new ArgumentNullException(nameof(s));
+
+        if (string.IsNullOrWhiteSpace(s))
+            return false;
 
         var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         switch (parts.Length)
         {
             case 1:
-                if (float.TryParse(parts[0], out var size))
+                if (float.TryParse(parts[0], NumberStyles.Float, provider, out var size))
                 {
                     result = new Size(size);
                     return true;
                 }
                 return false;
+
             case 2:
-                if (float.TryParse(parts[0], out var width) && float.TryParse(parts[1], out var height))
+                if (float.TryParse(parts[0], NumberStyles.Float, provider, out var width) &&
+                    float.TryParse(parts[1], NumberStyles.Float, provider, out var height))
                 {
                     result = new Size(width, height);
                     return true;
                 }
                 return false;
-            default: return false;
+
+            default:
+                return false;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SilkyUIFramework.Helper;
+﻿using System;
+using SilkyUIFramework.Helper;
 
 namespace SilkyUIFramework;
 
@@ -10,14 +11,12 @@ public partial class UIElementGroup : UIView
 {
     public bool OverflowHidden { get; set; }
 
-    /// <summary>
-    /// 需要持续调用，以保证所有元素都被初始化
-    /// </summary>
+    /// <summary> 需要持续调用，以保证所有元素都被初始化 </summary>
     internal sealed override void Initialize()
     {
         base.Initialize();
 
-        foreach (var item in GetValidChildren())
+        foreach (var item in Elements)
         {
             item.Initialize();
         }
@@ -25,11 +24,8 @@ public partial class UIElementGroup : UIView
 
     protected List<UIView> Elements { get; } = [];
 
-    /// <summary>
-    /// 获取有效子元素
-    /// </summary>
-    public IEnumerable<UIView> GetValidChildren() => Elements.Where(el => !el.Invalid);
-    public IReadOnlyList<UIView> Children => Elements;
+    protected List<UIView> ElementsCache { get; } = [];
+    public IReadOnlyList<UIView> Children => ElementsCache;
 
     /// <summary>
     /// 处理元素进入 UI 树
@@ -38,7 +34,7 @@ public partial class UIElementGroup : UIView
     {
         base.HandleEnterTree(silkyUI);
 
-        foreach (var el in Children)
+        foreach (var el in Elements)
         {
             el.HandleEnterTree(silkyUI);
         }
@@ -51,7 +47,7 @@ public partial class UIElementGroup : UIView
     {
         base.HandleExitTree();
 
-        foreach (var el in Children)
+        foreach (var el in Elements)
         {
             el.HandleExitTree();
         }
@@ -74,43 +70,84 @@ public partial class UIElementGroup : UIView
 
     public virtual bool HasChild(UIView child) => Elements.Contains(child);
 
-    public virtual void Add(UIView child)
+    public virtual void Add(UIView child, int? index = null) => AppendChild(child, index);
+
+    public virtual void Add(IEnumerable<UIView> children, int? index = null) => AppendChild(children, index);
+
+    public void AppendChild(IEnumerable<UIView> children, int? index = null)
     {
-        child.Remove();
-        Elements.Add(child);
-        child.Parent = this;
-
-        MarkLayoutDirty();
-        MarkPositionDirty();
-
-        ChildrenOrderIsDirty = true;
-
-        RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
-        RuntimeHelper.ErrorCapture(child.Initialize);
-    }
-
-    public virtual void Add(IEnumerable<UIView> childs)
-    {
-        foreach (var child in childs)
+        if (index == null)
         {
-            child.Remove();
-            Elements.Add(child);
-            child.Parent = this;
+            var changing = false;
+            foreach (var child in children)
+            {
+                if (child?.Parent == this) continue;
+                changing = true;
+                child.Remove();
+                Elements.Add(child);
+                child.Parent = this;
+            }
+
+            if (!changing) return;
         }
+        else if (index >= 0 || index <= Elements.Count)
+        {
+            var changing = false;
+            var i = index.Value;
+            foreach (var child in children)
+            {
+                if (child?.Parent == this) continue;
+                changing = true;
+                child.Remove();
+                Elements.Insert(i++, child);
+                child.Parent = this;
+            }
+
+            if (!changing) return;
+        }
+        else { return; }
 
         MarkLayoutDirty();
         MarkPositionDirty();
 
-        ChildrenOrderIsDirty = true;
+        ElementsOrderIsDirty = true;
 
-        foreach (var child in childs)
+        foreach (var child in children)
         {
             RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
             RuntimeHelper.ErrorCapture(child.Initialize);
         }
     }
 
-    public virtual void AppendChild(UIView child) => Add(child);
+    public void AppendChild(UIView child, int? index = null)
+    {
+        if (child?.Parent == this) return;
+
+        if (index == null)
+        {
+            child.Remove();
+            Elements.Add(child);
+            child.Parent = this;
+        }
+        else if (index >= 0 || index <= Elements.Count)
+        {
+            child.Remove();
+            Elements.Insert(index.Value, child);
+            child.Parent = this;
+        }
+        else { return; }
+
+        MarkLayoutDirty();
+        MarkPositionDirty();
+
+        ElementsOrderIsDirty = true;
+
+        RuntimeHelper.ErrorCapture(() =>
+        {
+            if (SilkyUI != null) child.HandleEnterTree(SilkyUI);
+        });
+        RuntimeHelper.ErrorCapture(child.Initialize);
+    }
 
     public virtual void RemoveChild(UIView child)
     {
@@ -119,7 +156,7 @@ public partial class UIElementGroup : UIView
         child.Parent = null;
         MarkLayoutDirty();
         MarkPositionDirty();
-        ChildrenOrderIsDirty = true;
+        ElementsOrderIsDirty = true;
 
         child.HandleExitTree();
     }
@@ -138,7 +175,7 @@ public partial class UIElementGroup : UIView
 
     public virtual void SelectChild(UIView selectTarget)
     {
-        if (!Elements.Contains(selectTarget)) return;
+        if (!ElementsCache.Contains(selectTarget)) return;
 
         SelectedElement?.HandleDeselected();
         SelectedElement = selectTarget;
@@ -165,7 +202,7 @@ public partial class UIElementGroup : UIView
 
     protected virtual void UpdateChildren(GameTime gameTime)
     {
-        foreach (var child in GetValidChildren()) child.HandleUpdate(gameTime);
+        foreach (var child in ElementsCache) child.HandleUpdate(gameTime);
     }
 
     public override void HandleUpdateStatus(GameTime gameTime)
@@ -176,7 +213,7 @@ public partial class UIElementGroup : UIView
 
     protected virtual void UpdateChildrenStatus(GameTime gameTime)
     {
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             child.HandleUpdateStatus(gameTime);
         }
@@ -222,7 +259,7 @@ public partial class UIElementGroup : UIView
             spriteBatch.Begin(SpriteSortMode.Deferred,
                 null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
-            foreach (var child in ElementsSortedByZIndex.Where(el => el.OuterBounds.Intersects(innerBounds)))
+            foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(innerBounds)))
             {
                 child.HandleDraw(gameTime, spriteBatch);
             }
@@ -234,7 +271,7 @@ public partial class UIElementGroup : UIView
             return;
         }
 
-        foreach (var child in ElementsSortedByZIndex)
+        foreach (var child in ElementsInOrder)
         {
             child.HandleDraw(gameTime, spriteBatch);
         }
@@ -247,10 +284,13 @@ public partial class UIElementGroup : UIView
 
     protected void ClassifyChildren()
     {
+        ElementsCache.Clear();
+        ElementsCache.AddRange(Elements.Where(el => !el.Invalid));
+
         FreeChildren.Clear();
         LayoutChildren.Clear();
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             if (child.Positioning.IsFree())
             {
@@ -265,14 +305,12 @@ public partial class UIElementGroup : UIView
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
-        if (Invalid) return null;
-
         // 开启溢出隐藏后, 需要先检查自身是否包含点
         if (OverflowHidden)
         {
             if (!ContainsPoint(mousePosition)) return null;
 
-            foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
+            foreach (var child in ElementsInOrder.Reverse<UIView>())
             {
                 var target = child.GetElementAt(mousePosition);
                 if (target != null) return target;
@@ -283,7 +321,7 @@ public partial class UIElementGroup : UIView
         }
 
         // 没有开启溢出隐藏, 直接检查所有有效子元素
-        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
+        foreach (var child in ElementsInOrder.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;

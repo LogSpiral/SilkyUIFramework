@@ -12,8 +12,8 @@ public static class RuntimeHelper
         }
         catch (Exception ex)
         {
-            if (Debugger.IsAttached) throw;
             SilkyUIFramework.Instance?.Logger?.Error("RuntimeHelper ErrorCapture", ex);
+            if (Debugger.IsAttached) throw;
         }
     }
 }

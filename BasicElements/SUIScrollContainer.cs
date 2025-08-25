@@ -9,7 +9,7 @@ public class SUIScrollContainer(SUIScrollView scrollView) : UIElementGroup
     public override void DrawChildren(GameTime gameTime, SpriteBatch spriteBatch)
     {
         var innerBounds = ScrollView.Mask.InnerBounds;
-        foreach (var child in ElementsSortedByZIndex.Where(el => el.OuterBounds.Intersects(innerBounds)))
+        foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(innerBounds)))
         {
             child.HandleDraw(gameTime, spriteBatch);
         }

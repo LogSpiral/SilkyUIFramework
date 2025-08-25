@@ -25,57 +25,9 @@ public abstract partial class BasicBody : UIElementGroup
         FinallyDrawBorder = true;
     }
 
-    //private bool _adjustingWidth;
-    //private bool _adjustingHeight;
-
-    //private float _startWidth;
-    //private float _startHeight;
-
-    //private Vector2 _startPosition;
-
-    //public override void OnLeftMouseDown(UIMouseEvent evt)
-    //{
-    //    base.OnLeftMouseDown(evt);
-
-    //    if (evt.Source == this)
-    //    {
-    //        if (evt.MousePosition.X > Bounds.Right - Border - 2)
-    //        {
-    //            _startWidth = Bounds.Width;
-    //            _adjustingWidth = true;
-    //            FitWidth = false;
-    //        }
-
-    //        //_startHeight = Bounds.Height;
-    //        //_adjustingHeight = true;
-
-    //        _startPosition = evt.MousePosition;
-    //    }
-    //}
-
-    //public override void OnLeftMouseUp(UIMouseEvent evt)
-    //{
-    //    base.OnLeftMouseUp(evt);
-
-    //    _adjustingWidth = false;
-    //    _adjustingHeight = false;
-    //}
-
     protected override void UpdateStatus(GameTime gameTime)
     {
         WatchScreenSize();
-
-        //if (_adjustingWidth)
-        //{
-        //    var offset = Main.MouseScreen.X - _startPosition.X;
-        //    SetWidth(_startWidth + offset * 2f);
-        //}
-
-        //if (_adjustingHeight)
-        //{
-        //    var offset = Main.MouseScreen.Y - _startPosition.Y;
-        //    SetHeight(_startHeight + offset * 2f);
-        //}
 
         if (IsMouseHovering)
         {
@@ -111,11 +63,9 @@ public abstract partial class BasicBody : UIElementGroup
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
-        if (Invalid) return null;
-
         if (!ContainsPoint(mousePosition)) return null;
 
-        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
+        foreach (var child in ElementsInOrder.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;
@@ -127,25 +77,13 @@ public abstract partial class BasicBody : UIElementGroup
 
     public override void RefreshLayout()
     {
-        if (ChildrenOrderIsDirty)
-        {
-            ReorderChildren();
-            ChildrenOrderIsDirty = false;
-        }
-
         if (LayoutIsDirty)
         {
-            var container = GetParentInnerSpace();
-            Prepare(container.Width, container.Height);
-            ResizeChildrenWidth();
-            RecalculateHeight();
-            ResizeChildrenHeight();
-            ApplyLayout();
-
+            RefreshLayoutFromFree();
             CleanupDirtyMark();
         }
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             child.RefreshLayout();
         }

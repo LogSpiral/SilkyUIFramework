@@ -1,6 +1,9 @@
-﻿namespace SilkyUIFramework.UserInterfaces.Test;
+﻿#if DEBUG && false
 
-#if DEBUG && false
+using SilkyUIFramework.Animation;
+using SilkyUIFramework.BasicComponents;
+
+namespace SilkyUIFramework.UserInterfaces.Test;
 
 [RegisterUI("Vanilla: Radial Hotbars", "TestUI")]
 public partial class TestUI : BasicBody

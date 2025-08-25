@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using ReLogic.Localization.IME;
 using ReLogic.OS;
+using SilkyUIFramework.Helper;
 
 namespace SilkyUIFramework;
 
@@ -100,7 +101,6 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         {
             MouseFocusElement?.OnGotFocus(new UIMouseEvent(MouseFocusElement, MousePosition));
         }
-
     }
 
     public SilkyUI SetBody(BasicBody basicBody = null)
@@ -112,18 +112,8 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         var lastBasicBody = BasicBody;
         BasicBody = basicBody;
 
-        try
-        {
-            lastBasicBody?.HandleExitTree();
-        }
-        catch
-        {
-            throw;
-        }
-        finally
-        {
-            BasicBody?.HandleEnterTree(this);
-        }
+        RuntimeHelper.ErrorCapture(() => lastBasicBody?.HandleExitTree());
+        RuntimeHelper.ErrorCapture(() => BasicBody?.HandleEnterTree(this));
 
         return this;
     }
@@ -295,6 +285,7 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         BasicBody.RefreshLayout();
         BasicBody.UpdatePosition();
 
+        BasicBody.RefreshElementsOrder();
         BasicBody.HandleDraw(gameTime, spriteBatch);
 
         // 鼠标焦点程序

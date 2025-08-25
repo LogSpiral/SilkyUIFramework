@@ -18,57 +18,65 @@ public partial class UIElementGroup
         PositionIsDirty = true;
     }
 
-    protected List<UIView> ElementsSortedByZIndex { get; } = [];
-    public bool ChildrenOrderIsDirty { get; set; } = true;
+    public bool ElementsOrderIsDirty { get; set; } = true;
 
-    protected void ReorderChildren()
+    public List<UIView> ElementsInOrder { get; } = [];
+
+    public void RefreshElementsOrder()
     {
-        ElementsSortedByZIndex.Clear();
-        ElementsSortedByZIndex.AddRange(GetValidChildren().OrderBy(el => el.ZIndex));
+        if (ElementsOrderIsDirty)
+        {
+            ElementsInOrder.Clear();
+            ElementsInOrder.AddRange(ElementsCache.OrderBy(el => el.ZIndex));
+            ElementsOrderIsDirty = false;
+        }
+
+        foreach (var item in ElementsInOrder.OfType<UIElementGroup>())
+        {
+            item.RefreshElementsOrder();
+        }
     }
 
     public override void RefreshLayout()
     {
-        if (ChildrenOrderIsDirty)
-        {
-            ReorderChildren();
-            ChildrenOrderIsDirty = false;
-        }
-
         if (LayoutIsDirty)
         {
-            if (Positioning.IsFree())
-            {
-                var container = GetParentInnerSpace();
-                Prepare(container.Width, container.Height);
-                ResizeChildrenWidth();
-                RecalculateHeight();
-                ResizeChildrenHeight();
-                ApplyLayout();
-            }
-            else
-            {
-                PrepareChildren();
-                ResizeChildrenWidth();
-                RecalculateChildrenHeight();
-                ResizeChildrenHeight();
-                ApplyLayout();
-            }
+            if (Positioning.IsFree()) RefreshLayoutFromFree();
+            else RefreshLayoutFromFlow();
 
             CleanupDirtyMark();
         }
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             child.RefreshLayout();
         }
+    }
+
+    protected void RefreshLayoutFromFree()
+    {
+        var container = GetParentInnerSpace();
+        Prepare(container.Width, container.Height);
+        ResizeChildrenWidth();
+        RecalculateHeight();
+        ResizeChildrenHeight();
+        ApplyLayout();
+    }
+
+    protected void RefreshLayoutFromFlow()
+    {
+        PrepareChildren();
+        ResizeChildrenWidth();
+        RecalculateChildrenHeight();
+        ResizeChildrenHeight();
+        ApplyLayout();
     }
 
     public override void UpdatePosition()
     {
         base.UpdatePosition();
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             child.UpdatePosition();
         }
@@ -78,7 +86,7 @@ public partial class UIElementGroup
     {
         base.RecalculatePosition();
 
-        foreach (var child in GetValidChildren().Where(el => el.Positioning is not Positioning.Fixed))
+        foreach (var child in ElementsCache.Where(el => el.Positioning is not Positioning.Fixed))
         {
             child.RecalculatePosition();
         }
