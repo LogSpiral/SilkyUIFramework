@@ -22,7 +22,7 @@ public partial class UIElementGroup
 
     public List<UIView> ElementsInOrder { get; } = [];
 
-    public void RefreshElementsOrder()
+    public void UpdateElementsOrder()
     {
         if (ElementsOrderIsDirty)
         {
@@ -33,27 +33,33 @@ public partial class UIElementGroup
 
         foreach (var item in ElementsInOrder.OfType<UIElementGroup>())
         {
-            item.RefreshElementsOrder();
+            item.UpdateElementsOrder();
         }
     }
 
-    public override void RefreshLayout()
+    public override void UpdateLayout()
     {
         if (LayoutIsDirty)
         {
-            if (Positioning.IsFree()) RefreshLayoutFromFree();
-            else RefreshLayoutFromFlow();
+            if (Positioning.IsFree)
+            {
+                LayoutFromFree();
+            }
+            else
+            {
+                LayoutFromFlow();
+            }
 
             CleanupDirtyMark();
         }
 
         foreach (var child in ElementsCache)
         {
-            child.RefreshLayout();
+            child.UpdateLayout();
         }
     }
 
-    protected void RefreshLayoutFromFree()
+    protected void LayoutFromFree()
     {
         var container = GetParentInnerSpace();
         Prepare(container.Width, container.Height);
@@ -61,15 +67,37 @@ public partial class UIElementGroup
         RecalculateHeight();
         ResizeChildrenHeight();
         ApplyLayout();
+
+        foreach (var item in FreeChildren)
+        {
+            if (item.Positioning != Positioning.Absolute) continue;
+            if (item.LayoutIsDirty) continue;
+            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
+                item.Left.Percent == 0 && item.Top.Percent == 0 &&
+                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
+
+            item.MarkLayoutDirty();
+        }
     }
 
-    protected void RefreshLayoutFromFlow()
+    protected void LayoutFromFlow()
     {
         PrepareChildren();
         ResizeChildrenWidth();
         RecalculateChildrenHeight();
         ResizeChildrenHeight();
         ApplyLayout();
+
+        foreach (var item in FreeChildren)
+        {
+            if (item.Positioning != Positioning.Absolute) continue;
+            if (item.LayoutIsDirty) continue;
+            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
+                item.Left.Percent == 0 && item.Top.Percent == 0 &&
+                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
+
+            item.MarkLayoutDirty();
+        }
     }
 
     public override void UpdatePosition()
@@ -86,7 +114,7 @@ public partial class UIElementGroup
     {
         base.RecalculatePosition();
 
-        foreach (var child in ElementsCache.Where(el => el.Positioning is not Positioning.Fixed))
+        foreach (var child in ElementsCache.Where(el => el.Positioning != Positioning.Fixed))
         {
             child.RecalculatePosition();
         }

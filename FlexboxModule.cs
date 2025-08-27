@@ -3,6 +3,7 @@
 public static class FlexboxModule
 {
     #region extensions List<UIView>
+
     extension(List<UIView> elements)
     {
         /// <summary>
@@ -67,6 +68,7 @@ public static class FlexboxModule
             flexLines.Add(flexLine);
         }
     }
+
     #endregion
 
     public static void MeasureSize(this List<FlexLine> flexLines, float gap, out float mainAxisSize, out float crossAxisSize)
@@ -81,22 +83,6 @@ public static class FlexboxModule
         }
 
         crossAxisSize += (flexLines.Count - 1) * gap;
-    }
-
-    public static void RefreshMainSizeByRowMode(this List<FlexLine> flexLines, float gap)
-    {
-        foreach (var flexLine in flexLines)
-        {
-            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Width) + flexLine.GetFenceGap(gap);
-        }
-    }
-
-    public static void RefreshMainSizeByColumnMode(this List<FlexLine> flexLines, float gap)
-    {
-        foreach (var flexLine in flexLines)
-        {
-            flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(gap);
-        }
     }
 
     public static void GrowOrShrinkByRowMode(this List<FlexLine> flexLines, Size innerSize, float gap)

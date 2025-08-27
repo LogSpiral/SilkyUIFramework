@@ -178,7 +178,7 @@ public class UITextView : UIView
         }
         else
         {
-            RecalculateBoundsWidth(width ?? 0);
+            CalculateBoundsWidth(width ?? 0);
             RecalculateText(InnerBounds.Width);
         }
 
@@ -188,7 +188,7 @@ public class UITextView : UIView
         }
         else
         {
-            RecalculateBoundsHeight(height ?? 0);
+            CalculateBoundsHeight(height ?? 0);
         }
     }
 

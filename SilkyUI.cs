@@ -277,15 +277,19 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
 
         BasicBody.Initialize();
 
+        BasicBody.UpdateLayout();
+        BasicBody.UpdatePosition();
+        BasicBody.UpdateElementsOrder();
+
         // 更新 UI 的各种状态，比如动画
         BasicBody.HandleUpdateStatus(gameTime);
 
         if (BasicBody is not { Enabled: true }) return;
 
-        BasicBody.RefreshLayout();
+        BasicBody.UpdateLayout();
         BasicBody.UpdatePosition();
+        BasicBody.UpdateElementsOrder();
 
-        BasicBody.RefreshElementsOrder();
         BasicBody.HandleDraw(gameTime, spriteBatch);
 
         // 鼠标焦点程序

@@ -7,8 +7,10 @@ public partial class UIView
 {
     #region IgnoreMouseInteraction Invalid IsMouseHovering DirtyMark
 
-    /// <summary> 忽略鼠标交互, 不影响其子元素交互, 仅仅是忽略他自身 </summary>
+    /// <summary> 忽略鼠标交互, 不影响其子元素交互 </summary>
     public bool IgnoreMouseInteraction { get; set; }
+    /// <summary> 禁用鼠标交互, 影响其子元素交互 </summary>
+    public bool DisableMouseInteraction { get; set; }
 
     public bool Invalid
     {
@@ -36,15 +38,15 @@ public partial class UIView
 
     public bool IsMouseHovering { get; set; }
 
-    protected bool LayoutIsDirty { get; set; } = true;
+    public bool LayoutIsDirty { get; protected set; } = true;
 
-    protected void MarkLayoutDirty()
+    public void MarkLayoutDirty()
     {
         LayoutIsDirty = true;
         PositionIsDirty = true;
 
         // 如果元素是自由定位的，则不需要通知父元素
-        if (Positioning.IsFree()) return;
+        if (Positioning.IsFree) return;
         Parent?.NotifyParentChildDirty();
     }
 
@@ -84,7 +86,7 @@ public partial class UIView
 
     public virtual UIView GetElementAt(Vector2 mousePosition)
     {
-        if (IgnoreMouseInteraction) return null;
+        if (DisableMouseInteraction || IgnoreMouseInteraction) return null;
 
         if (ContainsPoint(mousePosition)) return this;
 
@@ -157,7 +159,7 @@ public partial class UIView
         set
         {
             if (field == value) return;
-            var freeChanged = field.IsFree() != value.IsFree();
+            var freeChanged = field.IsFree != value.IsFree;
 
             field = value;
             MarkPositionDirty();

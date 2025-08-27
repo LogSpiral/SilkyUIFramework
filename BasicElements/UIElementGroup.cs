@@ -23,9 +23,9 @@ public partial class UIElementGroup : UIView
     }
 
     protected List<UIView> Elements { get; } = [];
-
     protected List<UIView> ElementsCache { get; } = [];
-    public IReadOnlyList<UIView> Children => ElementsCache;
+    public IReadOnlyList<UIView> Children => Elements;
+    public IReadOnlyList<UIView> ChildrenCache => ElementsCache;
 
     /// <summary>
     /// 处理元素进入 UI 树
@@ -255,9 +255,8 @@ public partial class UIElementGroup : UIView
             var originalScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
             var scissor = Rectangle.Intersect(GetClippingRectangle(spriteBatch), originalScissor);
             spriteBatch.GraphicsDevice.ScissorRectangle = scissor;
-            var renderStatus = RenderStates.BackupStates(Main.graphics.GraphicsDevice, spriteBatch);
-            spriteBatch.Begin(SpriteSortMode.Deferred,
-                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            var deviceStatus = Main.graphics.GraphicsDevice.BackupStates(spriteBatch);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
             foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(innerBounds)))
             {
@@ -266,7 +265,7 @@ public partial class UIElementGroup : UIView
 
             spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = originalScissor;
-            renderStatus.Begin(spriteBatch, SpriteSortMode.Deferred);
+            deviceStatus.Begin(spriteBatch, SpriteSortMode.Deferred);
 
             return;
         }
@@ -282,7 +281,7 @@ public partial class UIElementGroup : UIView
     protected readonly List<UIView> FreeChildren = [];
     protected readonly List<UIView> LayoutChildren = [];
 
-    protected void ClassifyChildren()
+    protected virtual void ClassifyChildren()
     {
         ElementsCache.Clear();
         ElementsCache.AddRange(Elements.Where(el => !el.Invalid));
@@ -292,7 +291,7 @@ public partial class UIElementGroup : UIView
 
         foreach (var child in ElementsCache)
         {
-            if (child.Positioning.IsFree())
+            if (child.Positioning.IsFree)
             {
                 FreeChildren.Add(child);
             }
@@ -301,10 +300,17 @@ public partial class UIElementGroup : UIView
                 LayoutChildren.Add(child);
             }
         }
+
+        if (LayoutChildren.Count <= 0)
+        {
+            FlexLines.Clear();
+        }
     }
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
+        if (DisableMouseInteraction) return null;
+
         // 开启溢出隐藏后, 需要先检查自身是否包含点
         if (OverflowHidden)
         {

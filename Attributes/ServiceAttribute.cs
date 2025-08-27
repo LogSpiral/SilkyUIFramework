@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class ServiceAttribute(ServiceLifetime lifetime) : Attribute

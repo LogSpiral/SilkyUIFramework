@@ -63,6 +63,7 @@ public abstract partial class BasicBody : UIElementGroup
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
+        if (DisableMouseInteraction) return null;
         if (!ContainsPoint(mousePosition)) return null;
 
         foreach (var child in ElementsInOrder.Reverse<UIView>())
@@ -75,17 +76,17 @@ public abstract partial class BasicBody : UIElementGroup
         return IgnoreMouseInteraction ? null : this;
     }
 
-    public override void RefreshLayout()
+    public override void UpdateLayout()
     {
         if (LayoutIsDirty)
         {
-            RefreshLayoutFromFree();
+            LayoutFromFree();
             CleanupDirtyMark();
         }
 
         foreach (var child in ElementsCache)
         {
-            child.RefreshLayout();
+            child.UpdateLayout();
         }
     }
 }
