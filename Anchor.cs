@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace SilkyUIFramework;
 
@@ -44,100 +45,80 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
 
     public override int GetHashCode() => HashCode.Combine(Pixels, Percent, Alignment);
 
-    public override string ToString()
-    {
-        return $"{Pixels}px, {Percent}%, {Alignment}#";
-    }
+    public override string ToString() => $"{Pixels}px, {Percent * 100f}%, {Alignment * 100f}#";
 
-    /// <summary>
-    /// 支持一个参数或三个参数，空格分割
-    /// </summary>
     public static Anchor Parse(string s, IFormatProvider provider)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
+        if (!TryParse(s, provider, out var result))
+            throw new FormatException("Invalid anchor format. Expected: '<number>px [<number>% [<number>#]]'");
+        return result;
+    }
+
+    public static bool TryParse(string s, IFormatProvider provider, out Anchor result)
+    {
+        result = default;
+
+        ArgumentNullException.ThrowIfNull(s);
+
+        if (string.IsNullOrWhiteSpace(s))
+            return false;
 
         var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
         switch (parts.Length)
         {
             case 1:
-            {
-                if (parts[0].EndsWith("px"))
-                {
-                    var value = float.Parse(parts[0].TrimEnd("px"), provider);
-                    return new Anchor(value, 0f, 0f);
-                }
-                else if (parts[0].EndsWith('%'))
-                {
-                    var value = float.Parse(parts[0].TrimEnd('%'), provider);
-                    return new Anchor(0f, value / 100f, 0f);
-                }
-                else if (parts[0].EndsWith('#'))
-                {
-                    var value = float.Parse(parts[0].TrimEnd('#'), provider);
-                    return new Anchor(0f, 0f, value / 100f);
-                }
+                return TryParseSingle(parts[0], provider, out result);
 
-                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment#'");
-            }
             case 3:
-            {
-                var arg1 = float.Parse(parts[0].TrimEnd("px"), provider);
-                var arg2 = float.Parse(parts[1].TrimEnd('%'), provider);
-                var arg3 = float.Parse(parts[2].TrimEnd('#'), provider);
+                if (TryParseWithSuffix(parts[0], "px", provider, out var px) &&
+                    TryParseWithSuffix(parts[1], "%", provider, out var percent) &&
+                    TryParseWithSuffix(parts[2], "#", provider, out var align))
+                {
+                    result = new Anchor(px, percent / 100f, align / 100f);
+                    return true;
+                }
+                return false;
 
-                return new Anchor(arg1, arg2 / 100f, arg3 / 100f);
-            }
             default:
-                throw new FormatException("Invalid anchor format. Expected format: 'pixels, percent%, alignment#'");
+                return false;
         }
     }
 
-    /// <summary>
-    /// 支持一个参数或三个参数，空格分割
-    /// </summary>
-    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Anchor result)
+    private static bool TryParseSingle([NotNullWhen(true)] string part, IFormatProvider provider, out Anchor result)
     {
-        result = new Anchor();
-        if (string.IsNullOrWhiteSpace(s)) return false;
+        result = default;
 
-        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        switch (parts.Length)
+        if (part.EndsWith("px", StringComparison.OrdinalIgnoreCase) &&
+            TryParseWithSuffix(part, "px", provider, out var px))
         {
-            case 1:
-            {
-                if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var arg1))
-                {
-                    result = new Anchor(arg1, 0f, 0f);
-                    return true;
-                }
-                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var arg2))
-                {
-                    result = new Anchor(0f, arg2 / 100f, 0f);
-                    return true;
-                }
-                else if (parts[0].EndsWith('#') && float.TryParse(parts[0].TrimEnd('#'), out var arg3))
-                {
-                    result = new Anchor(0f, 0f, arg3 / 100f);
-                    return true;
-                }
-
-                return false;
-            }
-            case 3:
-            {
-                if (float.TryParse(parts[0].TrimEnd("px"), out var arg1) &&
-                    float.TryParse(parts[1].TrimEnd('%'), out var arg2) &&
-                    float.TryParse(parts[2].TrimEnd('#'), out var arg3))
-                {
-                    result = new Anchor(arg1, arg2 / 100f, arg3 / 100f);
-                    return true;
-                }
-
-                return false;
-            }
-            default: return false;
+            result = new Anchor(px, 0f, 0f);
+            return true;
         }
+
+        if (part.EndsWith("%", StringComparison.OrdinalIgnoreCase) &&
+            TryParseWithSuffix(part, "%", provider, out var percent))
+        {
+            result = new Anchor(0f, percent / 100f, 0f);
+            return true;
+        }
+
+        if (part.EndsWith("#", StringComparison.OrdinalIgnoreCase) &&
+            TryParseWithSuffix(part, "#", provider, out var align))
+        {
+            result = new Anchor(0f, 0f, align / 100f);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseWithSuffix(string input, string suffix, IFormatProvider provider, out float value)
+    {
+        value = 0f;
+        if (!input.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var numberPart = input[..^suffix.Length];
+        return float.TryParse(numberPart, NumberStyles.Float, provider, out value);
     }
 }

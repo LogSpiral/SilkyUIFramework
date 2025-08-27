@@ -79,7 +79,7 @@ public class SUIImage : UIView
 
         if (FitHeight)
         {
-            SetInnerBoundsWidth(Texture2D.Value.Height);
+            SetInnerBoundsHeight(Texture2D.Value.Height);
         }
     }
 

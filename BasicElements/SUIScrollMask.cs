@@ -33,11 +33,10 @@ public class SUIScrollMask : UIElementGroup
 
     public override UIView GetElementAt(Vector2 mousePosition)
     {
-        if (Invalid) return null;
-
+        if (DisableMouseInteraction) return null;
         if (!ContainsPoint(mousePosition)) return null;
 
-        foreach (var child in ElementsSortedByZIndex.Reverse<UIView>())
+        foreach (var child in ElementsInOrder.Reverse<UIView>())
         {
             var target = child.GetElementAt(mousePosition);
             if (target != null) return target;

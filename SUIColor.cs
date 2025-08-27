@@ -6,6 +6,7 @@ public static class SUIColor
     /// 普通边框
     /// </summary>
     public static Color Border => new(18, 18, 38);
+
     /// <summary>
     /// 普通背景
     /// </summary>
@@ -15,6 +16,7 @@ public static class SUIColor
     /// 黄色强调色
     /// </summary>
     public static Color Highlight => new(233, 176, 0);
+
     /// <summary>
     /// 警告强调色
     /// </summary>

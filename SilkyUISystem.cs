@@ -67,6 +67,7 @@ public partial class SilkyUISystem : ModSystem
 
 public class SilkyUIPlayer : ModPlayer
 {
+    // 每次进入游戏时，重新创建 UI 实例
     public override void OnEnterWorld()
     {
         if (SilkyUISystem.Instance.SilkyUIManager is not { } manager) return;

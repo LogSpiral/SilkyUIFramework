@@ -1,8 +1,8 @@
 ﻿namespace SilkyUIFramework;
 
-public class RenderStates
+public class GraphicsDeviceStates
 {
-    private RenderStates() { }
+    private GraphicsDeviceStates() { }
 
     /// <summary>
     /// 混合模式
@@ -25,14 +25,17 @@ public class RenderStates
     public RasterizerState RasterizerState { get; private set; }
     public Matrix Matrix { get; private set; }
 
+    /// <summary>
+    /// 使用保存的状态 Begin
+    /// </summary>
     public void Begin(SpriteBatch spriteBatch, SpriteSortMode spriteSortMode, Effect effect = null, Matrix? matrix = null)
     {
         spriteBatch.Begin(spriteSortMode, BlendState, SamplerState, DepthStencilState, RasterizerState, effect, matrix ?? Matrix);
     }
 
-    public static RenderStates BackupStates(GraphicsDevice device, SpriteBatch spriteBatch)
+    public static GraphicsDeviceStates BackupStates(GraphicsDevice device, SpriteBatch spriteBatch)
     {
-        return new RenderStates
+        return new GraphicsDeviceStates
         {
             BlendState = device.BlendState,
             SamplerState = device.SamplerStates[0],

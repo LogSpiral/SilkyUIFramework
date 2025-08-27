@@ -18,49 +18,85 @@ public partial class UIElementGroup
         PositionIsDirty = true;
     }
 
-    protected List<UIView> ElementsSortedByZIndex { get; } = [];
-    public bool ChildrenOrderIsDirty { get; set; } = true;
+    public bool ElementsOrderIsDirty { get; set; } = true;
 
-    protected void ReorderChildren()
-    {
-        ElementsSortedByZIndex.Clear();
-        ElementsSortedByZIndex.AddRange(GetValidChildren().OrderBy(el => el.ZIndex));
-    }
+    public List<UIView> ElementsInOrder { get; } = [];
 
-    public override void RefreshLayout()
+    public void UpdateElementsOrder()
     {
-        if (ChildrenOrderIsDirty)
+        if (ElementsOrderIsDirty)
         {
-            ReorderChildren();
-            ChildrenOrderIsDirty = false;
+            ElementsInOrder.Clear();
+            ElementsInOrder.AddRange(ElementsCache.OrderBy(el => el.ZIndex));
+            ElementsOrderIsDirty = false;
         }
 
+        foreach (var item in ElementsInOrder.OfType<UIElementGroup>())
+        {
+            item.UpdateElementsOrder();
+        }
+    }
+
+    public override void UpdateLayout()
+    {
         if (LayoutIsDirty)
         {
-            if (Positioning.IsFree())
+            if (Positioning.IsFree)
             {
-                var container = GetParentInnerSpace();
-                Prepare(container.Width, container.Height);
-                ResizeChildrenWidth();
-                RecalculateHeight();
-                ResizeChildrenHeight();
-                ApplyLayout();
+                LayoutFromFree();
             }
             else
             {
-                PrepareChildren();
-                ResizeChildrenWidth();
-                RecalculateChildrenHeight();
-                ResizeChildrenHeight();
-                ApplyLayout();
+                LayoutFromFlow();
             }
 
             CleanupDirtyMark();
         }
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
-            child.RefreshLayout();
+            child.UpdateLayout();
+        }
+    }
+
+    protected void LayoutFromFree()
+    {
+        var container = GetParentInnerSpace();
+        Prepare(container.Width, container.Height);
+        ResizeChildrenWidth();
+        RecalculateHeight();
+        ResizeChildrenHeight();
+        ApplyLayout();
+
+        foreach (var item in FreeChildren)
+        {
+            if (item.Positioning != Positioning.Absolute) continue;
+            if (item.LayoutIsDirty) continue;
+            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
+                item.Left.Percent == 0 && item.Top.Percent == 0 &&
+                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
+
+            item.MarkLayoutDirty();
+        }
+    }
+
+    protected void LayoutFromFlow()
+    {
+        PrepareChildren();
+        ResizeChildrenWidth();
+        RecalculateChildrenHeight();
+        ResizeChildrenHeight();
+        ApplyLayout();
+
+        foreach (var item in FreeChildren)
+        {
+            if (item.Positioning != Positioning.Absolute) continue;
+            if (item.LayoutIsDirty) continue;
+            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
+                item.Left.Percent == 0 && item.Top.Percent == 0 &&
+                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
+
+            item.MarkLayoutDirty();
         }
     }
 
@@ -68,7 +104,7 @@ public partial class UIElementGroup
     {
         base.UpdatePosition();
 
-        foreach (var child in GetValidChildren())
+        foreach (var child in ElementsCache)
         {
             child.UpdatePosition();
         }
@@ -78,7 +114,7 @@ public partial class UIElementGroup
     {
         base.RecalculatePosition();
 
-        foreach (var child in GetValidChildren().Where(el => el.Positioning is not Positioning.Fixed))
+        foreach (var child in ElementsCache.Where(el => el.Positioning != Positioning.Fixed))
         {
             child.RecalculatePosition();
         }

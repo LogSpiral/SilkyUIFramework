@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using ReLogic.Localization.IME;
 using ReLogic.OS;
+using SilkyUIFramework.Helper;
 
 namespace SilkyUIFramework;
 
@@ -100,7 +101,6 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         {
             MouseFocusElement?.OnGotFocus(new UIMouseEvent(MouseFocusElement, MousePosition));
         }
-
     }
 
     public SilkyUI SetBody(BasicBody basicBody = null)
@@ -112,18 +112,8 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         var lastBasicBody = BasicBody;
         BasicBody = basicBody;
 
-        try
-        {
-            lastBasicBody?.HandleExitTree();
-        }
-        catch
-        {
-            throw;
-        }
-        finally
-        {
-            BasicBody?.HandleEnterTree(this);
-        }
+        RuntimeHelper.ErrorCapture(() => lastBasicBody?.HandleExitTree());
+        RuntimeHelper.ErrorCapture(() => BasicBody?.HandleEnterTree(this));
 
         return this;
     }
@@ -287,13 +277,18 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
 
         BasicBody.Initialize();
 
+        BasicBody.UpdateLayout();
+        BasicBody.UpdatePosition();
+        BasicBody.UpdateElementsOrder();
+
         // 更新 UI 的各种状态，比如动画
         BasicBody.HandleUpdateStatus(gameTime);
 
         if (BasicBody is not { Enabled: true }) return;
 
-        BasicBody.RefreshLayout();
+        BasicBody.UpdateLayout();
         BasicBody.UpdatePosition();
+        BasicBody.UpdateElementsOrder();
 
         BasicBody.HandleDraw(gameTime, spriteBatch);
 

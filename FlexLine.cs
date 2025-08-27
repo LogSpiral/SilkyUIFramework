@@ -21,7 +21,17 @@ public class FlexLine
 
     public float GetFenceGap(float gap) => (Elements.Count - 1) * gap;
 
-    public static FlexLine SingleRow(List<UIView> elements, float gap)
+    public void UpdateMainSizeByRow(float gap)
+    {
+        MainSize = Elements.Sum(element => element.OuterBounds.Width) + GetFenceGap(gap);
+    }
+
+    public void UpdateMainSizeByColumn(float gap)
+    {
+        MainSize = Elements.Sum(element => element.OuterBounds.Height) + GetFenceGap(gap);
+    }
+
+    public static FlexLine CreateSingleRow(List<UIView> elements, float gap)
     {
         var line = new FlexLine(elements)
         {
@@ -32,7 +42,7 @@ public class FlexLine
         return line;
     }
 
-    public static FlexLine SingleColumn(List<UIView> elements, float gap)
+    public static FlexLine CreateSingleColumn(List<UIView> elements, float gap)
     {
         var line = new FlexLine(elements)
         {

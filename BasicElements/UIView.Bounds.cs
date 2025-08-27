@@ -202,7 +202,7 @@ public partial class UIView
     protected Size GetParentInnerSpace() =>
         Parent?.GetInnerSpace() ?? GraphicsDeviceHelper.GetBackBufferSizeByUIScale();
 
-    public virtual void RefreshLayout()
+    public virtual void UpdateLayout()
     {
         if (!LayoutIsDirty) return;
 
@@ -220,12 +220,12 @@ public partial class UIView
         if (FitWidth)
             SetInnerBoundsWidth(MathHelper.Clamp(0f, MinInnerWidth, MaxInnerWidth));
         else
-            RecalculateBoundsWidth(width ?? 0);
+            CalculateBoundsWidth(width ?? 0);
 
         if (FitHeight)
             SetInnerBoundsHeight(MathHelper.Clamp(0f, MinInnerHeight, MaxInnerHeight));
         else
-            RecalculateBoundsHeight(height ?? 0);
+            CalculateBoundsHeight(height ?? 0);
     }
 
     public virtual void RecalculateHeight() { }
@@ -235,7 +235,7 @@ public partial class UIView
         CalculateWidthConstraints(containerWidth);
 
         if (FitWidth) return;
-        RecalculateBoundsWidth(containerWidth);
+        CalculateBoundsWidth(containerWidth);
     }
 
     public virtual void RefreshHeight(float containerHeight)
@@ -243,7 +243,7 @@ public partial class UIView
         CalculateHeightConstraints(containerHeight);
 
         if (FitHeight) return;
-        RecalculateBoundsHeight(containerHeight);
+        CalculateBoundsHeight(containerHeight);
     }
 
     public void SetExactWidth(float width)
@@ -326,7 +326,7 @@ public partial class UIView
 
     #endregion
 
-    protected void RecalculateBoundsWidth(float containerWidth)
+    protected void CalculateBoundsWidth(float containerWidth)
     {
         WidthValue = _width.CalculateSize(containerWidth);
         WidthValue = MathHelper.Clamp(WidthValue, MinWidthValue, MaxWidthValue);
@@ -343,7 +343,7 @@ public partial class UIView
         }
     }
 
-    protected void RecalculateBoundsHeight(float containerHeight)
+    protected void CalculateBoundsHeight(float containerHeight)
     {
         HeightValue = _height.CalculateSize(containerHeight);
         HeightValue = MathHelper.Clamp(HeightValue, MinHeightValue, MaxHeightValue);

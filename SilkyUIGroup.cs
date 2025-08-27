@@ -5,7 +5,6 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 {
     private SilkyUIManager SilkyUIManager { get; } = silkyUIManager;
 
-
     private readonly List<SilkyUI> _originalSilkyUIs = [];
 
     private readonly List<SilkyUI> _silkyUIs = [];

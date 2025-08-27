@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace SilkyUIFramework;
 
@@ -54,74 +55,57 @@ public readonly struct Margin(float left, float top, float right, float bottom) 
         return $"Margin({Left}, {Top}, {Right}, {Bottom})";
     }
 
+    // Parse 调用 TryParse
     public static Margin Parse(string s, IFormatProvider provider)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
-
-        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        switch (parts.Length)
-        {
-            case 1:
-                if (float.TryParse(parts[0], out var size))
-                {
-                    return new Margin(size);
-                }
-                throw new FormatException("Size must be a valid floating-point number.");
-            case 2:
-                if (float.TryParse(parts[0], out var h) && float.TryParse(parts[1], out var v))
-                {
-                    return new Margin(h, v);
-                }
-                throw new FormatException("Size must be a valid floating-point number.");
-            case 4:
-                if (float.TryParse(parts[0], out var l) &&
-                    float.TryParse(parts[1], out var t) &&
-                    float.TryParse(parts[2], out var r) &&
-                    float.TryParse(parts[3], out var b))
-                {
-                    return new Margin(l, t, r, b);
-                }
-                throw new FormatException("Size must be a valid floating-point number.");
-            default:
-                throw new FormatException("Size string must be in the format 'width x height' or 'size'.");
-        }
+        if (!TryParse(s, provider, out var result))
+            throw new FormatException($"Cannot parse '{s}' as Margin.");
+        return result;
     }
 
-    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Margin result)
+    // TryParse 核心逻辑
+    public static bool TryParse(string s, IFormatProvider provider, out Margin result)
     {
         result = Zero;
-        if (string.IsNullOrEmpty(s)) return false;
+
+        ArgumentNullException.ThrowIfNull(s);
+
+        if (string.IsNullOrWhiteSpace(s)) return false;
 
         var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         switch (parts.Length)
         {
             case 1:
-                if (float.TryParse(parts[0], out var size))
+                if (float.TryParse(parts[0], NumberStyles.Float, provider, out var size))
                 {
                     result = new Margin(size);
                     return true;
                 }
                 return false;
+
             case 2:
-                if (float.TryParse(parts[0], out var h) && float.TryParse(parts[1], out var v))
+                if (float.TryParse(parts[0], NumberStyles.Float, provider, out var h) &&
+                    float.TryParse(parts[1], NumberStyles.Float, provider, out var v))
                 {
                     result = new Margin(h, v);
                     return true;
                 }
                 return false;
+
             case 4:
-                if (float.TryParse(parts[0], out var l) &&
-                    float.TryParse(parts[1], out var t) &&
-                    float.TryParse(parts[2], out var r) &&
-                    float.TryParse(parts[3], out var b))
+                if (float.TryParse(parts[0], NumberStyles.Float, provider, out var l) &&
+                    float.TryParse(parts[1], NumberStyles.Float, provider, out var t) &&
+                    float.TryParse(parts[2], NumberStyles.Float, provider, out var r) &&
+                    float.TryParse(parts[3], NumberStyles.Float, provider, out var b))
                 {
                     result = new Margin(l, t, r, b);
                     return true;
                 }
                 return false;
-            default: return false;
+
+            default:
+                return false;
         }
     }
 }

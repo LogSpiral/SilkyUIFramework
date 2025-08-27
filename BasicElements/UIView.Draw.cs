@@ -59,10 +59,3 @@ public partial class UIView
         RectangleRender.DrawOnlyBorder(position, size, SilkyUI.TransformMatrix);
     }
 }
-
-public enum HiddenBox
-{
-    Outer,
-    Middle,
-    Inner,
-}

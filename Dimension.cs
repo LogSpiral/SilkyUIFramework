@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace SilkyUIFramework;
 
@@ -19,85 +20,74 @@ public readonly struct Dimension(float pixels = 0f, float percent = 0f) : IEquat
     public override bool Equals(object obj) => obj is Dimension other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Pixels, Percent);
 
-    public override string ToString() => $"{Pixels}px {Percent}%";
+    public override string ToString() => $"{Pixels}px {Percent * 100f}%";
 
+    // Parse 调用 TryParse
     public static Dimension Parse(string s, IFormatProvider provider)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
-
-        var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        switch (parts.Length)
-        {
-            case 0: goto default;
-            case 1:
-            {
-                if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var pixels))
-                {
-                    return new Dimension(pixels, 0f);
-                }
-                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd('%'), out var percent))
-                {
-                    return new Dimension(0f, percent / 100f);
-                }
-
-                goto default;
-            }
-            case 2:
-            {
-                if (float.TryParse(parts[0].TrimEnd("px"), out var pixels) &&
-                    float.TryParse(parts[1].TrimEnd('%'), out var percent))
-                    return new Dimension(pixels, percent / 100f);
-                goto default;
-            }
-            default: throw new FormatException($"Cannot parse '{s}' as Dimension.");
-        }
-
+        if (!TryParse(s, provider, out var result))
+            throw new FormatException($"Cannot parse '{s}' as Dimension.");
+        return result;
     }
 
-    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Dimension result)
+    // TryParse 负责核心逻辑
+    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, out Dimension result)
     {
-        if (string.IsNullOrWhiteSpace(s))
-        {
-            result = new Dimension();
-            return false;
-        }
+        result = default;
+
+        ArgumentNullException.ThrowIfNull(s);
+
+        if (string.IsNullOrWhiteSpace(s)) return false;
 
         var parts = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         switch (parts.Length)
         {
-            case 0: goto default;
             case 1:
-            {
-                if (parts[0].EndsWith("px") && float.TryParse(parts[0].TrimEnd("px"), out var pixels))
-                {
-                    result = new Dimension(pixels, 0f);
-                    return true;
-                }
-                else if (parts[0].EndsWith('%') && float.TryParse(parts[0].TrimEnd("%"), out var percent))
-                {
-                    result = new Dimension(0f, percent / 100f);
-                    return true;
-                }
+                return TryParseSingle(parts[0], provider, out result);
 
-                goto default;
-            }
             case 2:
-            {
-                if (float.TryParse(parts[0].TrimEnd("px"), out var pixels) &&
-                    float.TryParse(parts[1].TrimEnd('%'), out var percent))
+                if (TryParseWithSuffix(parts[0], "px", provider, out var px) &&
+                    TryParseWithSuffix(parts[1], "%", provider, out var percent))
                 {
-                    result = new Dimension(pixels, percent / 100f);
+                    result = new Dimension(px, percent / 100f);
                     return true;
                 }
-                goto default;
-            }
-            default:
-            {
-                result = new Dimension();
                 return false;
-            }
+
+            default:
+                return false;
         }
+    }
+
+    private static bool TryParseSingle(string part, IFormatProvider provider, out Dimension result)
+    {
+        result = default;
+
+        if (part.EndsWith("px", StringComparison.OrdinalIgnoreCase) &&
+            TryParseWithSuffix(part, "px", provider, out var px))
+        {
+            result = new Dimension(px, 0f);
+            return true;
+        }
+
+        if (part.EndsWith("%", StringComparison.OrdinalIgnoreCase) &&
+            TryParseWithSuffix(part, "%", provider, out var percent))
+        {
+            result = new Dimension(0f, percent / 100f);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseWithSuffix(string input, string suffix, IFormatProvider provider, out float value)
+    {
+        value = 0f;
+        if (!input.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var numberPart = input[..^suffix.Length];
+        return float.TryParse(numberPart, NumberStyles.Float, provider, out value);
     }
 }
