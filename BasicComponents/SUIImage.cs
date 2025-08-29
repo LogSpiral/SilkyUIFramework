@@ -87,7 +87,8 @@ public class SUIImage : UIView
     {
         base.Draw(gameTime, spriteBatch);
 
-        if (Texture2D.Value == null) return;
+
+        if (Texture2D?.Value == null) return;
 
         var position = InnerBounds.Position;
         var size = (Vector2)InnerBounds.Size;
