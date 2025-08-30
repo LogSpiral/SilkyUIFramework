@@ -5,7 +5,7 @@
 /// </summary>
 public struct Bounds
 {
-    public static readonly Bounds Zero = new(0, 0, 0, 0);
+    public static Bounds Zero { get; } = new(0, 0, 0, 0);
 
     private float _x;
     private float _y;

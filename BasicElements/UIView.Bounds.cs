@@ -138,54 +138,37 @@ public partial class UIView
     public Dimension Width
     {
         get => _width;
-        set
-        {
-            SetWidth(value.Pixels, value.Percent);
-        }
+        set { SetWidth(value.Pixels, value.Percent); }
     }
 
     public Dimension MinWidth
     {
         get => _minWidth;
-        set
-        {
-            SetMinWidth(value.Pixels, value.Percent);
-        }
+        set { SetMinWidth(value.Pixels, value.Percent); }
     }
 
     public Dimension MaxWidth
     {
         get => _maxWidth;
-        set
-        {
-            SetMaxWidth(value.Pixels, value.Percent);
-        }
+        set { SetMaxWidth(value.Pixels, value.Percent); }
     }
+
     public Dimension Height
     {
         get => _height;
-        set
-        {
-            SetHeight(value.Pixels, value.Percent);
-        }
+        set { SetHeight(value.Pixels, value.Percent); }
     }
 
     public Dimension MinHeight
     {
         get => _minHeight;
-        set
-        {
-            SetMinHeight(value.Pixels, value.Percent);
-        }
+        set { SetMinHeight(value.Pixels, value.Percent); }
     }
 
     public Dimension MaxHeight
     {
         get => _maxHeight;
-        set
-        {
-            SetMaxHeight(value.Pixels, value.Percent);
-        }
+        set { SetMaxHeight(value.Pixels, value.Percent); }
     }
 
     #endregion
@@ -228,8 +211,6 @@ public partial class UIView
             CalculateBoundsHeight(height ?? 0);
     }
 
-    public virtual void RecalculateHeight() { }
-
     public virtual void RefreshWidth(float containerWidth)
     {
         CalculateWidthConstraints(containerWidth);
@@ -237,6 +218,8 @@ public partial class UIView
         if (FitWidth) return;
         CalculateBoundsWidth(containerWidth);
     }
+
+    public virtual void RecalculateHeight() { }
 
     public virtual void RefreshHeight(float containerHeight)
     {
@@ -246,12 +229,34 @@ public partial class UIView
         CalculateBoundsHeight(containerHeight);
     }
 
-    public void SetExactWidth(float width)
+    /// <summary>
+    /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Width
+    /// </summary>
+    public void SetExactInnerWidth(float width)
+    {
+        SetInnerBoundsWidth(MathHelper.Clamp(width, MinInnerWidth, MaxInnerWidth));
+    }
+
+    /// <summary>
+    /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Height
+    /// </summary>
+    public void SetExactInnerHeight(float height)
+    {
+        SetInnerBoundsHeight(MathHelper.Clamp(height, MinInnerHeight, MaxInnerHeight));
+    }
+
+    /// <summary>
+    /// 通常用于 OnResizeChildrenWidth 阶段直接设置 OuterBounds.Width
+    /// </summary>
+    public void SetExactOuterWidth(float width)
     {
         SetOuterBoundsWidth(MathHelper.Clamp(width, MinOuterWidth, MaxOuterWidth));
     }
 
-    public void SetExactHeight(float height)
+    /// <summary>
+    /// 通常用于 OnResizeChildrenHeight 阶段直接设置 OuterBounds.Height
+    /// </summary>
+    public void SetExactOuterHeight(float height)
     {
         SetOuterBoundsHeight(MathHelper.Clamp(height, MinOuterHeight, MaxOuterHeight));
     }

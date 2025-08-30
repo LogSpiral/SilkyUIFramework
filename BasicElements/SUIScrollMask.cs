@@ -10,7 +10,7 @@ public class SUIScrollMask : UIElementGroup
         OverflowHidden = true;
     }
 
-    public override void RecalculateChildrenHeight()
+    protected override void RecalculateChildrenHeight()
     {
         base.RecalculateChildrenHeight();
     }

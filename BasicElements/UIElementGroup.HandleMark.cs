@@ -4,23 +4,18 @@ public partial class UIElementGroup
 {
     protected internal virtual void NotifyParentChildDirty()
     {
-        if (LayoutIsDirty) return;
+        LayoutIsDirty = true;
+        PositionIsDirty = true;
 
         if (FitWidth || FitHeight)
         {
-            LayoutIsDirty = true;
-            PositionIsDirty = true;
             Parent?.NotifyParentChildDirty();
-            return;
         }
-
-        LayoutIsDirty = true;
-        PositionIsDirty = true;
     }
 
     public bool ElementsOrderIsDirty { get; set; } = true;
 
-    public List<UIView> ElementsInOrder { get; } = [];
+    protected List<UIView> ElementsInOrder { get; } = [];
 
     public void UpdateElementsOrder()
     {
@@ -43,11 +38,11 @@ public partial class UIElementGroup
         {
             if (Positioning.IsFree)
             {
-                LayoutFromFree();
+                UpdateLayoutFromFree();
             }
             else
             {
-                LayoutFromFlow();
+                UpdateLayoutFromFlow();
             }
 
             CleanupDirtyMark();
@@ -59,43 +54,43 @@ public partial class UIElementGroup
         }
     }
 
-    protected void LayoutFromFree()
+    protected void UpdateLayoutFromFree()
     {
         var container = GetParentInnerSpace();
         Prepare(container.Width, container.Height);
         ResizeChildrenWidth();
         RecalculateHeight();
         ResizeChildrenHeight();
-        ApplyLayout();
+        UpdateChildrenLayoutOffset();
 
-        foreach (var item in FreeChildren)
+        foreach (var item in from item in FreeElements
+                 where item.Positioning == Positioning.Absolute
+                 where !item.LayoutIsDirty
+                 where item.Width.Percent != 0 || item.Height.Percent != 0 ||
+                       item.Left.Percent != 0 || item.Top.Percent != 0 ||
+                       item.Left.Alignment != 0 || item.Top.Alignment != 0
+                 select item)
         {
-            if (item.Positioning != Positioning.Absolute) continue;
-            if (item.LayoutIsDirty) continue;
-            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
-                item.Left.Percent == 0 && item.Top.Percent == 0 &&
-                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
-
             item.MarkLayoutDirty();
         }
     }
 
-    protected void LayoutFromFlow()
+    protected void UpdateLayoutFromFlow()
     {
         PrepareChildren();
         ResizeChildrenWidth();
         RecalculateChildrenHeight();
         ResizeChildrenHeight();
-        ApplyLayout();
+        UpdateChildrenLayoutOffset();
 
-        foreach (var item in FreeChildren)
+        foreach (var item in from item in FreeElements
+                 where item.Positioning == Positioning.Absolute
+                 where !item.LayoutIsDirty
+                 where item.Width.Percent != 0 || item.Height.Percent != 0 ||
+                       item.Left.Percent != 0 || item.Top.Percent != 0 ||
+                       item.Left.Alignment != 0 || item.Top.Alignment != 0
+                 select item)
         {
-            if (item.Positioning != Positioning.Absolute) continue;
-            if (item.LayoutIsDirty) continue;
-            if (item.Width.Percent == 0 && item.Height.Percent == 0 &&
-                item.Left.Percent == 0 && item.Top.Percent == 0 &&
-                item.Left.Alignment == 0 && item.Top.Alignment == 0) continue;
-
             item.MarkLayoutDirty();
         }
     }
