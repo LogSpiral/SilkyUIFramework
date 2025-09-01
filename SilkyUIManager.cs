@@ -8,7 +8,6 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     private ILog Logger { get; } = logger;
     private IServiceProvider ServiceProvider { get; } = serviceProvider;
 
-
     #region Fields and Propertices
 
     /// <summary>
@@ -26,44 +25,60 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     private readonly List<string> _layerOrders = [];
 
     /// <summary> 插入位置 </summary>
-    public Dictionary<string, SilkyUIGroup> SilkyUILayerNodes { get; } = [];
-    public Dictionary<string, List<Type>> SilkyUIType { get; } = [];
+    public Dictionary<string, SilkyUIGroup> SilkyUIGroups { get; } = [];
+    public Dictionary<string, List<Type>> SilkyUITypes { get; } = [];
 
     #endregion
 
-    /// <summary>
-    /// 注册游戏内 UI
-    /// </summary>
+    /// <summary> 注册游戏内 UI </summary>
     public void RegisterUI(Type bodyType, string layerNode)
     {
         Logger.Info($"Register Game UI: \"{bodyType.Name}\", \"{layerNode}\"");
 
-        if (!SilkyUIType.TryGetValue(layerNode, out var types))
+        if (!SilkyUITypes.TryGetValue(layerNode, out var types))
         {
             types = [];
-            SilkyUIType[layerNode] = types;
+            SilkyUITypes[layerNode] = types;
         }
 
         types.Add(bodyType);
 
-        if (!SilkyUILayerNodes.TryGetValue(layerNode, out var group))
+        if (!SilkyUIGroups.TryGetValue(layerNode, out var group))
         {
             group = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
-            SilkyUILayerNodes[layerNode] = group;
+            SilkyUIGroups[layerNode] = group;
         }
     }
 
     /// <summary>
-    /// 更新 UI
+    /// 获取游戏内 UI 实例
     /// </summary>
+    public bool TryGetInstance<TBody>(out TBody body) where TBody : BasicBody
+    {
+        foreach (var (key, value) in SilkyUIGroups)
+        {
+            foreach (var item in value.SilkyUIs)
+            {
+                if (item.BasicBody is TBody tBody)
+                {
+                    body = tBody;
+                    return true;
+                }
+            }
+        }
+
+        body = default;
+        return false;
+    }
+
     public void UpdateUI(GameTime gameTime)
     {
         CurrentSilkyUIGroup = null;
 
         // 它是绘制顺序, 所以事件处理要倒序
-        foreach (var layerNode in _layerOrders.Where(SilkyUILayerNodes.ContainsKey).Reverse())
+        foreach (var layerNode in _layerOrders.Where(SilkyUIGroups.ContainsKey).Reverse())
         {
-            CurrentSilkyUIGroup = SilkyUILayerNodes[layerNode];
+            CurrentSilkyUIGroup = SilkyUIGroups[layerNode];
             CurrentSilkyUIGroup.Order();
             CurrentSilkyUIGroup.UpdateUI(gameTime);
         }
@@ -87,7 +102,7 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
         var index = 0;
 
-        foreach (var (layerNode, silkyUIGroup) in SilkyUILayerNodes)
+        foreach (var (layerNode, silkyUIGroup) in SilkyUIGroups)
         {
             silkyUIGroup.Order();
 

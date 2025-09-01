@@ -72,11 +72,11 @@ public class SilkyUIPlayer : ModPlayer
     {
         if (SilkyUISystem.Instance.SilkyUIManager is not { } manager) return;
 
-        foreach (var (layerNode, group) in manager.SilkyUILayerNodes)
+        foreach (var (layerNode, group) in manager.SilkyUIGroups)
         {
             group.Clear();
 
-            if (!manager.SilkyUIType.TryGetValue(layerNode, out var types)) continue;
+            if (!manager.SilkyUITypes.TryGetValue(layerNode, out var types)) continue;
 
             foreach (var type in types)
             {
