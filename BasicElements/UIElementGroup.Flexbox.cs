@@ -2,7 +2,6 @@
 
 public partial class UIElementGroup
 {
-    private FlexboxModel FlexboxModel { get; set; }
 
     public FlexDirection FlexDirection
     {

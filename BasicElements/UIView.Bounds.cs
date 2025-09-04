@@ -191,6 +191,7 @@ public partial class UIView
 
         var container = GetParentInnerSpace();
         Prepare(container.Width, container.Height);
+        RecalculateWidth();
         RecalculateHeight();
         CleanupDirtyMark();
     }
@@ -219,6 +220,8 @@ public partial class UIView
         CalculateBoundsWidth(containerWidth);
     }
 
+    public virtual void RecalculateWidth() { }
+
     public virtual void RecalculateHeight() { }
 
     public virtual void RefreshHeight(float containerHeight)
@@ -227,38 +230,6 @@ public partial class UIView
 
         if (FitHeight) return;
         CalculateBoundsHeight(containerHeight);
-    }
-
-    /// <summary>
-    /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Width
-    /// </summary>
-    public void SetExactInnerWidth(float width)
-    {
-        SetInnerBoundsWidth(MathHelper.Clamp(width, MinInnerWidth, MaxInnerWidth));
-    }
-
-    /// <summary>
-    /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Height
-    /// </summary>
-    public void SetExactInnerHeight(float height)
-    {
-        SetInnerBoundsHeight(MathHelper.Clamp(height, MinInnerHeight, MaxInnerHeight));
-    }
-
-    /// <summary>
-    /// 通常用于 OnResizeChildrenWidth 阶段直接设置 OuterBounds.Width
-    /// </summary>
-    public void SetExactOuterWidth(float width)
-    {
-        SetOuterBoundsWidth(MathHelper.Clamp(width, MinOuterWidth, MaxOuterWidth));
-    }
-
-    /// <summary>
-    /// 通常用于 OnResizeChildrenHeight 阶段直接设置 OuterBounds.Height
-    /// </summary>
-    public void SetExactOuterHeight(float height)
-    {
-        SetOuterBoundsHeight(MathHelper.Clamp(height, MinOuterHeight, MaxOuterHeight));
     }
 
     #region 声明和计算约束
@@ -367,42 +338,42 @@ public partial class UIView
 
     #region 设置 Bounds 的方法，包括 OuterBounds, Bounds, InnerBounds
 
-    protected void SetOuterBoundsWidth(float width)
+    protected internal void SetOuterBoundsWidth(float width)
     {
         OuterBounds.Width = width;
         Bounds.Width = width -= Margin.Horizontal;
         InnerBounds.Width = width - Padding.Horizontal - Border * 2;
     }
 
-    protected void SetOuterBoundsHeight(float height)
+    protected internal void SetOuterBoundsHeight(float height)
     {
         OuterBounds.Height = height;
         Bounds.Height = height -= Margin.Vertical;
         InnerBounds.Height = height - Padding.Vertical - Border * 2;
     }
 
-    protected void SetBoundsWidth(float width)
+    protected internal void SetBoundsWidth(float width)
     {
         Bounds.Width = width;
         InnerBounds.Width = width - Padding.Horizontal - Border * 2;
         OuterBounds.Width = width + Margin.Horizontal;
     }
 
-    protected void SetBoundsHeight(float height)
+    protected internal void SetBoundsHeight(float height)
     {
         Bounds.Height = height;
         InnerBounds.Height = height - Padding.Vertical - Border * 2;
         OuterBounds.Height = height + Margin.Vertical;
     }
 
-    protected void SetInnerBoundsWidth(float width)
+    protected internal void SetInnerBoundsWidth(float width)
     {
         InnerBounds.Width = width;
         Bounds.Width = width += Padding.Horizontal + Border * 2;
         OuterBounds.Width = width + Margin.Horizontal;
     }
 
-    protected void SetInnerBoundsHeight(float height)
+    protected internal void SetInnerBoundsHeight(float height)
     {
         InnerBounds.Height = height;
         Bounds.Height = height += Padding.Vertical + Border * 2;

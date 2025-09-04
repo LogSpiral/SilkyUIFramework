@@ -58,18 +58,19 @@ public partial class UIElementGroup
     {
         var container = GetParentInnerSpace();
         Prepare(container.Width, container.Height);
+        RecalculateWidth();
         ResizeChildrenWidth();
         RecalculateHeight();
         ResizeChildrenHeight();
         UpdateChildrenLayoutOffset();
 
         foreach (var item in from item in FreeElements
-                 where item.Positioning == Positioning.Absolute
-                 where !item.LayoutIsDirty
-                 where item.Width.Percent != 0 || item.Height.Percent != 0 ||
-                       item.Left.Percent != 0 || item.Top.Percent != 0 ||
-                       item.Left.Alignment != 0 || item.Top.Alignment != 0
-                 select item)
+                             where item.Positioning == Positioning.Absolute
+                             where !item.LayoutIsDirty
+                             where item.Width.Percent != 0 || item.Height.Percent != 0 ||
+                                   item.Left.Percent != 0 || item.Top.Percent != 0 ||
+                                   item.Left.Alignment != 0 || item.Top.Alignment != 0
+                             select item)
         {
             item.MarkLayoutDirty();
         }
@@ -78,18 +79,19 @@ public partial class UIElementGroup
     protected void UpdateLayoutFromFlow()
     {
         PrepareChildren();
+        RecalculateChildrenWidth();
         ResizeChildrenWidth();
         RecalculateChildrenHeight();
         ResizeChildrenHeight();
         UpdateChildrenLayoutOffset();
 
         foreach (var item in from item in FreeElements
-                 where item.Positioning == Positioning.Absolute
-                 where !item.LayoutIsDirty
-                 where item.Width.Percent != 0 || item.Height.Percent != 0 ||
-                       item.Left.Percent != 0 || item.Top.Percent != 0 ||
-                       item.Left.Alignment != 0 || item.Top.Alignment != 0
-                 select item)
+                             where item.Positioning == Positioning.Absolute
+                             where !item.LayoutIsDirty
+                             where item.Width.Percent != 0 || item.Height.Percent != 0 ||
+                                   item.Left.Percent != 0 || item.Top.Percent != 0 ||
+                                   item.Left.Alignment != 0 || item.Top.Alignment != 0
+                             select item)
         {
             item.MarkLayoutDirty();
         }

@@ -4,6 +4,9 @@ public partial class UIElementGroup
 {
     #region Properties & Fields LayoutType LayoutDirection Gap
 
+    /// <summary>
+    /// 目前仅有 Flexbox 可以使用，请不要自定义布局。
+    /// </summary>
     public LayoutType LayoutType
     {
         get;
@@ -13,7 +16,7 @@ public partial class UIElementGroup
             field = value;
             MarkLayoutDirty();
         }
-    }
+    } = LayoutType.Flexbox;
 
     public Size Gap
     {
@@ -27,17 +30,33 @@ public partial class UIElementGroup
     }
 
     public void SetGap(float gap) => Gap = gap;
+    public void SetGap(float width, float height) => Gap = Gap.With(width, height);
 
-    public void SetGap(float width, float height)
+    private readonly FlexboxModule FlexboxModule;
+    public readonly GridModule GridModule;
+
+    public LayoutModule LayoutModule
     {
-        Gap = Gap.With(width, height);
+        get
+        {
+            return LayoutType switch
+            {
+                LayoutType.Grid => GridModule,
+                LayoutType.Custom => field,
+                { } => FlexboxModule,
+            };
+        }
+        set
+        {
+            if (value.Parent != this) return;
+            if (field.GetType() == value.GetType()) return;
+            field = value;
+            if (LayoutType == LayoutType.Custom) MarkLayoutDirty();
+        }
     }
 
     #endregion
 
-    /// <summary>
-    /// 预处理
-    /// </summary>
     public override void Prepare(float? width, float? height)
     {
         base.Prepare(width, height);
@@ -45,7 +64,7 @@ public partial class UIElementGroup
         PrepareChildren();
 
         if (LayoutElements.Count <= 0) return;
-        if (LayoutType == LayoutType.Flexbox) FlexboxModel.OnPrepare();
+        LayoutModule?.PostPrepare();
     }
 
     public virtual void PrepareChildren()
@@ -53,34 +72,33 @@ public partial class UIElementGroup
         ClassifyChildren();
         if (LayoutElements.Count <= 0) return;
 
-        float? spaceWidth = FitWidth ? null : InnerBounds.Width;
-        float? spaceHeight = FitHeight ? null : InnerBounds.Height;
+        LayoutModule?.UpdateCacheStatus();
 
-        foreach (var el in LayoutElements)
+        float? availableWidth = FitWidth ? null : InnerBounds.Width;
+        float? availableHeight = FitHeight ? null : InnerBounds.Height;
+        for (int i = 0; i < LayoutElements.Count; i++)
         {
-            el.Prepare(spaceWidth, spaceHeight);
+            LayoutModule.ModifyAvailableSize(LayoutElements[i], i, ref availableWidth, ref availableHeight);
+            LayoutElements[i].Prepare(availableWidth, availableHeight);
         }
 
-        if (LayoutType == LayoutType.Flexbox) FlexboxModel.OnPrepareChildren();
+        LayoutModule?.PostPrepareChildren();
     }
 
     /// <summary> 重新设置子元素宽度 </summary>
     public virtual void ResizeChildrenWidth()
     {
         if (LayoutElements.Count <= 0) return;
-        var innerSize = InnerBounds.Size;
 
-        // 如果不适应宽度, 子元素也不适应宽度, 则重新设置子元素的宽度
         if (!FitWidth)
         {
-            foreach (var el in LayoutElements)
+            for (int i = 0; i < LayoutElements.Count; i++)
             {
-                el.RefreshWidth(innerSize.Width);
+                LayoutElements[i].RefreshWidth(InnerBounds.Width);
             }
         }
 
-        // Flexbox 处理
-        if (LayoutType is LayoutType.Flexbox) FlexboxModel.OnResizeChildrenWidth();
+        LayoutModule?.PostResizeChildrenWidth();
 
         foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {
@@ -88,25 +106,42 @@ public partial class UIElementGroup
         }
     }
 
-    public override void RecalculateHeight()
+    public override void RecalculateWidth()
+    {
+        base.RecalculateWidth();
+        RecalculateChildrenWidth();
+
+        LayoutModule?.PostRecalculateWidth();
+    }
+
+    protected virtual void RecalculateChildrenWidth()
     {
         if (LayoutElements.Count <= 0) return;
-        base.RecalculateHeight();
+        for (int i = 0; i < LayoutElements.Count; i++)
+        {
+            LayoutElements[i].RecalculateWidth();
+        }
 
+        LayoutModule?.PostRecalculateChildrenWidth();
+    }
+
+    public override void RecalculateHeight()
+    {
+        base.RecalculateHeight();
         RecalculateChildrenHeight();
 
-        if (LayoutType == LayoutType.Flexbox) FlexboxModel.OnRecalculateHeight();
+        LayoutModule?.PostRecalculateHeight();
     }
 
     protected virtual void RecalculateChildrenHeight()
     {
         if (LayoutElements.Count <= 0) return;
-        foreach (var el in LayoutElements)
+        for (int i = 0; i < LayoutElements.Count; i++)
         {
-            el.RecalculateHeight();
+            LayoutElements[i].RecalculateHeight();
         }
 
-        if (LayoutType == LayoutType.Flexbox) FlexboxModel.OnRecalculateChildrenHeight();
+        LayoutModule?.PostRecalculateChildrenHeight();
     }
 
     protected virtual void ResizeChildrenHeight()
@@ -116,13 +151,13 @@ public partial class UIElementGroup
 
         if (!FitHeight)
         {
-            foreach (var el in LayoutElements)
+            for (int i = 0; i < LayoutElements.Count; i++)
             {
-                el.RefreshHeight(innerSize.Height);
+                LayoutElements[i].RefreshHeight(innerSize.Height);
             }
         }
 
-        if (LayoutType == LayoutType.Flexbox) FlexboxModel.OnResizeChildrenHeight();
+        LayoutModule?.PostResizeChildrenHeight();
 
         foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {
@@ -135,16 +170,7 @@ public partial class UIElementGroup
     {
         if (LayoutElements.Count <= 0) return;
 
-        switch (LayoutType)
-        {
-            case LayoutType.Flexbox:
-            {
-                FlexboxModel.OnUpdateChildrenLayoutOffset();
-                break;
-            }
-            case LayoutType.Custom:
-            default: goto case LayoutType.Flexbox;
-        }
+        LayoutModule.ModifyLayoutOffset();
 
         foreach (var child in LayoutElements.OfType<UIElementGroup>())
         {

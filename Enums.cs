@@ -4,7 +4,7 @@ namespace SilkyUIFramework;
 
 public enum MouseButtonType { Left, Middle, Right }
 
-public enum LayoutType { Flexbox, Custom, }
+public enum LayoutType { Flexbox, Grid, Custom, }
 
 public enum HiddenBox
 {

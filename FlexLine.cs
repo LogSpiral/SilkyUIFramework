@@ -2,29 +2,114 @@ using System.Collections;
 
 namespace SilkyUIFramework;
 
-public class FlexLine : IEnumerable<UIView>
+public class FlexLine
 {
-    public List<UIView> Elements { get; }
+    public readonly List<UIView> Elements;
     private FlexLine() => Elements = [];
     private FlexLine(IReadOnlyList<UIView> elements) => Elements = [.. elements];
-
-    public IEnumerator<UIView> GetEnumerator() => Elements.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public float MainSize { get; set; }
     public float CrossSize { get; set; }
 
     public float GetFenceGap(float gap) => (Elements.Count - 1) * gap;
 
-    public void UpdateMainSizeByRow(float gap)
+    public float MaxOuterWidth()
     {
-        MainSize = Elements.Sum(element => element.OuterBounds.Width) + GetFenceGap(gap);
+        var width = 0f;
+
+        for (int i = 0; i < Elements.Count; i++)
+            width = Math.Max(Elements[i].OuterBounds.Width, width);
+
+        return width;
     }
 
-    public void UpdateMainSizeByColumn(float gap)
+    public float MaxOuterHeight()
     {
-        MainSize = Elements.Sum(element => element.OuterBounds.Height) + GetFenceGap(gap);
+        var height = 0f;
+
+        for (int i = 0; i < Elements.Count; i++)
+            height = Math.Max(Elements[i].OuterBounds.Height, height);
+
+        return height;
     }
+
+    public float SumOuterWidth()
+    {
+        var width = 0f;
+
+        for (int i = 0; i < Elements.Count; i++)
+            width += Elements[i].OuterBounds.Width;
+
+        return width;
+    }
+
+    public float SumOuterHeight()
+    {
+        var height = 0f;
+
+        for (int i = 0; i < Elements.Count; i++)
+            height += Elements[i].OuterBounds.Height;
+
+        return height;
+    }
+
+    public void UpdateMainSizeByRow(float gap) => MainSize = SumOuterWidth() + GetFenceGap(gap);
+    public void UpdateMainSizeByColumn(float gap) => MainSize = SumOuterHeight() + GetFenceGap(gap);
+
+    public float MainOffset { get; private set; }
+    public float MainGap { get; private set; }
+
+    public void UpdateMainAlignment(MainAlignment mainAlignment, float availableSize, float baseGap)
+    {
+        if (Elements.Count == 0)
+        {
+            MainOffset = 0f;
+            MainGap = baseGap;
+            return;
+        }
+
+        switch (mainAlignment)
+        {
+            default:
+            case MainAlignment.Start:
+                MainOffset = 0f;
+                MainGap = baseGap;
+                break;
+            case MainAlignment.Center:
+                MainOffset = (availableSize - MainSize) / 2f;
+                MainGap = baseGap;
+                break;
+            case MainAlignment.End:
+                MainOffset = availableSize - MainSize;
+                MainGap = baseGap;
+                break;
+            case MainAlignment.SpaceEvenly:
+            {
+                var contentSize = MainSize - baseGap * (Elements.Count - 1);
+                MainGap = (availableSize - contentSize) / (Elements.Count + 1);
+                MainOffset = MainGap;
+                break;
+            }
+            case MainAlignment.SpaceBetween:
+            {
+                var contentSize = MainSize - baseGap * (Elements.Count - 1);
+                if (Elements.Count > 1)
+                {
+                    MainGap = (availableSize - contentSize) / (Elements.Count - 1);
+                    MainOffset = 0f;
+                }
+                else
+                {
+                    MainGap = 0f;
+                    MainOffset = (availableSize - contentSize) / 2f;
+                }
+
+                break;
+            }
+        }
+    }
+
+    #region Static
 
     public static FlexLine CreateRow(UIView view)
     {
@@ -68,56 +153,5 @@ public class FlexLine : IEnumerable<UIView>
         return line;
     }
 
-    public float MainOffset { get; private set; }
-    public float MainGap { get; private set; }
-
-    public void UpdateMainAlignment(MainAlignment mainAlignment, float space, float baseGap)
-    {
-        if (Elements.Count == 0)
-        {
-            MainOffset = 0f;
-            MainGap = baseGap;
-            return;
-        }
-
-        switch (mainAlignment)
-        {
-            default:
-            case MainAlignment.Start:
-                MainOffset = 0f;
-                MainGap = baseGap;
-                break;
-            case MainAlignment.Center:
-                MainOffset = (space - MainSize) / 2f;
-                MainGap = baseGap;
-                break;
-            case MainAlignment.End:
-                MainOffset = space - MainSize;
-                MainGap = baseGap;
-                break;
-            case MainAlignment.SpaceEvenly:
-            {
-                var contentSpace = MainSize - baseGap * (Elements.Count - 1);
-                MainGap = (space - contentSpace) / (Elements.Count + 1);
-                MainOffset = MainGap;
-                break;
-            }
-            case MainAlignment.SpaceBetween:
-            {
-                var contentSpace = MainSize - baseGap * (Elements.Count - 1);
-                if (Elements.Count > 1)
-                {
-                    MainGap = (space - contentSpace) / (Elements.Count - 1);
-                    MainOffset = 0f;
-                }
-                else
-                {
-                    MainGap = 0f;
-                    MainOffset = (space - contentSpace) / 2f;
-                }
-
-                break;
-            }
-        }
-    }
+    #endregion
 }

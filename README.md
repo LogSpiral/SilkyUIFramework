@@ -3,9 +3,26 @@
     <h3>SilkyUI Framework</h3>
 </div>
 
+### 发展
+
+**SilkyUI** 原来只是 **更好的体验** 与 **积分商店** 两个模组内使用的对于 **Terraria.UI** 的一些扩展与更改。\
+由于原来是模组内部直接维护 UI，所以在**积分商店**与**更好的体验**之间的代码同步极为不方便，并且随着后续的更新需求与要求逐渐高了起来，仅对 **Terraria.UI** 进行扩展便产生了局限性，故而将 UI 部分分离出来，方便多模组直接使用其进行开发，并命名为 **SilkyUI**。
+
+### Terraria.UI 的问题
+
+**SilkyUI** 是为了简化 UI 开发而设计的，如果你深度使用过 **Terraria.UI** 那么你会发现其中很多的不便，例如：UI 之间没有统一的管理，需要自己维护、没有专业布局功能、布局依赖直接设定元素的位置来进行布局、没有自适应大小、且布局更新需要主动调用 **Recalculate()** 来触发、布局仅能使用纯 C# 代码形式，没有声明式布局支持等诸多问题。
+
+### SilkyUI 的解决方案
+
+以上问题不仅会产生非常多的冗余代码，还会导致开发体验很差，同时编写的代码也难以维护。\
+**SilkyUI** 中，当你想要创建一个 UI 只需要继承 **BasicBody** 类，添加 **RegisterUI** 特性便能直接创建一个游戏中可直接使用的 UI，并且 UI 之间有层级关系，不会出现鼠标穿透问题，且能类似 **Windows 窗口** 一样根据你所操作的 UI 更新层级关系。\
+**UIView & UIElementGroup** 中对布局会产生影响的属性，都会在更新是进行脏标记，无需主动调用 **Recalculate()** 计算布局的同时还能进行局部更新。\
+**SilkyUI** 现已实现了 [CSS Flexible Box Layout Module Level 1](https://www.w3.org/TR/css-flexbox-1/) 标准的 **Flexbox 布局** 功能，并且 Grid 也在计划中，后续也会慢慢实现。\
+**SilkyUI** 支持使用 **XML** 进行布局，**XML** 中可以 **复用样式** 和 **生成元素映射**。
+
 ### 相关文档
 
-[Flexbox 文档](FlexibleBoxModule.md)
+[Flexbox 文档](FlexboxModule.md)
 
 [CSS Flexible Box Layout Module Level 1](https://www.w3.org/TR/css-flexbox-1/)
 

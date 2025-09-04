@@ -11,7 +11,8 @@ public partial class UIElementGroup : UIView
 {
     public UIElementGroup()
     {
-        FlexboxModel = new FlexboxModel(this);
+        FlexboxModule = new FlexboxModule(this);
+        GridModule = new GridModule(this);
     }
 
     public bool OverflowHidden { get; set; }
