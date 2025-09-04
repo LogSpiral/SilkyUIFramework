@@ -33,6 +33,9 @@ public partial class UIElementGroup : UIView
     public IReadOnlyList<UIView> Children => Elements;
     public IReadOnlyList<UIView> ChildrenCache => ElementsCache;
 
+    public int IndexOf(UIView view) => Elements.IndexOf(view);
+    public int IndexOfInCache(UIView view) => ElementsCache.IndexOf(view);
+
     /// <summary>
     /// 处理元素进入 UI 树
     /// </summary>
