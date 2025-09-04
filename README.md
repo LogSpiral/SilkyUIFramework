@@ -59,13 +59,13 @@
 
 ### 如何使用？
 
-SilkyUI Framework 是以前置 Mod 的方式在 tML 中使用的（为了不同 UI 之前的协同），所以需要将其设置为前置 Mod。
+**SilkyUI** 是以前置模组的方式在 **tModLoader** 中使用，所以需要将其设置为模组引用。
 
-> 由于使用了**增量生成器**，所以你还需要一同将生成器项目引入你的 Mod 项目。
+**XML** 布局功能使用了**增量生成器**，所以你还需要一同将生成器项目引入你的模组项目（无需模组引用）。
 
-### 设为前置 Mod
+### 设为前置模组
 
-在主 Mod 项目中的 build.txt 文件内添加模组引用
+在你项目中的 build.txt 文件内添加模组引用
 
 ```txt
 modReferences = SilkyUIFramework
@@ -84,9 +84,9 @@ git clone https://github.com/487666123/SilkyUIAnalyzer.git
 
 1. 将两个项目添加入你的解决方案中（选中 .csproj 文件）
 ![alt text](image.png)
-2. 这两个项目会出现在你的解决方案中
+1. 这两个项目会出现在你的解决方案中
 ![alt text](image-1.png)
-3. 在你的项目的 .csporj 文件中添加这两个项目的引用
+1. 在你的项目的 .csporj 文件中添加这两个项目的引用
 ```xml
 <ItemGroup>
     <ProjectReference Include="..\SilkyUIAnalyzer\SilkyUIAnalyzer.csproj">
@@ -96,12 +96,3 @@ git clone https://github.com/487666123/SilkyUIAnalyzer.git
     <ProjectReference Include="..\SilkyUIFramework\SilkyUIFramework.csproj"></ProjectReference>
 </ItemGroup>
 ```
-
-<hr/>
-
-<div align=center>
-    <h3>豆包生成的几个 LOGO</h3>
-    <img src="logo1.png" width="200"/>
-    <img src="logo3.jpg" width="200"/>
-    <img src="logo2.jpg" width="200"/>
-</div>
