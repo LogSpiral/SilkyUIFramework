@@ -25,6 +25,13 @@
 - 已实现 [Flexbox 布局标准](https://www.w3.org/TR/css-flexbox-1/)，计划支持 Grid
 - 支持 **XML 布局**，可复用样式并生成元素映射
 
+### 说明
+
+- main 分支是已发布在 Steam 创意工坊中的版本
+- preview 分支是最新版，会定期并入 main 分支，并在 Steam 创意工坊中更新
+- preview 不一定有破坏性更新，如果出现会在通知
+
+> 交流群：[971038831](https://qm.qq.com/q/mRF9AJDHWM)
 
 ### 相关文档
 
