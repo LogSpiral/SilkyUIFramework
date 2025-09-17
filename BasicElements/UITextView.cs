@@ -66,12 +66,26 @@ public class UITextView : UIView
     /// </summary>
     protected virtual void OnContentChanged(string text) { }
 
+    /// <summary>
+    /// 最大字符，只在输入时生效。
+    /// </summary>
+    public int MaximumCharacters
+    {
+        get; set
+        {
+            if (field == value) return;
+            field = value;
+            if (field > 0 && Text.Length > field) Text = Text[..field];
+        }
+    }
+
     public virtual string Text
     {
-        get => field;
-        set
+        get; set
         {
-            if (field?.Equals(value) ?? value is null) return;
+            if (field is null) return;
+            if (field.Equals(value)) return;
+            if (MaximumCharacters > 0 && value.Length > MaximumCharacters) value = value[..MaximumCharacters];
 
             if (ContentChanging != null)
                 value = ContentChanging.Invoke(this, new ContentChangingEventArgs(value, field));

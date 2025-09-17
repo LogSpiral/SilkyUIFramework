@@ -1,4 +1,5 @@
 ﻿using SilkyUIFramework.Helper;
+using Terraria;
 
 namespace SilkyUIFramework.BasicElements;
 
@@ -9,6 +10,7 @@ public partial class UIView
 
     /// <summary> 忽略鼠标交互, 不影响其子元素交互 </summary>
     public bool IgnoreMouseInteraction { get; set; }
+
     /// <summary> 禁用鼠标交互, 影响其子元素交互 </summary>
     public bool DisableMouseInteraction { get; set; }
 
@@ -24,6 +26,7 @@ public partial class UIView
             Parent?.ElementsOrderIsDirty = true;
         }
     }
+
     public int ZIndex
     {
         get;
@@ -56,27 +59,24 @@ public partial class UIView
 
     #region Parent Remove() ContainsPoint() GetElementAt()
 
-    /// <summary>
-    /// 获取元素的祖先
-    /// </summary>
-    /// <returns>祖先</returns>
     public UIElementGroup GetAncestor()
     {
-        if (Parent is null) return null;
-        var currentAncestors = Parent;
+        if (Parent == null) return null;
 
-        while (currentAncestors.Parent is not null)
+        var ancestor = Parent;
+
+        while (ancestor.Parent != null)
         {
-            currentAncestors = currentAncestors.Parent;
+            ancestor = ancestor.Parent;
         }
 
-        return currentAncestors;
+        return ancestor;
     }
 
     /// <summary>
     /// 元素是否在 UI 树中
     /// </summary>
-    public bool IsInsideTree => SilkyUI?.BasicBody == GetAncestor();
+    public bool IsInsideTree => SilkyUI != null;
 
     public UIElementGroup Parent { get; protected internal set; }
 
@@ -88,9 +88,7 @@ public partial class UIView
     {
         if (DisableMouseInteraction || IgnoreMouseInteraction) return null;
 
-        if (ContainsPoint(mousePosition)) return this;
-
-        return null;
+        return ContainsPoint(mousePosition) ? this : null;
     }
 
     #endregion
@@ -104,7 +102,7 @@ public partial class UIView
     {
         if (_initialized) return;
         _initialized = true;
-        RuntimeHelper.ErrorCapture(OnInitialize);
+        RuntimeSafeHelper.SafeInvoke(OnInitialize);
     }
 
     protected virtual void OnInitialize() { }
@@ -114,13 +112,13 @@ public partial class UIView
     internal virtual void HandleEnterTree(SilkyUI silkyUI)
     {
         SilkyUI = silkyUI;
-        RuntimeHelper.ErrorCapture(OnEnterTree);
+        RuntimeSafeHelper.SafeInvoke(OnEnterTree);
     }
 
     internal virtual void HandleExitTree()
     {
         SilkyUI = null;
-        RuntimeHelper.ErrorCapture(OnExitTree);
+        RuntimeSafeHelper.SafeInvoke(OnExitTree);
     }
 
     /// <summary> 当元素加入UI树中时调用 </summary>
@@ -128,22 +126,6 @@ public partial class UIView
 
     /// <summary> 当元素移出UI树中时调用 </summary>
     protected virtual void OnExitTree() { }
-
-    /// <summary> 按条件获取祖先元素 </summary>
-    public UIView GetAncestor(Func<UIView, bool> condition = null)
-    {
-        if (condition is null) return Parent;
-
-        var parent = Parent;
-
-        do
-        {
-            if (condition(parent)) return this;
-            parent = parent.Parent;
-        } while (parent != null);
-
-        return null;
-    }
 
     #region PositionIsDirty
 
@@ -194,6 +176,16 @@ public partial class UIView
             // Sticky 定位时，重新计算位置
             if (Positioning is Positioning.Sticky) MarkPositionDirty();
         }
+    }
+
+    /// <summary>
+    /// 宽度、高度、位置如果有依赖父元素的则返回 true
+    /// </summary>
+    /// <returns></returns>
+    public bool IsDependentParent()
+    {
+        return Width.Percent != 0 || Height.Percent != 0 ||
+               Left.Percent != 0 || Top.Percent != 0 || Left.Alignment != 0 || Top.Alignment != 0;
     }
 
     #region Anchor
@@ -261,7 +253,8 @@ public partial class UIView
         }
     }
 
-    public void SetDragOffset(float? x = null, float? y = null) => DragOffset = new Vector2(x ?? DragOffset.X, y ?? DragOffset.Y);
+    public void SetDragOffset(float? x = null, float? y = null) =>
+        DragOffset = new Vector2(x ?? DragOffset.X, y ?? DragOffset.Y);
 
     #endregion
 
@@ -375,8 +368,8 @@ public partial class UIView
 
     public virtual void HandleUpdateStatus(GameTime gameTime)
     {
-        OnUpdateStatus?.Invoke(gameTime);
-        UpdateStatus(gameTime);
+        RuntimeSafeHelper.SafeInvoke(OnUpdateStatus, action => action(gameTime));
+        RuntimeSafeHelper.SafeInvoke(() => UpdateStatus(gameTime));
     }
 
     public event Action<GameTime> OnUpdate;
@@ -384,7 +377,7 @@ public partial class UIView
 
     public virtual void HandleUpdate(GameTime gameTime)
     {
-        OnUpdate?.Invoke(gameTime);
+        RuntimeSafeHelper.SafeInvoke(OnUpdate, action => action(gameTime));
         Update(gameTime);
     }
 

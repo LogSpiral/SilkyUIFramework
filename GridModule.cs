@@ -1,7 +1,3 @@
-
-using System.Collections.Generic;
-using System.Data.Common;
-
 namespace SilkyUIFramework;
 
 public class GridModule(UIElementGroup parent) : LayoutModule(parent)
@@ -21,13 +17,13 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
         base.UpdateCacheStatus();
 
         _rowsFraction = 0;
-        for (int i = 0; i < Rows.Length; i++)
+        for (var i = 0; i < Rows.Length; i++)
         {
             _rowsFraction = Rows[i].Fraction;
         }
 
         _columnsFraction = 0;
-        for (int i = 0; i < Columns.Length; i++)
+        for (var i = 0; i < Columns.Length; i++)
         {
             _columnsFraction = Columns[i].Fraction;
         }
@@ -37,26 +33,26 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
 
         Marks = new bool[Rows.Length, Columns.Length];
 
-        var container = Parent.InnerBounds;
+        var availableSize = Parent.InnerBounds;
 
         if (FitWidth)
         {
-            for (int i = 0; i < Columns.Length; i++) Columns[i].Value = Columns[i].Pixels;
+            for (var i = 0; i < Columns.Length; i++) Columns[i].Value = Columns[i].Pixels;
         }
         else
         {
-            var remaining = container.Width - _columnsFenceGap;
+            var remaining = availableSize.Width - _columnsFenceGap;
 
-            for (int i = 0; i < Columns.Length; i++)
+            for (var i = 0; i < Columns.Length; i++)
             {
-                Columns[i].Recalculate(container.Width);
+                Columns[i].Recalculate(availableSize.Width);
                 remaining -= Columns[i].Pixels;
             }
 
             if (remaining > 0)
             {
                 var share = remaining / Columns.Length;
-                for (int i = 0; i < Columns.Length; i++)
+                for (var i = 0; i < Columns.Length; i++)
                 {
                     Columns[i].Value += share;
                 }
@@ -65,22 +61,22 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
 
         if (FitHeight)
         {
-            for (int i = 0; i < Rows.Length; i++) Rows[i].Value = Rows[i].Pixels;
+            for (var i = 0; i < Rows.Length; i++) Rows[i].Value = Rows[i].Pixels;
         }
         else
         {
-            var remaining = container.Height - _rowsFenceGap;
+            var remaining = availableSize.Height - _rowsFenceGap;
 
-            for (int i = 0; i < Rows.Length; i++)
+            for (var i = 0; i < Rows.Length; i++)
             {
-                Rows[i].Recalculate(container.Height);
+                Rows[i].Recalculate(availableSize.Height);
                 remaining -= Rows[i].Pixels;
             }
 
             if (remaining > 0)
             {
                 var share = remaining / Rows.Length;
-                for (int i = 0; i < Rows.Length; i++)
+                for (var i = 0; i < Rows.Length; i++)
                 {
                     Rows[i].Value += share;
                 }
@@ -116,7 +112,7 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
         if (end > Columns.Length) end = Columns.Length;
 
         var width = 0f;
-        for (int i = start; i < end; i++)
+        for (var i = start; i < end; i++)
         {
             width = Columns[i].Value;
         }
@@ -131,7 +127,7 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
         if (end > Rows.Length) end = Rows.Length;
 
         var height = 0f;
-        for (int i = start; i < end; i++)
+        for (var i = start; i < end; i++)
         {
             height = Rows[i].Value;
         }
@@ -139,47 +135,16 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
         return height;
     }
 
-    public override sealed void PostPrepare()
-    {
-    }
+    public sealed override void PostPrepare() { }
 
-    public override void ModifyAvailableSize(UIView view, int index, ref float? availableWidth, ref float? availableHeight)
+    public override void ModifyAvailableSize(UIView view,
+        int index, ref float? availableWidth, ref float? availableHeight)
     {
         if (!view.GridArea) return;
 
         availableWidth = GetColumnWidth(view.ColumnStart, view.ColumnEnd);
         availableHeight = GetRowHeight(view.RowStart, view.RowEnd);
         UpdateLocking(view.RowStart, view.RowEnd, view.ColumnStart, view.ColumnEnd);
-    }
-
-    public override sealed void PostPrepareChildren()
-    {
-
-    }
-
-    public override sealed void PostRecalculateChildrenHeight()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override sealed void PostRecalculateHeight()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override sealed void PostResizeChildrenHeight()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override sealed void PostResizeChildrenWidth()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override sealed void ModifyLayoutOffset()
-    {
-        throw new NotImplementedException();
     }
 }
 
@@ -192,9 +157,9 @@ public struct TemplateDimensions(bool auto, float pixels, float fraction, float 
 
     public float Value { get; set; }
 
-    public void Recalculate(float container)
+    public void Recalculate(float availableSize)
     {
-        Value = Pixels + container * Percent;
+        Value = Pixels + availableSize * Percent;
     }
 
     public static TemplateDimensions[] Repeat(int quantity, bool auto = false, float pixels = 0f, float fraction = 0f,

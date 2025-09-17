@@ -68,6 +68,25 @@ public static class SDFRectangle
         SpriteEffectPass.Apply();
     }
 
+    public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size, Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize, Vector4 borderRadius, Matrix matrix)
+    {
+        MatrixHelper.Transform2SDFMatrix(ref matrix);
+
+        SetSmoothstepRange();
+        Effect.Parameters["uTransformMatrix"].SetValue(matrix);
+
+        var device = GraphicsDevice;
+        var screenSize = new Vector2(device.Viewport.Width, device.Viewport.Height);
+        Effect.CurrentTechnique.Passes["SampleVersion"].Apply();
+        device.Textures[0] = texture2D;
+        SetRectanglePrimitives(0, position, size, borderRadius, textureCoordinatesPosition, textureCoordinatesSize);
+
+        GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+            RectangleVertexData, 0, RectangleVertexData.Length, IndexData, 0, 8);
+
+        SpriteEffectPass.Apply();
+    }
+
     public static void DrawShadow(Vector2 position, Vector2 size,
         Vector4 borderRadius, Color backgroundColor, float shadowBlurSize, Matrix matrix)
     {

@@ -33,7 +33,7 @@ public partial class UIElementGroup
     public void SetGap(float width, float height) => Gap = Gap.With(width, height);
 
     private readonly FlexboxModule FlexboxModule;
-    public readonly GridModule GridModule;
+    private readonly GridModule GridModule;
 
     public LayoutModule LayoutModule
     {
@@ -49,7 +49,7 @@ public partial class UIElementGroup
         set
         {
             if (value.Parent != this) return;
-            if (field.GetType() == value.GetType()) return;
+            if (field?.GetType() == value?.GetType()) return;
             field = value;
             if (LayoutType == LayoutType.Custom) MarkLayoutDirty();
         }
@@ -78,32 +78,13 @@ public partial class UIElementGroup
         float? availableHeight = FitHeight ? null : InnerBounds.Height;
         for (int i = 0; i < LayoutElements.Count; i++)
         {
-            LayoutModule.ModifyAvailableSize(LayoutElements[i], i, ref availableWidth, ref availableHeight);
-            LayoutElements[i].Prepare(availableWidth, availableHeight);
+            var cacheWidth = availableWidth;
+            var cacheHeight = availableHeight;
+            LayoutModule.ModifyAvailableSize(LayoutElements[i], i, ref cacheWidth, ref cacheHeight);
+            LayoutElements[i].Prepare(cacheWidth, cacheHeight);
         }
 
         LayoutModule?.PostPrepareChildren();
-    }
-
-    /// <summary> 重新设置子元素宽度 </summary>
-    public virtual void ResizeChildrenWidth()
-    {
-        if (LayoutElements.Count <= 0) return;
-
-        if (!FitWidth)
-        {
-            for (int i = 0; i < LayoutElements.Count; i++)
-            {
-                LayoutElements[i].RefreshWidth(InnerBounds.Width);
-            }
-        }
-
-        LayoutModule?.PostResizeChildrenWidth();
-
-        foreach (var item in LayoutElements.OfType<UIElementGroup>())
-        {
-            item.ResizeChildrenWidth();
-        }
     }
 
     public override void RecalculateWidth()
@@ -123,6 +104,27 @@ public partial class UIElementGroup
         }
 
         LayoutModule?.PostRecalculateChildrenWidth();
+    }
+
+    /// <summary> 重设宽度 </summary>
+    public virtual void ResizeChildrenWidth()
+    {
+        if (LayoutElements.Count <= 0) return;
+
+        if (!FitWidth)
+        {
+            for (int i = 0; i < LayoutElements.Count; i++)
+            {
+                LayoutElements[i].RefreshWidth(InnerBounds.Width);
+            }
+        }
+
+        LayoutModule?.PostResizeChildrenWidth();
+
+        foreach (var item in LayoutElements.OfType<UIElementGroup>())
+        {
+            item.ResizeChildrenWidth();
+        }
     }
 
     public override void RecalculateHeight()

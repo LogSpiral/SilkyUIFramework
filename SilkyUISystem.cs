@@ -25,17 +25,19 @@ public partial class SilkyUISystem : ModSystem
 
     public override void PostSetupContent()
     {
-        foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
+        foreach (var data in Assemblies.Select(assembly => (Assembly: assembly, Types: AssemblyManager.GetLoadableTypes(assembly))))
         {
-            ScanUI(types);
+            ScanAndRegisterGameUI(data.Assembly, data.Types);
+            ScanAndRegisterGloablUI(data.Assembly, data.Types);
         }
 
         SilkyUIManager.InitializeGlobalUI();
     }
 
-    private void ScanUI(Type[] types)
+    private void ScanAndRegisterGameUI(Assembly assembly, Type[] types)
     {
-        Logger.Info($"开始扫描游戏 UI");
+        Logger.Info($"Scan Game User Interface in {assembly.FullName}");
+
         foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
         {
             if (type.GetCustomAttribute<RegisterUIAttribute>() is { } attribute)
@@ -43,8 +45,12 @@ public partial class SilkyUISystem : ModSystem
                 SilkyUIManager.RegisterUI(type, attribute.LayerNode);
             }
         }
+    }
 
-        Logger.Info("开始扫描全局 UI");
+    private void ScanAndRegisterGloablUI(Assembly assembly, Type[] types)
+    {
+        Logger.Info($"Scan Global User Interface in {assembly.FullName}");
+
         foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
         {
             if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)

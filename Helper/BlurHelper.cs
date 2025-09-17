@@ -1,4 +1,6 @@
-﻿namespace SilkyUIFramework.Helpers;
+﻿using SilkyUIFramework.Helper;
+
+namespace SilkyUIFramework.Helpers;
 
 public enum BlurMixingNumber { One, Two, Three, Four, Five }
 
@@ -19,11 +21,11 @@ public static class BlurHelper
         var original = device.GetRenderTargets();
         device.SetRenderTarget(BlurRenderTarget);
 
-        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
+        batch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, Matrix.Identity);
         batch.Draw(sourceRenderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, BlurRenderTarget.Size() / Main.screenTarget.Size(), 0, 0f);
         batch.End();
 
-        original.RestoreRenderTargets(device);
+        device.RestoreRenderTargets(original);
 
         KawaseBlur(BlurRenderTarget, blurIterationCount, iterationOffsetMultiplier, blurMixingNumber);
     }
@@ -52,7 +54,8 @@ public static class BlurHelper
     public static void KawaseBlur(RenderTarget2D renderTarget,
         float[] offsets, BlurMixingNumber blurType = BlurMixingNumber.Three)
     {
-        if (offsets.Length == 0) return;
+        var offsetsSpan = offsets.AsSpan();
+        if (offsetsSpan.Length == 0) return;
 
         var effect = ModAsset.BlurEffect.Value;
         if (effect == null) return;
@@ -69,12 +72,12 @@ public static class BlurHelper
         SelectBlurEffectPasses(blurType, out var blurX, out var blurY);
 
         device.Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);
-        batch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Matrix.Identity);
-        for (int i = 0; i < offsets.Length; i++)
+        batch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, Matrix.Identity);
+        for (int i = 0; i < offsetsSpan.Length; i++)
         {
             device.SetRenderTarget(renderTargetSwap);
 
-            effect.Parameters["uBlurRadius"].SetValue(offsets[i]);
+            effect.Parameters["uBlurRadius"].SetValue(offsetsSpan[i]);
             blurX.Apply();
             batch.Draw(renderTarget, Vector2.Zero, null, Color.White);
 
@@ -85,7 +88,7 @@ public static class BlurHelper
         }
         batch.End();
 
-        original.RestoreRenderTargets(device);
+        device.RestoreRenderTargets(original);
 
         RenderTargetPool.Instance.Return(renderTargetSwap);
     }

@@ -64,16 +64,7 @@ public partial class UIElementGroup
         ResizeChildrenHeight();
         UpdateChildrenLayoutOffset();
 
-        foreach (var item in from item in FreeElements
-                             where item.Positioning == Positioning.Absolute
-                             where !item.LayoutIsDirty
-                             where item.Width.Percent != 0 || item.Height.Percent != 0 ||
-                                   item.Left.Percent != 0 || item.Top.Percent != 0 ||
-                                   item.Left.Alignment != 0 || item.Top.Alignment != 0
-                             select item)
-        {
-            item.MarkLayoutDirty();
-        }
+        MarkFreeElementsDirty();
     }
 
     protected void UpdateLayoutFromFlow()
@@ -85,12 +76,14 @@ public partial class UIElementGroup
         ResizeChildrenHeight();
         UpdateChildrenLayoutOffset();
 
+        MarkFreeElementsDirty();
+    }
+
+    protected void MarkFreeElementsDirty()
+    {
         foreach (var item in from item in FreeElements
                              where item.Positioning == Positioning.Absolute
-                             where !item.LayoutIsDirty
-                             where item.Width.Percent != 0 || item.Height.Percent != 0 ||
-                                   item.Left.Percent != 0 || item.Top.Percent != 0 ||
-                                   item.Left.Alignment != 0 || item.Top.Alignment != 0
+                             where !item.LayoutIsDirty || item.IsDependentParent()
                              select item)
         {
             item.MarkLayoutDirty();

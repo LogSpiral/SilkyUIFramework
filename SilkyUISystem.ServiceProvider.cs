@@ -8,10 +8,10 @@ public partial class SilkyUISystem
 {
     public override void Load()
     {
-        // 更新全局 UI
         On_Main.DoUpdate_HandleInput += (orig, self) =>
         {
             orig(self);
+
             PlayerInput.SetZoom_UI();
             SilkyUIManager?.UpdateGlobalUI(Main.gameTimeCache);
             PlayerInput.SetZoom_World();
@@ -24,11 +24,9 @@ public partial class SilkyUISystem
             if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor)))) return;
             if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0))) return;
 
-            // 绘制全局 UI
-            c.EmitDelegate(() =>
-            {
-                SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache);
-            });
+            // 2025/9/16 需要找个新地方 游戏里面开启菜单的时候就不绘制了
+            // Draw Gloabl UI
+            c.EmitDelegate(() => SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache));
         };
 
         Assemblies = ModLoader.Mods.Select(mod => mod.Code);
@@ -55,7 +53,6 @@ public partial class SilkyUISystem
         {
             ScanRegisterServices(serviceCollection, types);
 
-            // 扫描 UI
             foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
             {
                 if (type.GetCustomAttribute<RegisterUIAttribute>() != null)

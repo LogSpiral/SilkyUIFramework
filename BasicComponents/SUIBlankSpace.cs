@@ -1,6 +1,6 @@
 namespace SilkyUIFramework.BasicComponents;
 
-public class SUIBlankSpace : UIView
+public class SUIBlankSpace : UIElementGroup
 {
     public SUIBlankSpace()
     {

@@ -78,8 +78,8 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         var lastBasicBody = BasicBody;
         BasicBody = basicBody;
 
-        RuntimeHelper.ErrorCapture(() => lastBasicBody?.HandleExitTree());
-        RuntimeHelper.ErrorCapture(() => BasicBody?.HandleEnterTree(this));
+        RuntimeSafeHelper.SafeInvoke(() => lastBasicBody?.HandleExitTree());
+        RuntimeSafeHelper.SafeInvoke(() => BasicBody?.HandleEnterTree(this));
 
         return this;
     }
@@ -262,7 +262,7 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         if (MouseFocusElement is not { OccupyPlayerInput: true }) return;
 
         Main.spriteBatch.End();
-        Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp,
+        Main.spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp,
             DepthStencilState.None, RasterizerStateForOverflowHidden, null, TransformMatrix);
 
         PlayerInput.WritingText = true;

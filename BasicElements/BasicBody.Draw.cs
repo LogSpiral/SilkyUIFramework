@@ -1,24 +1,22 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿using SilkyUIFramework.Helper;
+
+namespace SilkyUIFramework.BasicElements;
 
 public abstract partial class BasicBody
 {
-    /// <summary>
-    /// 不会影响鼠标位置的判定, 所以只建议用于开关 UI 的动画
-    /// </summary>
     public virtual bool UseRenderTarget { get; set; } = false;
-    public virtual float Opacity { get => field; set => field = Math.Clamp(value, 0f, 1f); } = 1f;
+    public virtual float Opacity { get; set => field = Math.Clamp(value, 0f, 1f); } = 1f;
 
     public Matrix RenderTargetMatrix;
 
+    public virtual bool EnableBlur { get; set; } = false;
+    public virtual Bounds BlurBounds => Bounds;
+    public virtual Vector4 BlurBorderRadius => BorderRadius;
+
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        if (UseRenderTarget)
-        {
-            UseRenderTargetDraw(gameTime, spriteBatch);
-            return;
-        }
-
-        base.HandleDraw(gameTime, spriteBatch);
+        if (UseRenderTarget) UseRenderTargetDraw(gameTime, spriteBatch);
+        else base.HandleDraw(gameTime, spriteBatch);
     }
 
     protected virtual void UseRenderTargetDraw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -29,41 +27,41 @@ public abstract partial class BasicBody
         var backBufferHeight = device.PresentationParameters.BackBufferHeight;
         var uiRenderTarget = RenderTargetPool.Instance.Rent(backBufferWidth, backBufferHeight);
 
-        try
+        RuntimeSafeHelper.SafeInvoke(delegate
         {
             spriteBatch.End();
 
-            var original = device.GetRenderTargets();
+            var original = device.GetRenderTargets(); device.SetRenderTarget(uiRenderTarget); device.Clear(Color.Transparent);
 
-            var lastRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
-            device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
-            device.SetRenderTarget(uiRenderTarget);
-            device.Clear(Color.Transparent);
+            base.HandleDraw(gameTime, spriteBatch); spriteBatch.End(); device.RestoreRenderTargets(original);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred,
-                null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, RenderTargetMatrix);
+            spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null, Color.White * Opacity, 0f, Vector2.Zero, Vector2.One, 0, 0);
+        });
 
-            base.HandleDraw(gameTime, spriteBatch);
+        RenderTargetPool.Instance.Return(uiRenderTarget);
+    }
 
-            spriteBatch.End();
-
-            original.RestoreRenderTargets(device);
-
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, RenderTargetMatrix);
-            spriteBatch.Draw(uiRenderTarget, Vector2.Zero, null,
-                Color.White * Opacity, 0f, Vector2.Zero, Vector2.One, 0, 0);
-
-            device.PresentationParameters.RenderTargetUsage = lastRenderTargetUsage;
-        }
-        catch (Exception e)
+    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    {
+        if (EnableBlur && BlurMakeSystem.BlurAvailable && !Main.gameMenu)
         {
-            SilkyUIFramework.Instance.Logger.Error($"{GetType().FullName} error: {e}");
-            throw;
+            if (BlurMakeSystem.SingleBlur)
+            {
+                spriteBatch.End(); BlurMakeSystem.KawaseBlur();
+                spriteBatch.Begin(0, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            }
+
+            var scale = Main.UIScale; var bounds = BlurBounds;
+
+            var borderRadius = BlurBorderRadius * scale;
+            var position = bounds.Position * scale; var size = bounds.Size * scale;
+
+            SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget, position, size, borderRadius, Matrix.Identity);
         }
-        finally
-        {
-            RenderTargetPool.Instance.Return(uiRenderTarget);
-        }
+
+        base.Draw(gameTime, spriteBatch);
     }
 }

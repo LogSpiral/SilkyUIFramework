@@ -53,10 +53,10 @@ public class SUIToggleSwitch : UIView
         base.OnLeftMouseDown(evt);
     }
 
-    public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
+    protected override void UpdateStatus(GameTime gameTime)
     {
+        base.UpdateStatus(gameTime);
         SwitchTimer.Update(gameTime);
-        base.HandleDraw(gameTime, spriteBatch);
     }
 
     protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)

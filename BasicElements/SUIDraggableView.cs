@@ -43,43 +43,42 @@ public class SUIDraggableView : UIElementGroup
         base.OnLeftMouseUp(evt);
     }
 
-    public override void HandleUpdateStatus(GameTime gameTime)
+    protected override void UpdateStatus(GameTime gameTime)
     {
-        if (Dragging)
+        base.UpdateStatus(gameTime);
+
+        if (!Dragging) return;
+
+        var x = Main.mouseX - MouseDragOffset.X;
+        var y = Main.mouseY - MouseDragOffset.Y;
+
+        if (DragIncrement.X != 0) x -= x % DragIncrement.X;
+        if (DragIncrement.Y != 0) y -= y % DragIncrement.Y;
+
+        // 计算新的拖拽偏移  
+        var newDragOffset = new Vector2(x, y);
+
+        // 如果需要限制在父元素内  
+        if (ConstrainInParent && ControlTarget.Parent != null)
         {
-            var x = Main.mouseX - MouseDragOffset.X;
-            var y = Main.mouseY - MouseDragOffset.Y;
+            // 获取父元素的内部边界  
+            var parentBounds = ControlTarget.Parent.InnerBounds;
+            // 获取控制目标的外部边界（不包含拖拽偏移）  
+            var targetBounds = ControlTarget.OuterBounds;
+            var originalX = targetBounds.X - ControlTarget.DragOffset.X;
+            var originalY = targetBounds.Y - ControlTarget.DragOffset.Y;
 
-            if (DragIncrement.X != 0) x -= x % DragIncrement.X;
-            if (DragIncrement.Y != 0) y -= y % DragIncrement.Y;
+            // 计算允许的拖拽范围  
+            var minX = parentBounds.X - originalX;
+            var minY = parentBounds.Y - originalY;
+            var maxX = parentBounds.Right - originalX - targetBounds.Width;
+            var maxY = parentBounds.Bottom - originalY - targetBounds.Height;
 
-            // 计算新的拖拽偏移  
-            var newDragOffset = new Vector2(x, y);
-
-            // 如果需要限制在父元素内  
-            if (ConstrainInParent && ControlTarget.Parent != null)
-            {
-                // 获取父元素的内部边界  
-                var parentBounds = ControlTarget.Parent.InnerBounds;
-                // 获取控制目标的外部边界（不包含拖拽偏移）  
-                var targetBounds = ControlTarget.OuterBounds;
-                var originalX = targetBounds.X - ControlTarget.DragOffset.X;
-                var originalY = targetBounds.Y - ControlTarget.DragOffset.Y;
-
-                // 计算允许的拖拽范围  
-                var minX = parentBounds.X - originalX;
-                var minY = parentBounds.Y - originalY;
-                var maxX = parentBounds.Right - originalX - targetBounds.Width;
-                var maxY = parentBounds.Bottom - originalY - targetBounds.Height;
-
-                // 限制拖拽偏移在允许范围内  
-                newDragOffset.X = MathHelper.Clamp(newDragOffset.X, minX, maxX);
-                newDragOffset.Y = MathHelper.Clamp(newDragOffset.Y, minY, maxY);
-            }
-
-            ControlTarget.DragOffset = newDragOffset;
+            // 限制拖拽偏移在允许范围内  
+            newDragOffset.X = MathHelper.Clamp(newDragOffset.X, minX, maxX);
+            newDragOffset.Y = MathHelper.Clamp(newDragOffset.Y, minY, maxY);
         }
 
-        base.HandleUpdateStatus(gameTime);
+        ControlTarget.DragOffset = newDragOffset;
     }
 }

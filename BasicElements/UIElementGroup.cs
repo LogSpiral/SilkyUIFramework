@@ -17,6 +17,11 @@ public partial class UIElementGroup : UIView
 
     public bool OverflowHidden { get; set; }
 
+    /// <summary>
+    /// 仅在开启 <see cref="OverflowHidden"/> 时有效，通过将内容绘制在新的 RenderTarget 上实现隐藏超出部分的效果
+    /// </summary>
+    public bool IndependentRenderTarget { get; set; } = true;
+
     /// <summary> 需要持续调用，以保证所有元素都被初始化 </summary>
     internal sealed override void Initialize()
     {
@@ -81,16 +86,15 @@ public partial class UIElementGroup : UIView
 
     public virtual void Add(UIView child, int? index = null) => AppendChild(child, index);
 
-    public virtual void Add(IEnumerable<UIView> children, int? index = null) => AppendChild(children, index);
+    public virtual void Add(List<UIView> children, int? index = null) => AppendChild(children, index);
 
-    public void AppendChild(IEnumerable<UIView> children, int? index = null)
+    public void AppendChild(List<UIView> children, int? index = null)
     {
         if (index == null)
         {
             var changing = false;
-            foreach (var child in children)
+            foreach (var child in children.Where(child => child != null && child.Parent != this))
             {
-                if (child?.Parent == this) continue;
                 changing = true;
                 child.Remove();
                 Elements.Add(child);
@@ -103,9 +107,8 @@ public partial class UIElementGroup : UIView
         {
             var changing = false;
             var i = index.Value;
-            foreach (var child in children)
+            foreach (var child in children.Where(child => child?.Parent != this))
             {
-                if (child?.Parent == this) continue;
                 changing = true;
                 child.Remove();
                 Elements.Insert(i++, child);
@@ -114,29 +117,23 @@ public partial class UIElementGroup : UIView
 
             if (!changing) return;
         }
-        else
-        {
-            return;
-        }
+        else return;
 
         MarkLayoutDirty();
-        MarkPositionDirty();
 
         ElementsOrderIsDirty = true;
 
         foreach (var child in children)
         {
-            RuntimeHelper.ErrorCapture(() =>
-            {
-                if (SilkyUI != null) child.HandleEnterTree(SilkyUI);
-            });
-            RuntimeHelper.ErrorCapture(child.Initialize);
+            RuntimeSafeHelper.SafeInvoke(() => child.HandleEnterTree(SilkyUI));
+            RuntimeSafeHelper.SafeInvoke(child.Initialize);
         }
     }
 
     public void AppendChild(UIView child, int? index = null)
     {
-        if (child?.Parent == this) return;
+        if (child == null) return;
+        if (child.Parent == this) return;
 
         if (index == null)
         {
@@ -160,14 +157,19 @@ public partial class UIElementGroup : UIView
 
         ElementsOrderIsDirty = true;
 
-        RuntimeHelper.ErrorCapture(() =>
+        RuntimeSafeHelper.SafeInvoke(() =>
         {
             if (SilkyUI != null) child.HandleEnterTree(SilkyUI);
         });
-        RuntimeHelper.ErrorCapture(child.Initialize);
+        RuntimeSafeHelper.SafeInvoke(child.Initialize);
     }
 
-    public virtual void RemoveChild(UIView child)
+    public virtual void Remove(UIView child)
+    {
+        RemoveChild(child);
+    }
+
+    public void RemoveChild(UIView child)
     {
         if (!Elements.Remove(child)) return;
 
@@ -179,7 +181,7 @@ public partial class UIElementGroup : UIView
         child.HandleExitTree();
     }
 
-    public virtual void RemoveAllChildren()
+    public void RemoveAllChildren()
     {
         foreach (var child in Elements.ToArray())
         {
@@ -240,7 +242,6 @@ public partial class UIElementGroup : UIView
     public override void HandleDraw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         base.HandleDraw(gameTime, spriteBatch);
-
         DrawChildren(gameTime, spriteBatch);
     }
 
@@ -260,7 +261,10 @@ public partial class UIElementGroup : UIView
             (int)Math.Ceiling(rightBottom.X - topLeft.X),
             (int)Math.Ceiling(rightBottom.Y - topLeft.Y));
 
-        var scissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
+        var device = spriteBatch.GraphicsDevice; var viewport = device.Viewport;
+        var scissorRectangle = device.ScissorRectangle;
+        scissorRectangle.X -= viewport.X;
+        scissorRectangle.Y -= viewport.Y;
         return Rectangle.Intersect(rectangle, scissorRectangle);
     }
 
@@ -268,23 +272,60 @@ public partial class UIElementGroup : UIView
     {
         if (OverflowHidden)
         {
-            var innerBounds = InnerBounds;
             spriteBatch.End();
-            var originalScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
-            var scissor = Rectangle.Intersect(GetClippingRectangle(spriteBatch), originalScissor);
-            spriteBatch.GraphicsDevice.ScissorRectangle = scissor;
-            var deviceStatus = Main.graphics.GraphicsDevice.BackupStates(spriteBatch);
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null,
-                SilkyUI.TransformMatrix);
 
-            foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(innerBounds)))
+            var device = spriteBatch.GraphicsDevice;
+            var originalScissor = device.ScissorRectangle;
+            var scissorRectangle = GetClippingRectangle(spriteBatch);
+
+            if (IndependentRenderTarget && scissorRectangle.Width > 0 && scissorRectangle.Height > 0)
+            {
+                var renderTarget = RenderTargetPool.Instance.Rent(scissorRectangle.Width, scissorRectangle.Height);
+
+                RuntimeSafeHelper.SafeInvoke(() =>
+                {
+                    var binding = device.GetRenderTargets();
+                    var viewport = device.Viewport;
+
+                    device.SetRenderTarget(renderTarget); device.Clear(Color.Transparent);
+
+                    device.Viewport = device.Viewport.WithXy(-scissorRectangle.X, -scissorRectangle.Y).IncreaseSize(scissorRectangle.X, scissorRectangle.Y);
+                    device.ScissorRectangle = new Rectangle(0, 0, scissorRectangle.Width, scissorRectangle.Height);
+
+                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+
+                    foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(InnerBounds)))
+                    {
+                        child.HandleDraw(gameTime, spriteBatch);
+                    }
+
+                    spriteBatch.End();
+
+                    device.RestoreRenderTargets(binding);
+                    device.Viewport = viewport;
+                    device.ScissorRectangle = originalScissor;
+
+                    DrawRenderTarget(spriteBatch, renderTarget, scissorRectangle.Position);
+                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+                });
+
+                RenderTargetPool.Instance.Return(renderTarget);
+
+                return;
+            }
+
+            device.ScissorRectangle = scissorRectangle;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+
+            foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(InnerBounds)))
             {
                 child.HandleDraw(gameTime, spriteBatch);
             }
 
             spriteBatch.End();
-            spriteBatch.GraphicsDevice.ScissorRectangle = originalScissor;
-            deviceStatus.Begin(spriteBatch, SpriteSortMode.Deferred);
+
+            device.ScissorRectangle = originalScissor;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
             return;
         }
@@ -293,6 +334,14 @@ public partial class UIElementGroup : UIView
         {
             child.HandleDraw(gameTime, spriteBatch);
         }
+    }
+
+    protected virtual void DrawRenderTarget(SpriteBatch spriteBatch, RenderTarget2D renderTarget, Vector2 position)
+    {
+        var scale = Main.UIScale;
+        spriteBatch.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+        SDFRectangle.SampleVersion(renderTarget,
+            position, renderTarget.SizeVec2, Vector2.Zero, Vector2.One, (BorderRadius - new Vector4(2)) * scale, Matrix.Identity);
     }
 
     #endregion

@@ -189,8 +189,8 @@ public partial class UIView
     {
         if (!LayoutIsDirty) return;
 
-        var container = GetParentInnerSpace();
-        Prepare(container.Width, container.Height);
+        var availableSize = GetParentInnerSpace();
+        Prepare(availableSize.Width, availableSize.Height);
         RecalculateWidth();
         RecalculateHeight();
         CleanupDirtyMark();
@@ -212,24 +212,24 @@ public partial class UIView
             CalculateBoundsHeight(height ?? 0);
     }
 
-    public virtual void RefreshWidth(float containerWidth)
+    public virtual void RefreshWidth(float availableWidth)
     {
-        CalculateWidthConstraints(containerWidth);
+        CalculateWidthConstraints(availableWidth);
 
         if (FitWidth) return;
-        CalculateBoundsWidth(containerWidth);
+        CalculateBoundsWidth(availableWidth);
     }
 
     public virtual void RecalculateWidth() { }
 
     public virtual void RecalculateHeight() { }
 
-    public virtual void RefreshHeight(float containerHeight)
+    public virtual void RefreshHeight(float availableHeight)
     {
-        CalculateHeightConstraints(containerHeight);
+        CalculateHeightConstraints(availableHeight);
 
         if (FitHeight) return;
-        CalculateBoundsHeight(containerHeight);
+        CalculateBoundsHeight(availableHeight);
     }
 
     #region 声明和计算约束
@@ -252,22 +252,22 @@ public partial class UIView
     public float MinInnerHeight { get; private set; }
     public float MaxInnerHeight { get; private set; }
 
-    protected internal void CalculateWidthConstraints(float containerWidth)
+    protected internal void CalculateWidthConstraints(float availableWidth)
     {
         switch (BoxSizing)
         {
             default:
             case BoxSizing.Border:
-                MinWidthValue = Math.Max(_minWidth.CalculateSize(containerWidth), Padding.Horizontal + Border * 2);
-                MaxWidthValue = Math.Max(_maxWidth.CalculateSize(containerWidth), Padding.Horizontal + Border * 2);
+                MinWidthValue = Math.Max(_minWidth.CalculateSize(availableWidth), Padding.Horizontal + Border * 2);
+                MaxWidthValue = Math.Max(_maxWidth.CalculateSize(availableWidth), Padding.Horizontal + Border * 2);
                 MinInnerWidth = MinWidthValue - Border * 2 - Padding.Horizontal;
                 MaxInnerWidth = MaxWidthValue - Border * 2 - Padding.Horizontal;
                 MinOuterWidth = MinWidthValue + Margin.Horizontal;
                 MaxOuterWidth = MaxWidthValue + Margin.Horizontal;
                 break;
             case BoxSizing.Content:
-                MinWidthValue = _minWidth.CalculateSize(containerWidth);
-                MaxWidthValue = _maxWidth.CalculateSize(containerWidth);
+                MinWidthValue = _minWidth.CalculateSize(availableWidth);
+                MaxWidthValue = _maxWidth.CalculateSize(availableWidth);
                 MinInnerWidth = MinWidthValue;
                 MaxInnerWidth = MaxWidthValue;
                 MinOuterWidth = MinWidthValue + Border * 2 + Padding.Horizontal + Margin.Horizontal;
@@ -276,22 +276,22 @@ public partial class UIView
         }
     }
 
-    protected internal void CalculateHeightConstraints(float containerHeight)
+    protected internal void CalculateHeightConstraints(float availableHeight)
     {
         switch (BoxSizing)
         {
             default:
             case BoxSizing.Border:
-                MinHeightValue = Math.Max(_minHeight.CalculateSize(containerHeight), Padding.Vertical + Border * 2);
-                MaxHeightValue = Math.Max(_maxHeight.CalculateSize(containerHeight), Padding.Vertical + Border * 2);
+                MinHeightValue = Math.Max(_minHeight.CalculateSize(availableHeight), Padding.Vertical + Border * 2);
+                MaxHeightValue = Math.Max(_maxHeight.CalculateSize(availableHeight), Padding.Vertical + Border * 2);
                 MinInnerHeight = MinHeightValue - Border * 2 - Padding.Vertical;
                 MaxInnerHeight = MaxHeightValue - Border * 2 - Padding.Vertical;
                 MinOuterHeight = MinHeightValue + Margin.Vertical;
                 MaxOuterHeight = MaxHeightValue + Margin.Vertical;
                 break;
             case BoxSizing.Content:
-                MinHeightValue = _minHeight.CalculateSize(containerHeight);
-                MaxHeightValue = _maxHeight.CalculateSize(containerHeight);
+                MinHeightValue = _minHeight.CalculateSize(availableHeight);
+                MaxHeightValue = _maxHeight.CalculateSize(availableHeight);
                 MinInnerHeight = MinHeightValue;
                 MaxInnerHeight = MaxHeightValue;
                 MinOuterHeight = MinHeightValue + Border * 2 + Padding.Vertical + Margin.Vertical;
@@ -302,9 +302,9 @@ public partial class UIView
 
     #endregion
 
-    protected void CalculateBoundsWidth(float containerWidth)
+    protected void CalculateBoundsWidth(float availableWidth)
     {
-        WidthValue = _width.CalculateSize(containerWidth);
+        WidthValue = _width.CalculateSize(availableWidth);
         WidthValue = MathHelper.Clamp(WidthValue, MinWidthValue, MaxWidthValue);
 
         switch (BoxSizing)
@@ -319,9 +319,9 @@ public partial class UIView
         }
     }
 
-    protected void CalculateBoundsHeight(float containerHeight)
+    protected void CalculateBoundsHeight(float availableHeight)
     {
-        HeightValue = _height.CalculateSize(containerHeight);
+        HeightValue = _height.CalculateSize(availableHeight);
         HeightValue = MathHelper.Clamp(HeightValue, MinHeightValue, MaxHeightValue);
 
         switch (BoxSizing)
