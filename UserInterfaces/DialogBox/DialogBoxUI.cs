@@ -3,7 +3,7 @@
 namespace SilkyUIFramework.UserInterfaces.DialogBox;
 
 [RegisterGlobalUI("DialogBoxUI", 2000)]
-internal class DialogBoxUI : BasicBody
+internal class DialogBoxUI : BaseBody
 {
     public static bool ShowUI { get; set; }
     public override bool Enabled

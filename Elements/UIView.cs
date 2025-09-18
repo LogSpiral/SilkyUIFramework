@@ -1,7 +1,6 @@
 ﻿using SilkyUIFramework.Helper;
-using Terraria;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 [XmlElementMapping("View")]
 public partial class UIView

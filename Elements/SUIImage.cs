@@ -1,6 +1,6 @@
 ﻿using ReLogic.Content;
 
-namespace SilkyUIFramework.BasicComponents;
+namespace SilkyUIFramework.Elements;
 
 [XmlElementMapping("Image")]
 public class SUIImage : UIView

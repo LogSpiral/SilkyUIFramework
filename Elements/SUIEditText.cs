@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Input;
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 [XmlElementMapping("EditText")]
 public class SUIEditText : UITextView

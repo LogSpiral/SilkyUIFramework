@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿namespace SilkyUIFramework.Elements;
 
 /// <summary>
 /// 可拖动视图
@@ -26,21 +26,18 @@ public class SUIDraggableView : UIElementGroup
 
     public override void OnLeftMouseDown(UIMouseEvent evt)
     {
-        if (evt.Source == this)
-        {
-            MouseDragOffset = evt.MousePosition - ControlTarget.DragOffset;
-
-            Dragging = true;
-        }
-
         base.OnLeftMouseDown(evt);
+
+        if (ControlTarget == null || evt.Source != this) return;
+
+        Dragging = true;
+        MouseDragOffset = evt.MousePosition - ControlTarget.DragOffset;
     }
 
     public override void OnLeftMouseUp(UIMouseEvent evt)
     {
-        Dragging = false;
-
         base.OnLeftMouseUp(evt);
+        Dragging = false;
     }
 
     protected override void UpdateStatus(GameTime gameTime)
@@ -55,26 +52,26 @@ public class SUIDraggableView : UIElementGroup
         if (DragIncrement.X != 0) x -= x % DragIncrement.X;
         if (DragIncrement.Y != 0) y -= y % DragIncrement.Y;
 
-        // 计算新的拖拽偏移  
+        // 计算新的拖拽偏移
         var newDragOffset = new Vector2(x, y);
 
-        // 如果需要限制在父元素内  
+        // 如果需要限制在父元素内
         if (ConstrainInParent && ControlTarget.Parent != null)
         {
-            // 获取父元素的内部边界  
+            // 获取父元素的内部边界
             var parentBounds = ControlTarget.Parent.InnerBounds;
-            // 获取控制目标的外部边界（不包含拖拽偏移）  
+            // 获取控制目标的外部边界（不包含拖拽偏移）
             var targetBounds = ControlTarget.OuterBounds;
             var originalX = targetBounds.X - ControlTarget.DragOffset.X;
             var originalY = targetBounds.Y - ControlTarget.DragOffset.Y;
 
-            // 计算允许的拖拽范围  
+            // 计算允许的拖拽范围
             var minX = parentBounds.X - originalX;
             var minY = parentBounds.Y - originalY;
             var maxX = parentBounds.Right - originalX - targetBounds.Width;
             var maxY = parentBounds.Bottom - originalY - targetBounds.Height;
 
-            // 限制拖拽偏移在允许范围内  
+            // 限制拖拽偏移在允许范围内
             newDragOffset.X = MathHelper.Clamp(newDragOffset.X, minX, maxX);
             newDragOffset.Y = MathHelper.Clamp(newDragOffset.Y, minY, maxY);
         }

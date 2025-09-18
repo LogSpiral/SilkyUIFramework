@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿namespace SilkyUIFramework.Elements;
 
 public class SUIScrollContainer(SUIScrollView scrollView) : UIElementGroup
 {

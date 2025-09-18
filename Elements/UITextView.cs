@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 public class ContentChangingEventArgs(string newText, string oldText) : EventArgs
 {

@@ -23,7 +23,7 @@ public partial class SilkyUIManager
         foreach (var type in GlobalBodyTypes)
         {
             var silkyUI = ServiceProvider.GetRequiredService<SilkyUI>();
-            var body = ServiceProvider.GetRequiredService(type) as BasicBody;
+            var body = ServiceProvider.GetRequiredService(type) as BaseBody;
 
             silkyUI.Priority = type.GetCustomAttribute<RegisterGlobalUIAttribute>().Priority;
             silkyUI.SetBody(body);

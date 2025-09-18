@@ -1,5 +1,4 @@
-﻿using log4net;
-using SilkyUIFramework.Animation;
+﻿using SilkyUIFramework.Animation;
 
 namespace SilkyUIFramework.UserInterfaces;
 
@@ -21,7 +20,7 @@ public enum MouseAnchor
 #if true
 
 [RegisterGlobalUI("MouseMenuUI", 1000)]
-public partial class MouseMenuUI : BasicBody, IMouseMenu
+public partial class MouseMenuUI : BaseBody, IMouseMenu
 {
     public static bool IsShow { get; set; }
     public override bool Enabled

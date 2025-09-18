@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-
-namespace SilkyUIFramework.Helper;
+﻿namespace SilkyUIFramework.Helper;
 
 public static class RenderTargetHelper
 {

@@ -1,6 +1,6 @@
 ﻿using SilkyUIFramework.Animation;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 public class SUIScrollbar : UIView
 {

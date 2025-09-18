@@ -19,7 +19,7 @@
 
 ### SilkyUI 的改进
 **SilkyUI** 针对上述痛点提供了解决方案：
-- 继承 **BasicBody** 并添加 **RegisterUI** 特性即可快速创建 UI
+- 继承 **BaseBody** 并添加 **RegisterUI** 特性即可快速创建 UI
 - 内建层级关系，自动避免鼠标穿透，并支持类似 **Windows 窗口** 的层级更新
 - **UIView / UIElementGroup** 采用脏标记机制，属性变化会自动触发布局更新，无需显式调用 **Recalculate()**，还能局部更新
 - 已实现 [Flexbox 布局标准](https://www.w3.org/TR/css-flexbox-1/)，计划支持 Grid
@@ -34,6 +34,8 @@
 > 交流群：[971038831](https://qm.qq.com/q/mRF9AJDHWM)
 
 ### 相关文档
+
+[SilkyUI 迁移指南](MigrationGuide.md)
 
 [Flexbox 文档](FlexboxModule.md)
 

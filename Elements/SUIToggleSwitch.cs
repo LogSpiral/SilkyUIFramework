@@ -1,6 +1,6 @@
 ﻿using SilkyUIFramework.Animation;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 /// <summary>
 /// 拨动开关
@@ -66,7 +66,7 @@ public class SUIToggleSwitch : UIView
         var position = InnerBounds.Position;
         var size = InnerBounds.Size;
         var beadSize = new Vector2(MathHelper.Min(size.Width, size.Height));
-        var end = InnerBounds.RightBottom - beadSize;
+        var end = InnerBounds.BottomRight - beadSize;
 
         InternalRectangleRender.BorderRadius = new Vector4(beadSize.Y / 2f);
         InternalRectangleRender.Draw(SwitchTimer.Lerp(position, end), beadSize, false, SilkyUI.TransformMatrix);

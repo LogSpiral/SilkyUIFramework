@@ -55,6 +55,7 @@ public static class SDFRectangle
 
         SetSmoothstepRange();
         Effect.Parameters["uTransformMatrix"].SetValue(matrix);
+        Effect.Parameters["uBackgroundColor"].SetValue(Color.White.ToVector4());
 
         var device = GraphicsDevice;
         var screenSize = new Vector2(device.Viewport.Width, device.Viewport.Height);
@@ -68,11 +69,13 @@ public static class SDFRectangle
         SpriteEffectPass.Apply();
     }
 
-    public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size, Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize, Vector4 borderRadius, Matrix matrix)
+    public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size,
+        Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize, Vector4 borderRadius, Color color, Matrix matrix)
     {
         MatrixHelper.Transform2SDFMatrix(ref matrix);
 
         SetSmoothstepRange();
+        Effect.Parameters["uBackgroundColor"].SetValue(color.ToVector4());
         Effect.Parameters["uTransformMatrix"].SetValue(matrix);
 
         var device = GraphicsDevice;

@@ -1,31 +1,21 @@
 ﻿namespace SilkyUIFramework;
 
-/// <summary>
-/// 似乎在密谋着什么，再等等...
-/// </summary>
 public struct Bounds
 {
     public static Bounds Zero { get; } = new(0, 0, 0, 0);
 
-    private float _x;
-    private float _y;
-    private float _width;
-    private float _height;
+    private float _x, _y, _width, _height;
 
     public Bounds(float x, float y, float width, float height)
     {
-        _x = x;
-        _y = y;
-        _width = width;
-        _height = height;
+        _x = x; _y = y;
+        _width = width; _height = height;
     }
 
     public Bounds(Vector2 position, Size size)
     {
-        _x = position.X;
-        _y = position.Y;
-        _width = size.Width;
-        _height = size.Height;
+        _x = position.X; _y = position.Y;
+        _width = size.Width; _height = size.Height;
     }
 
     public float X { readonly get => _x; set => _x = value; }
@@ -33,15 +23,9 @@ public struct Bounds
     public float Width { readonly get => _width; set => _width = value; }
     public float Height { readonly get => _height; set => _height = value; }
 
-    public float Left { readonly get => _x; set => _x = value; }
-    public float Top { readonly get => _y; set => _y = value; }
-    public readonly float Right => _x + _width;
-    public readonly float Bottom => _y + _height;
-
     public Vector2 Position
     {
-        readonly get => new(_x, _y);
-        set
+        readonly get => new(_x, _y); set
         {
             _x = value.X;
             _y = value.Y;
@@ -50,31 +34,20 @@ public struct Bounds
 
     public Size Size
     {
-        readonly get => new(_width, _height);
-        set
+        readonly get => new(_width, _height); set
         {
             _width = value.Width;
             _height = value.Height;
         }
     }
 
-    public void SetPosition(float x, float y)
-    {
-        _x = x;
-        _y = y;
-    }
-
-    public void SetSize(float width, float height)
-    {
-        _width = width;
-        _height = height;
-    }
-
+    public readonly float Right => _x + _width;
+    public readonly float Bottom => _y + _height;
     public readonly Vector2 Center => new(_x + _width / 2f, _y + _height / 2f);
-    public readonly Vector2 LeftBottom => new(_x, _y + _height);
-    public readonly Vector2 RightBottom => new(_x + _width, _y + _height);
-    public readonly Vector2 LeftTop => new(_x, _y);
-    public readonly Vector2 RightTop => new(_x + _width, _y);
+    public readonly Vector2 TopLeft => new(_x, _y);
+    public readonly Vector2 TopRight => new(_x + _width, _y);
+    public readonly Vector2 BottomLeft => new(_x, _y + _height);
+    public readonly Vector2 BottomRight => new(_x + _width, _y + _height);
 
     public static implicit operator Bounds(Rectangle rectangle)
     {

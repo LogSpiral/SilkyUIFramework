@@ -1,6 +1,6 @@
 using SixLabors.ImageSharp;
 
-namespace SilkyUIFramework.BasicComponents;
+namespace SilkyUIFramework.Elements;
 
 /// <summary>
 /// 缩放，位置这些都还没做适配，代码一共就这么多。

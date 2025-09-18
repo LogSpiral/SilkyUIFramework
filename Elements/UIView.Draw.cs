@@ -1,6 +1,6 @@
 ﻿using SilkyUIFramework.Helper;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
 public partial class UIView
 {

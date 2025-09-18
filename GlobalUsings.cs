@@ -4,7 +4,7 @@ global using Microsoft.Xna.Framework;
 global using Microsoft.Xna.Framework.Graphics;
 global using ReLogic.Graphics;
 global using SilkyUIFramework.Attributes;
-global using SilkyUIFramework.BasicElements;
+global using SilkyUIFramework.Elements;
 global using SilkyUIFramework.Extensions;
 global using SilkyUIFramework.Graphics2D;
 global using SilkyUIFramework.Helpers;

@@ -1,6 +1,6 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿namespace SilkyUIFramework.Elements;
 
-public abstract partial class BasicBody : UIElementGroup
+public abstract partial class BaseBody : UIElementGroup
 {
     public virtual bool Enabled { get; set; } = true;
     public virtual bool IsInteractable => true;
@@ -8,7 +8,7 @@ public abstract partial class BasicBody : UIElementGroup
     protected bool AvailableItem { get; set; } = false;
     protected bool AvailableScroll { get; set; } = false;
 
-    protected BasicBody()
+    protected BaseBody()
     {
         SetSize(16f * 30f, 9f * 30f);
         SetGap(10f);

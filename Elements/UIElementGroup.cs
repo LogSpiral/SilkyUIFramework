@@ -1,7 +1,6 @@
-﻿using System;
-using SilkyUIFramework.Helper;
+﻿using SilkyUIFramework.Helper;
 
-namespace SilkyUIFramework;
+namespace SilkyUIFramework.Elements;
 
 /// <summary>
 /// 似乎在密谋着什么，再等等...
@@ -255,7 +254,7 @@ public partial class UIElementGroup : UIView
         };
 
         var topLeft = Vector2.Transform(bounds.Position, SilkyUI.TransformMatrix);
-        var rightBottom = Vector2.Transform(bounds.RightBottom, SilkyUI.TransformMatrix);
+        var rightBottom = Vector2.Transform(bounds.BottomRight, SilkyUI.TransformMatrix);
         var rectangle = new Rectangle(
             (int)Math.Floor(topLeft.X), (int)Math.Floor(topLeft.Y),
             (int)Math.Ceiling(rightBottom.X - topLeft.X),
@@ -340,8 +339,8 @@ public partial class UIElementGroup : UIView
     {
         var scale = Main.UIScale;
         spriteBatch.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-        SDFRectangle.SampleVersion(renderTarget,
-            position, renderTarget.SizeVec2, Vector2.Zero, Vector2.One, (BorderRadius - new Vector4(2)) * scale, Matrix.Identity);
+        SDFRectangle.SampleVersion(renderTarget, position, renderTarget.SizeVec2,
+            Vector2.Zero, Vector2.One, (BorderRadius - new Vector4(2)) * scale, Color.White, Matrix.Identity);
     }
 
     #endregion

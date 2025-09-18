@@ -1,8 +1,8 @@
 ﻿using SilkyUIFramework.Helper;
 
-namespace SilkyUIFramework.BasicElements;
+namespace SilkyUIFramework.Elements;
 
-public abstract partial class BasicBody
+public abstract partial class BaseBody
 {
     public virtual bool UseRenderTarget { get; set; } = false;
     public virtual float Opacity { get; set => field = Math.Clamp(value, 0f, 1f); } = 1f;

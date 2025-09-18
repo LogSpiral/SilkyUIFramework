@@ -1,17 +1,17 @@
 ﻿namespace SilkyUIFramework.Extensions;
 
-static class BasicBodyExtensions
+static class BaseBodyExtensions
 {
-    extension(BasicBody basicBody)
+    extension(BaseBody baseBody)
     {
         public RegisterUIAttribute GetRegisterUI()
         {
-            return basicBody.GetType().GetCustomAttribute<RegisterUIAttribute>();
+            return baseBody.GetType().GetCustomAttribute<RegisterUIAttribute>();
         }
 
         public RegisterGlobalUIAttribute GetRegisterGlobalUI()
         {
-            return basicBody.GetType().GetCustomAttribute<RegisterGlobalUIAttribute>();
+            return baseBody.GetType().GetCustomAttribute<RegisterGlobalUIAttribute>();
         }
     }
 }

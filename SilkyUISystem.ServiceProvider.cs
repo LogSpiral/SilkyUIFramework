@@ -53,7 +53,7 @@ public partial class SilkyUISystem
         {
             ScanRegisterServices(serviceCollection, types);
 
-            foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
+            foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
             {
                 if (type.GetCustomAttribute<RegisterUIAttribute>() != null)
                 {

@@ -38,7 +38,7 @@ public partial class SilkyUISystem : ModSystem
     {
         Logger.Info($"Scan Game User Interface in {assembly.FullName}");
 
-        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
+        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
         {
             if (type.GetCustomAttribute<RegisterUIAttribute>() is { } attribute)
             {
@@ -51,7 +51,7 @@ public partial class SilkyUISystem : ModSystem
     {
         Logger.Info($"Scan Global User Interface in {assembly.FullName}");
 
-        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BasicBody))))
+        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
         {
             if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
             {
@@ -89,7 +89,7 @@ public class SilkyUIPlayer : ModPlayer
                 var silkyUI = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUI>();
 
                 silkyUI.Priority = type.GetCustomAttribute<RegisterUIAttribute>().Priority;
-                silkyUI.SetBody(SilkyUISystem.ServiceProvider.GetRequiredService(type) as BasicBody);
+                silkyUI.SetBody(SilkyUISystem.ServiceProvider.GetRequiredService(type) as BaseBody);
 
                 group.Add(silkyUI);
             }

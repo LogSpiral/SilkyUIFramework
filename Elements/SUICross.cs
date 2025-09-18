@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.BasicComponents;
+﻿namespace SilkyUIFramework.Elements;
 
 [XmlElementMapping("Cross")]
 public class SUICross : UIView

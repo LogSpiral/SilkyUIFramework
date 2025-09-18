@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.BasicElements;
+﻿namespace SilkyUIFramework.Elements;
 
 [XmlElementMapping("ItemSlot")]
 public class SUIItemSlot : UIView

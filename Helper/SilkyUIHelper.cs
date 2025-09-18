@@ -8,7 +8,7 @@ public static class SilkyUIHelper
     /// <summary>
     /// 根据屏幕大小返回 <see cref="CalculatedStyle"/>
     /// </summary>
-    public static CalculatedStyle GetBasicBodyDimensions()
+    public static CalculatedStyle GetBaseBodyDimensions()
     {
         var screenScaledSize = GetScreenScaledSize();
         return new CalculatedStyle(0f, 0f, screenScaledSize.X, screenScaledSize.Y);

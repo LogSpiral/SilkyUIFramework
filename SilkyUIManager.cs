@@ -53,13 +53,13 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     /// <summary>
     /// 获取游戏内 UI 实例
     /// </summary>
-    public bool TryGetInstance<TBody>(out TBody body) where TBody : BasicBody
+    public bool TryGetInstance<TBody>(out TBody body) where TBody : BaseBody
     {
         foreach (var (key, value) in SilkyUIGroups)
         {
             foreach (var item in value.SilkyUIs)
             {
-                if (item.BasicBody is TBody tBody)
+                if (item.BaseBody is TBody tBody)
                 {
                     body = tBody;
                     return true;

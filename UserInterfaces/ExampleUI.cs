@@ -3,7 +3,7 @@
 #if DEBUG && false
 
 [RegisterGlobalUI("ExampleUI", 0)]
-public partial class ExampleUI(IMouseMenu menuUI) : BasicBody
+public partial class ExampleUI(IMouseMenu menuUI) : BaseBody
 {
     private readonly IMouseMenu MenuUI = menuUI;
 
