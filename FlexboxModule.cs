@@ -52,7 +52,7 @@ public partial class FlexboxModule
 
     private void WrapRow()
     {
-        var container = Parent.InnerBounds.Width;
+        var availableSize = Parent.InnerBounds.Width;
         var gap = Gap.Width;
         var elements = Parent.LayoutChildren;
         _flexLines.Clear();
@@ -67,7 +67,7 @@ public partial class FlexboxModule
             var mainAxisSize = element.OuterBounds.Width;
             var crossAxisSize = element.OuterBounds.Height;
 
-            if (line.MainSize + mainAxisSize + gap <= container)
+            if (line.MainSize + mainAxisSize + gap <= availableSize)
             {
                 line.Elements.Add(element);
                 line.MainSize += mainAxisSize + gap;
@@ -259,7 +259,7 @@ public partial class FlexboxModule
         return _crossSize = _crossContent + (_flexLines.Count - 1) * gap;
     }
 
-    private void UpdateCrossContentAlignment(float container, float gap)
+    private void UpdateCrossContentAlignment(float availableSize, float gap)
     {
         UpdateCrossSize(gap);
         switch (_crossContentAlignment)
@@ -275,24 +275,24 @@ public partial class FlexboxModule
             case CrossContentAlignment.Center:
             {
                 _crossGapCache = gap;
-                _crossOffsetCache = (container - _crossSize) / 2f;
+                _crossOffsetCache = (availableSize - _crossSize) / 2f;
                 return;
             }
             case CrossContentAlignment.End:
             {
                 _crossGapCache = gap;
-                _crossOffsetCache = container - _crossSize;
+                _crossOffsetCache = availableSize - _crossSize;
                 return;
             }
             case CrossContentAlignment.SpaceEvenly:
             {
-                _crossGapCache = (container - _crossContent) / (_flexLines.Count + 1);
+                _crossGapCache = (availableSize - _crossContent) / (_flexLines.Count + 1);
                 _crossOffsetCache = _crossGapCache;
                 return;
             }
             case CrossContentAlignment.SpaceBetween:
             {
-                _crossGapCache = _flexLines.Count > 1 ? (container - _crossContent) / (_flexLines.Count - 1) : 0f;
+                _crossGapCache = _flexLines.Count > 1 ? (availableSize - _crossContent) / (_flexLines.Count - 1) : 0f;
                 _crossOffsetCache = 0f;
                 return;
             }

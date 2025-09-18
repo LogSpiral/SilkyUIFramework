@@ -92,7 +92,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
     {
         foreach (var silkyUI in _silkyUIs)
         {
-            if (silkyUI.BasicBody.GetRegisterUI() is not { } registerUI) continue;
+            if (silkyUI.BaseBody.GetRegisterUI() is not { } registerUI) continue;
 
             var silkyUILayer = new SilkyUILayer(this, silkyUI, registerUI.Name, registerUI.InterfaceScaleType);
 
@@ -108,7 +108,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
         foreach (var silkyUI in reversedList)
         {
-            if (silkyUI.BasicBody.GetRegisterGlobalUI() is not { } globalUI) continue;
+            if (silkyUI.BaseBody.GetRegisterGlobalUI() is not { } globalUI) continue;
 
             silkyUI.TransformMatrix = Main.UIScaleMatrix;
 

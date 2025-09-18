@@ -17,7 +17,7 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
 
     public int Priority { get; set; }
 
-    public BasicBody BasicBody { get; private set; }
+    public BaseBody BaseBody { get; private set; }
 
     public Matrix TransformMatrix { get; set; }
     public Vector2 MousePosition { get; private set; }
@@ -69,17 +69,17 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         }
     }
 
-    public SilkyUI SetBody(BasicBody basicBody = null)
+    public SilkyUI SetBody(BaseBody baseBody = null)
     {
-        if (BasicBody == basicBody) return this;
+        if (BaseBody == baseBody) return this;
 
-        if (basicBody != null && basicBody.SilkyUI != null) return this;
+        if (baseBody != null && baseBody.SilkyUI != null) return this;
 
-        var lastBasicBody = BasicBody;
-        BasicBody = basicBody;
+        var lastBaseBody = BaseBody;
+        BaseBody = baseBody;
 
-        RuntimeHelper.ErrorCapture(() => lastBasicBody?.HandleExitTree());
-        RuntimeHelper.ErrorCapture(() => BasicBody?.HandleEnterTree(this));
+        RuntimeSafeHelper.SafeInvoke(() => lastBaseBody?.HandleExitTree());
+        RuntimeSafeHelper.SafeInvoke(() => BaseBody?.HandleEnterTree(this));
 
         return this;
     }
@@ -89,7 +89,7 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
     /// </summary>
     public void PreUpdate()
     {
-        BasicBody?.Initialize();
+        BaseBody?.Initialize();
     }
 
     /// <summary> 更新状态 </summary>
@@ -106,15 +106,15 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
         // 按下 Escape 键时移除焦点 (或已有焦点时)
         if (Manager.HasFocusGroup || Keys.Escape.JustPressed()) SetFocus(null);
 
-        if (BasicBody is not { Enabled: true }) return false;
+        if (BaseBody is not { Enabled: true }) return false;
 
         UpdateMouseStates();
 
         try
         {
-            if (!Manager.HasHoverGroup && BasicBody.IsInteractable)
+            if (!Manager.HasHoverGroup && BaseBody.IsInteractable)
             {
-                SetHoverElement(BasicBody.GetElementAt(MousePosition));
+                SetHoverElement(BaseBody.GetElementAt(MousePosition));
             }
             else SetHoverElement(null);
 
@@ -160,7 +160,7 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
                     PlayerInput.ScrollWheelDeltaForUI));
             }
 
-            BasicBody.HandleUpdate(gameTime);
+            BaseBody.HandleUpdate(gameTime);
         }
         catch (Exception ex)
         {
@@ -239,30 +239,30 @@ public class SilkyUI(SilkyUIManager manager, ILog logger)
     private uint _lastCandidateCount;
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        if (BasicBody is not { Enabled: true }) return;
+        if (BaseBody is not { Enabled: true }) return;
 
-        BasicBody.Initialize();
+        BaseBody.Initialize();
 
-        BasicBody.UpdateLayout();
-        BasicBody.UpdatePosition();
-        BasicBody.UpdateElementsOrder();
+        BaseBody.UpdateLayout();
+        BaseBody.UpdatePosition();
+        BaseBody.UpdateElementsOrder();
 
         // 更新 UI 的各种状态，比如动画
-        BasicBody.HandleUpdateStatus(gameTime);
+        BaseBody.HandleUpdateStatus(gameTime);
 
-        if (BasicBody is not { Enabled: true }) return;
+        if (BaseBody is not { Enabled: true }) return;
 
-        BasicBody.UpdateLayout();
-        BasicBody.UpdatePosition();
-        BasicBody.UpdateElementsOrder();
+        BaseBody.UpdateLayout();
+        BaseBody.UpdatePosition();
+        BaseBody.UpdateElementsOrder();
 
-        BasicBody.HandleDraw(gameTime, spriteBatch);
+        BaseBody.HandleDraw(gameTime, spriteBatch);
 
         // 鼠标焦点程序
         if (MouseFocusElement is not { OccupyPlayerInput: true }) return;
 
         Main.spriteBatch.End();
-        Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp,
+        Main.spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp,
             DepthStencilState.None, RasterizerStateForOverflowHidden, null, TransformMatrix);
 
         PlayerInput.WritingText = true;

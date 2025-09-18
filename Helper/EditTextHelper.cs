@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework.Input;
 using ReLogic.OS;
 
-namespace SilkyUIFramework;
+namespace SilkyUIFramework.Helper;
 
 public static class EditTextHelper
 {

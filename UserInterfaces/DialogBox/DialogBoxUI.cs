@@ -3,7 +3,7 @@
 namespace SilkyUIFramework.UserInterfaces.DialogBox;
 
 [RegisterGlobalUI("DialogBoxUI", 2000)]
-internal class DialogBoxUI : BasicBody
+internal class DialogBoxUI : BaseBody
 {
     public static bool ShowUI { get; set; }
     public override bool Enabled
@@ -23,6 +23,8 @@ internal class DialogBoxUI : BasicBody
 
     protected override void OnInitialize()
     {
+        EnableBlur = true;
+
         SetSize(0f, 0f, 1f, 1f);
 
         SetLeft(0f, 0f, 0f);
@@ -64,24 +66,5 @@ internal class DialogBoxUI : BasicBody
         RenderTargetMatrix = Matrix.CreateTranslation(0, SwitchTimer.Lerp(10f, 0), 0);
 
         base.UpdateStatus(gameTime);
-    }
-
-    protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-    {
-        if (BlurMakeSystem.BlurAvailable && !Main.gameMenu)
-        {
-            if (BlurMakeSystem.SingleBlur)
-            {
-                var batch = Main.spriteBatch;
-                batch.End();
-                BlurMakeSystem.KawaseBlur();
-                batch.Begin(0, null, SamplerState.PointClamp, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
-            }
-
-            SDFRectangle.SampleVersion(BlurMakeSystem.BlurRenderTarget,
-                DialogContainer.Bounds.Position * Main.UIScale, DialogContainer.Bounds.Size * Main.UIScale, DialogContainer.BorderRadius * Main.UIScale, Matrix.Identity);
-        }
-
-        base.Draw(gameTime, spriteBatch);
     }
 }

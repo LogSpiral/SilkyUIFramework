@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework.Helpers;
+﻿namespace SilkyUIFramework.Helper;
 
 public static class MatrixHelper
 {

@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace SilkyUIFramework;
 
 public class FlexLine
@@ -17,7 +15,7 @@ public class FlexLine
     {
         var width = 0f;
 
-        for (int i = 0; i < Elements.Count; i++)
+        for (var i = 0; i < Elements.Count; i++)
             width = Math.Max(Elements[i].OuterBounds.Width, width);
 
         return width;
@@ -27,7 +25,7 @@ public class FlexLine
     {
         var height = 0f;
 
-        for (int i = 0; i < Elements.Count; i++)
+        for (var i = 0; i < Elements.Count; i++)
             height = Math.Max(Elements[i].OuterBounds.Height, height);
 
         return height;
@@ -37,7 +35,7 @@ public class FlexLine
     {
         var width = 0f;
 
-        for (int i = 0; i < Elements.Count; i++)
+        for (var i = 0; i < Elements.Count; i++)
             width += Elements[i].OuterBounds.Width;
 
         return width;
@@ -47,7 +45,7 @@ public class FlexLine
     {
         var height = 0f;
 
-        for (int i = 0; i < Elements.Count; i++)
+        for (var i = 0; i < Elements.Count; i++)
             height += Elements[i].OuterBounds.Height;
 
         return height;
