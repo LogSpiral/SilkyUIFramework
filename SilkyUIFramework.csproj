@@ -23,12 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
-        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Assets\Images\" />
+        <AdditionalFiles Include="**/*.xml" Exclude="bin/**/*;obj/**/*;.git/**/*;.idea/**/*;.vs/**/*" Pack="true" ModPath="%(Identity)" />
+        <AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*;.git/**/*;.idea/**/*;.vs/**/*" Pack="true" ModPath="%(Identity)" />
     </ItemGroup>
 
 </Project>

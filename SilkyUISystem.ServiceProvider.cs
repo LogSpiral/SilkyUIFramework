@@ -25,7 +25,7 @@ public partial class SilkyUISystem
             if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0))) return;
 
             // 2025/9/16 需要找个新地方 游戏里面开启菜单的时候就不绘制了
-            // Draw Gloabl UI
+            // Draw Global UI
             c.EmitDelegate(() => SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache));
         };
 
@@ -81,8 +81,7 @@ public partial class SilkyUISystem
         }
     }
 
-    private static void RegisterService(
-        IServiceCollection services, ServiceLifetime lifetime, Type implType)
+    private static void RegisterService(IServiceCollection services, ServiceLifetime lifetime, Type implType)
     {
         var interfaces = implType.GetInterfaces();
 

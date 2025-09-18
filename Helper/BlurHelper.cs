@@ -1,6 +1,4 @@
-﻿using SilkyUIFramework.Helper;
-
-namespace SilkyUIFramework.Helpers;
+﻿namespace SilkyUIFramework.Helper;
 
 public enum BlurMixingNumber { One, Two, Three, Four, Five }
 

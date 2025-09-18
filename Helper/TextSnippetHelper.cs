@@ -1,22 +1,19 @@
 ﻿using System.Text.RegularExpressions;
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.Helpers;
+namespace SilkyUIFramework.Helper;
 
 public static class TextSnippetHelper
 {
-    public static Vector2 GetStringSize(
-        DynamicSpriteFont font,
-        List<TextSnippet> snippets,
-        Vector2 baseScale,
-        float maxWidth = -1f)
+    public static Vector2 GetStringSize(DynamicSpriteFont font, List<TextSnippet> snippets, Vector2 baseScale, float maxWidth = -1f)
     {
-        Vector2 vec = new Vector2((float)Main.mouseX, (float)Main.mouseY);
-        Vector2 zero = Vector2.Zero;
-        Vector2 minimum = zero;
-        Vector2 stringSize = minimum;
+        var vec = new Vector2((float)Main.mouseX, (float)Main.mouseY);
+        var zero = Vector2.Zero;
+        var minimum = zero;
+        var stringSize = minimum;
         float x = font.MeasureString(" ").X;
         float num1 = 0.0f;
+
         foreach (TextSnippet snippet in snippets)
         {
             snippet.Update();
@@ -25,8 +22,8 @@ public static class TextSnippetHelper
             Vector2 vector2_1 = Vector2.Zero;
             ref Vector2 local = ref vector2_1;
             float num2 = baseScale.X * scale1;
-            Vector2 position = new Vector2();
-            Color color = new Color();
+            var position = new Vector2();
+            var color = new Color();
             double scale2 = (double)num2;
             if (textSnippet.UniqueDraw(true, out local, (SpriteBatch)null, position, color, (float)scale2))
             {

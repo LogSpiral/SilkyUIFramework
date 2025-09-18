@@ -1,6 +1,4 @@
-﻿using SilkyUIFramework.Helper;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 /// <summary>
 /// 模糊效果处理系统，继承自 ModSystem
