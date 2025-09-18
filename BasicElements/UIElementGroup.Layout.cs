@@ -4,6 +4,9 @@ public partial class UIElementGroup
 {
     #region Properties & Fields LayoutType LayoutDirection Gap
 
+    /// <summary>
+    /// 目前仅有 Flexbox 可以使用，请不要自定义布局。
+    /// </summary>
     public LayoutType LayoutType
     {
         get;
@@ -13,20 +16,7 @@ public partial class UIElementGroup
             field = value;
             MarkLayoutDirty();
         }
-    }
-
-    public FlexDirection FlexDirection
-    {
-        get => _flexDirection;
-        set
-        {
-            if (value == _flexDirection) return;
-            _flexDirection = value;
-            MarkLayoutDirty();
-        }
-    }
-
-    private FlexDirection _flexDirection;
+    } = LayoutType.Flexbox;
 
     public Size Gap
     {
@@ -40,297 +30,151 @@ public partial class UIElementGroup
     }
 
     public void SetGap(float gap) => Gap = gap;
+    public void SetGap(float width, float height) => Gap = Gap.With(width, height);
 
-    public void SetGap(float width, float height)
+    private readonly FlexboxModule FlexboxModule;
+    public readonly GridModule GridModule;
+
+    public LayoutModule LayoutModule
     {
-        Gap = Gap.With(width, height);
+        get
+        {
+            return LayoutType switch
+            {
+                LayoutType.Grid => GridModule,
+                LayoutType.Custom => field,
+                { } => FlexboxModule,
+            };
+        }
+        set
+        {
+            if (value.Parent != this) return;
+            if (field.GetType() == value.GetType()) return;
+            field = value;
+            if (LayoutType == LayoutType.Custom) MarkLayoutDirty();
+        }
     }
 
     #endregion
 
-    public virtual void PrepareChildren()
-    {
-        ClassifyChildren();
-
-        float? spaceWidth = FitWidth ? null : InnerBounds.Width;
-        float? spaceHeight = FitHeight ? null : InnerBounds.Height;
-
-        foreach (var el in LayoutChildren)
-        {
-            el.Prepare(spaceWidth, spaceHeight);
-        }
-    }
-
-    /// <summary>
-    /// 预处理
-    /// </summary>
     public override void Prepare(float? width, float? height)
     {
         base.Prepare(width, height);
 
         PrepareChildren();
 
-        if (LayoutType != LayoutType.Flexbox) return;
-
-        switch (FlexDirection)
-        {
-            case FlexDirection.Row:
-            {
-                if (FitWidth)
-                {
-                    FlexLines.Clear();
-                    FlexLines.Add(FlexLine.CreateSingleRow(LayoutChildren, Gap.Width));
-                }
-                else
-                {
-                    var maxMainAxisSize = FlexWrap ? InnerBounds.Width : MaxInnerWidth;
-                    LayoutChildren.FlexWrapRow(FlexLines, maxMainAxisSize, Gap.Width);
-                }
-
-                FlexLines.MeasureSize(Gap.Width, out var contentWidth, out var contentHeight);
-                if (FitWidth)
-                    SetInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
-                if (FitHeight)
-                    SetInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
-
-                break;
-            }
-            case FlexDirection.Column:
-            {
-                if (FitHeight)
-                {
-                    FlexLines.Clear();
-                    FlexLines.Add(FlexLine.CreateSingleColumn(LayoutChildren, Gap.Height));
-                }
-                else
-                {
-                    var maxMainAxisSize = FlexWrap ? InnerBounds.Height : MaxInnerHeight;
-                    LayoutChildren.FlexWrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
-                }
-
-                FlexLines.MeasureSize(Gap.Height, out var contentHeight, out var contentWidth);
-                if (FitWidth)
-                    SetInnerBoundsWidth(MathHelper.Clamp(contentWidth, MinInnerWidth, MaxInnerWidth));
-                if (FitHeight)
-                    SetInnerBoundsHeight(MathHelper.Clamp(contentHeight, MinInnerHeight, MaxInnerHeight));
-
-                break;
-            }
-            default: goto case FlexDirection.Row;
-        }
+        if (LayoutElements.Count <= 0) return;
+        LayoutModule?.PostPrepare();
     }
 
-    public virtual void RecalculateChildrenHeight()
+    public virtual void PrepareChildren()
     {
-        foreach (var el in LayoutChildren)
+        ClassifyChildren();
+        if (LayoutElements.Count <= 0) return;
+
+        LayoutModule?.UpdateCacheStatus();
+
+        float? availableWidth = FitWidth ? null : InnerBounds.Width;
+        float? availableHeight = FitHeight ? null : InnerBounds.Height;
+        for (int i = 0; i < LayoutElements.Count; i++)
         {
-            el.RecalculateHeight();
+            LayoutModule.ModifyAvailableSize(LayoutElements[i], i, ref availableWidth, ref availableHeight);
+            LayoutElements[i].Prepare(availableWidth, availableHeight);
         }
 
-        if (LayoutType != LayoutType.Flexbox) return;
-
-        switch (FlexDirection)
-        {
-            default:
-            case FlexDirection.Row:
-            {
-                if (FitHeight)
-                {
-                    var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
-                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
-                }
-
-                foreach (var flexLine in FlexLines)
-                {
-                    flexLine.CrossSize = flexLine.Elements.Max(el => el.OuterBounds.Height);
-                }
-                break;
-            }
-            case FlexDirection.Column:
-            {
-                foreach (var flexLine in FlexLines)
-                {
-                    flexLine.MainSize = flexLine.Elements.Sum(el => el.OuterBounds.Height) + flexLine.GetFenceGap(Gap.Height);
-                }
-                break;
-            }
-        }
+        LayoutModule?.PostPrepareChildren();
     }
 
-    /// <summary>
-    /// 重新设置子元素宽度
-    /// </summary>
+    /// <summary> 重新设置子元素宽度 </summary>
     public virtual void ResizeChildrenWidth()
     {
-        if (LayoutChildren.Count <= 0) return;
+        if (LayoutElements.Count <= 0) return;
 
-        var innerSize = InnerBounds.Size;
-
-        // 如果不适应宽度, 子元素也不适应宽度, 则重新设置子元素的宽度
         if (!FitWidth)
         {
-            foreach (var el in LayoutChildren)
+            for (int i = 0; i < LayoutElements.Count; i++)
             {
-                el.RefreshWidth(innerSize.Width);
+                LayoutElements[i].RefreshWidth(InnerBounds.Width);
             }
         }
 
-        // Flexbox 处理
-        if (LayoutType is LayoutType.Flexbox)
-        {
-            switch (FlexDirection)
-            {
-                default:
-                case FlexDirection.Row:
-                {
-                    // 宽度可能被父元素拉伸, 再次计算元素换行
-                    if (FlexWrap)
-                    {
-                        var maxMainAxisSize = innerSize.Width;
-                        LayoutChildren.FlexWrapRow(FlexLines, maxMainAxisSize, Gap.Width);
-                    }
-                    else
-                    {
-                        foreach (var line in FlexLines) line.UpdateMainSizeByRow(Gap.Width);
-                    }
+        LayoutModule?.PostResizeChildrenWidth();
 
-                    // 拉伸或者压缩宽度
-                    FlexLines.GrowOrShrinkByRowMode(innerSize, Gap.Width);
-                    break;
-                }
-                case FlexDirection.Column:
-                {
-                    FlexLines.ResizeCrossAxis(CrossContentAlignment, InnerBounds.Width, Gap.Width);
-                    if (CrossAlignment == CrossAlignment.Stretch)
-                    {
-                        foreach (FlexLine flexLine in FlexLines)
-                        {
-                            // 子元素使用适应宽度或者子元素的宽度小于交叉轴的空间
-                            foreach (var el in flexLine.Elements.Where(
-                                el => el.FitWidth || el.OuterBounds.Width < flexLine.CrossSpace))
-                            {
-                                el.SetExactWidth(flexLine.CrossSpace);
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-
-        foreach (var item in LayoutChildren.OfType<UIElementGroup>())
+        foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {
             item.ResizeChildrenWidth();
         }
     }
 
+    public override void RecalculateWidth()
+    {
+        base.RecalculateWidth();
+        RecalculateChildrenWidth();
+
+        LayoutModule?.PostRecalculateWidth();
+    }
+
+    protected virtual void RecalculateChildrenWidth()
+    {
+        if (LayoutElements.Count <= 0) return;
+        for (int i = 0; i < LayoutElements.Count; i++)
+        {
+            LayoutElements[i].RecalculateWidth();
+        }
+
+        LayoutModule?.PostRecalculateChildrenWidth();
+    }
+
     public override void RecalculateHeight()
     {
         base.RecalculateHeight();
-
-        if (LayoutChildren.Count <= 0) return;
-
         RecalculateChildrenHeight();
 
-        if (LayoutType != LayoutType.Flexbox) return;
+        LayoutModule?.PostRecalculateHeight();
+    }
 
-        switch (FlexDirection)
+    protected virtual void RecalculateChildrenHeight()
+    {
+        if (LayoutElements.Count <= 0) return;
+        for (int i = 0; i < LayoutElements.Count; i++)
         {
-            default:
-            case FlexDirection.Row:
-            {
-                if (FitHeight)
-                {
-                    var content = FlexLines.CalculateCrossAxisContent() + FlexLines.FenceGap(Gap.Height);
-                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
-                }
-                break;
-            }
-            case FlexDirection.Column:
-            {
-                if (FitHeight)
-                {
-                    var content = FlexLines.Max(line => line.MainSize);
-                    SetInnerBoundsHeight(MathHelper.Clamp(content, MinInnerHeight, MaxInnerHeight));
-                }
-                break;
-            }
+            LayoutElements[i].RecalculateHeight();
         }
+
+        LayoutModule?.PostRecalculateChildrenHeight();
     }
 
     protected virtual void ResizeChildrenHeight()
     {
-        if (LayoutChildren.Count <= 0) return;
-
+        if (LayoutElements.Count <= 0) return;
         var innerSize = InnerBounds.Size;
 
         if (!FitHeight)
         {
-            foreach (var el in LayoutChildren)
+            for (int i = 0; i < LayoutElements.Count; i++)
             {
-                el.RefreshHeight(innerSize.Height);
+                LayoutElements[i].RefreshHeight(innerSize.Height);
             }
         }
 
-        if (LayoutType is LayoutType.Flexbox)
-        {
-            switch (FlexDirection)
-            {
-                default:
-                case FlexDirection.Row:
-                {
-                    FlexLines.ResizeCrossAxis(CrossContentAlignment, InnerBounds.Height, Gap.Height);
-                    if (CrossAlignment == CrossAlignment.Stretch)
-                    {
-                        foreach (FlexLine flexLine in FlexLines)
-                        {
-                            foreach (var el in flexLine.Elements.Where(
-                                el => el.FitHeight || el.OuterBounds.Height < flexLine.CrossSpace))
-                            {
-                                el.SetExactHeight(flexLine.CrossSpace);
-                            }
-                        }
-                    }
-                    break;
-                }
-                case FlexDirection.Column:
-                {
-                    if (FlexWrap)
-                    {
-                        var maxMainAxisSize = innerSize.Height;
-                        LayoutChildren.FlexWrapColumn(FlexLines, maxMainAxisSize, Gap.Height);
-                    }
-                    else
-                    {
-                        foreach (var line in FlexLines) line.UpdateMainSizeByColumn(Gap.Width);
-                    }
+        LayoutModule?.PostResizeChildrenHeight();
 
-                    FlexLines.GrowOrShrinkByColumnMode(innerSize, Gap.Height);
-                    break;
-                }
-            }
-        }
-
-        foreach (var item in LayoutChildren.OfType<UIElementGroup>())
+        foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {
             item.ResizeChildrenHeight();
         }
     }
 
 
-    protected virtual void ApplyLayout()
+    protected virtual void UpdateChildrenLayoutOffset()
     {
-        switch (LayoutType)
-        {
-            case LayoutType.Flexbox:
-                ApplyFlexboxLayout();
-                break;
-            default: goto case LayoutType.Flexbox;
-        }
+        if (LayoutElements.Count <= 0) return;
 
-        foreach (var child in LayoutChildren.OfType<UIElementGroup>())
+        LayoutModule.ModifyLayoutOffset();
+
+        foreach (var child in LayoutElements.OfType<UIElementGroup>())
         {
-            child.ApplyLayout();
+            child.UpdateChildrenLayoutOffset();
         }
     }
 }
