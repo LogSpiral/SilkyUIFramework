@@ -1,70 +1,79 @@
-﻿using SilkyUIFramework.Animation;
+﻿#if DEBUG && true
 
 namespace SilkyUIFramework.UserInterfaces.DialogBox;
 
 [RegisterGlobalUI("DialogBoxUI", 2000)]
-internal class DialogBoxUI : BaseBody
+public class DialogBoxUI : BaseBody
 {
-    public static bool ShowUI { get; set; }
-    public override bool Enabled
-    {
-        get
-        {
-            ShowUI = false;
-            if (ShowUI) return true;
-            return !SwitchTimer.IsReverseCompleted;
-        }
-        set => ShowUI = value;
-    }
-    public override bool IsInteractable => SwitchTimer.IsForward;
-
-    public readonly AnimationTimer SwitchTimer = new(3);
-    private UIElementGroup DialogContainer { get; set; }
+    public UITextView TextView { get; set; }
+    public SUIEditText EditText { get; set; }
 
     protected override void OnInitialize()
     {
+        Enabled = true;
         EnableBlur = true;
+        OverflowHidden = true;
+        BorderRadius = new Vector4(12f);
 
-        SetSize(0f, 0f, 1f, 1f);
+        Gap = 0f;
+        SetSize(300f, 300f);
 
-        SetLeft(0f, 0f, 0f);
-        SetTop(0f, 0f, 0f);
-
-        Border = 0;
-        BorderColor = Color.Transparent;
-        BackgroundColor = Color.Transparent;
-
-        DialogContainer = new UIElementGroup()
+        TextView = new UITextView
         {
-            FitWidth = true,
-            FitHeight = true,
-            Border = 2,
-            BorderRadius = new Vector4(8f),
-            BorderColor = SUIColor.Border * 0.5f,
-            BackgroundColor = SUIColor.Background * 0.5f,
+            Padding = 12f,
+            FitWidth = false,
+            Width = new Dimension(0f, 1f),
+            WordWrap = true,
+            Text = "Hello World!Hello World!Hello World!Hello World!Hello World!",
         }.Join(this);
+        TextView.BackgroundColor = Color.Red * 0.25f;
+
+        new HorizontalRule().Join(this);
+
+        EditText = new SUIEditText
+        {
+            Padding = 12f,
+            FitWidth = false,
+            Width = new Dimension(0f, 1f),
+            WordWrap = true,
+            Text = "Line 2",
+        }.Join(this);
+        EditText.BackgroundColor = Color.Green * 0.25f;
+
+        new HorizontalRule().Join(this);
+
+        EditText = new SUIEditText
+        {
+            Padding = 12f,
+            FitWidth = false,
+            Width = new Dimension(0f, 1f),
+            WordWrap = true,
+            Text = "Line 3",
+        }.Join(this);
+        EditText.BackgroundColor = Color.Blue * 0.25f;
     }
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        DialogContainer.FitWidth = false;
-        DialogContainer.FitHeight = false;
-
-        //DialogContainer.SetWidth(100f);
-        DialogContainer.SetLeft(0f, 0f, 0.5f);
-        DialogContainer.SetTop(0f, 0f, 0.5f);
-        DialogContainer.SetSize(320f, 180f);
-
-        if (ShowUI) SwitchTimer.StartUpdate();
-        else SwitchTimer.StartReverseUpdate();
-
-        SwitchTimer.Update(gameTime);
-
-        UseRenderTarget = SwitchTimer.IsUpdating;
-        Opacity = SwitchTimer.Lerp(0f, 1f);
-
-        RenderTargetMatrix = Matrix.CreateTranslation(0, SwitchTimer.Lerp(10f, 0), 0);
-
         base.UpdateStatus(gameTime);
+        OverflowHidden = true;
+
+        SetLeft(0f, 0f, 0.75f);
+        SetTop(0f, 0f, 0.5f);
+        SetSize(300f, 500f);
+
+        //MarkLayoutDirty();
+
+        TextView.WordWrap = true;
+        TextView.Text = $"[c/ff0000:[调试][c/ff0000:] 不会出现在发布版]\n" +
+            $"[c/ff0000:{GetType().FullName.Replace('.', '\\')}]";
+
+        EditText.Placeholder = "请输入";
+        EditText.WordWrap = false;
+        EditText.FitWidth = true;
+        EditText.Width = new Dimension(0f, 1f);
+        EditText.UseDeathText();
     }
 }
+
+#endif

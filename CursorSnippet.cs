@@ -2,23 +2,28 @@ using Terraria.UI.Chat;
 
 namespace SilkyUIFramework;
 
-public class CursorSnippet(SUIEditText editText) : TextSnippet
+public class CursorSnippet : TextSnippet
 {
+    public SUIEditText EditText;
+    public int Height { get; set; } = 20;
+
+    public CursorSnippet(SUIEditText editText)
+    {
+        Text = " ";
+        EditText = editText;
+    }
+
     public override float GetStringLength(DynamicSpriteFont font) => 0f;
 
     public override bool UniqueDraw(bool justCheckingString,
-        out Vector2 size,
-        SpriteBatch spriteBatch, Vector2 position = new(), Color color = new(), float scale = 1)
+        out Vector2 size, SpriteBatch spriteBatch, Vector2 position = new(), Color color = new(), float scale = 1)
     {
-        size = new Vector2(0, 20f) * editText.TextScale;
+        size = new Vector2(0, Height * scale);
 
-        if (editText.CanDrawCursor)
+        if (EditText.CanDrawCursor)
         {
             spriteBatch?.Draw(TextureAssets.MagicPixel.Value, position,
-                new Rectangle(0, 0, 2, (int)(20 * editText.TextScale)),
-                editText.CursorFlashColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-            // SDFRectangle.HasBorder(position - new Vector2(0, 0), new Vector2(4, 20) * scale, new Vector4(2f) * scale,
-            //     Color.White, 1f, Color.Black, editText.FinalMatrix);
+                new Rectangle(0, 0, 2, (int)Math.Round(Height * scale)), EditText.CursorFlashColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
         }
 
         return true;

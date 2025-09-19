@@ -1,6 +1,4 @@
-﻿using SilkyUIFramework.Helper;
-
-namespace SilkyUIFramework.Elements;
+﻿namespace SilkyUIFramework.Elements;
 
 public delegate void MouseEventHandler(UIView sender, UIMouseEvent evt);
 public delegate void MouseWheelEventHandler(UIView sender, UIScrollWheelEvent evt);

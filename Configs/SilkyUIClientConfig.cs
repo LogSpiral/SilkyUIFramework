@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using SilkyUIFramework.Helper;
 using Terraria.ModLoader.Config;
 
 namespace SilkyUIFramework.Configs;

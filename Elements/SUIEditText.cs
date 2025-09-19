@@ -13,6 +13,21 @@ public class SUIEditText : UITextView
     public Color CursorColor = Color.White;
     public Color CursorFlashColor { get; set; }
 
+    /// <summary> 别问为什么是 2 </summary>
+    protected readonly List<TextSnippet> IntermediateSnippets2 = [];
+
+    public string Placeholder
+    {
+        get; set
+        {
+            if (value == null) return;
+            if (value.Equals(field)) return;
+            field = value;
+            if (Text.Equals(string.Empty))
+                MarkLayoutDirty();
+        }
+    } = string.Empty;
+
     public SUIEditText()
     {
         OccupyPlayerInput = true;
@@ -23,71 +38,70 @@ public class SUIEditText : UITextView
 
     protected override void RecalculateText(float maxWidth)
     {
-        var text = Text;
+        var text = Text.Length == 0 ? Placeholder : Text;
 
         var beforeText = text[..CursorIndex];
         var afterText = text[CursorIndex..];
-        var beforeSnippet =
-            TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(beforeText, TextColor));
-        var afterSnippet =
-            TextSnippetHelper.ConvertNormalSnippets(TextSnippetHelper.ParseMessage(afterText, TextColor));
-        beforeSnippet.Add(CursorSnippet);
-        beforeSnippet.AddRange(afterSnippet);
 
+        IntermediateSnippets.Parse(beforeText, Color.White).ConvertPlainSnippet();
+        IntermediateSnippets2.Parse(afterText, Color.White).ConvertPlainSnippet();
+
+        IntermediateSnippets.Add(CursorSnippet);
+        IntermediateSnippets.AddRange(IntermediateSnippets2);
+
+        SnippetModule.UpdateProperties(Font, maxWidth, MaxLines);
         // 自动换行 & 指定宽度
         if (WordWrap)
         {
             // 进行换行
-            TextSnippetHelper.WordWrapString(beforeSnippet, FinalSnippets,
-                TextColor, Font, maxWidth, MaxWordLength, MaxLines);
+            SnippetModule.WordWrapSnippets(IntermediateSnippets);
         }
         else
         {
-            FinalSnippets.Clear();
-            FinalSnippets.AddRange(beforeSnippet);
+            SnippetModule.FromSnippets(IntermediateSnippets);
         }
 
         // 计算文本大小
-        TextSize = TextSnippetHelper.GetStringSize(Font, FinalSnippets, new Vector2(1f));
+        TextSize = SnippetModule.GetStringSize(Font, new Vector2(1f));
     }
 
-    protected override void DrawText(SpriteBatch spriteBatch, List<TextSnippet> textSnippets)
+    protected override void DrawText(SpriteBatch spriteBatch)
     {
         // 光标颜色
         if (IsFocus)
         {
-            const int cycle = 60;
+            const int cycle = 45;
             CursorFlashColor = _cursorFlashTimer switch
             {
                 < cycle => CursorColor * (_cursorFlashTimer / cycle),
-                >= cycle => CursorColor * (1 - (_cursorFlashTimer - cycle) / cycle),
-                _ => CursorColor
+                >= cycle => CursorColor * (2f - _cursorFlashTimer / cycle),
+                { } => CursorColor
             };
 
             _cursorFlashTimer++;
-            _cursorFlashTimer %= cycle * 2;
+            _cursorFlashTimer %= 90;
         }
         else CursorFlashColor = Color.Transparent;
 
-        base.DrawText(spriteBatch, textSnippets);
+        base.DrawText(spriteBatch);
     }
 
     /// <summary>
     /// 绘制文本阴影
     /// </summary>
-    protected override void DrawTextShadow(SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
+    protected override void DrawTextShadow(SpriteBatch spriteBatch, Vector2 textPos)
     {
         CanDrawCursor = false;
-        base.DrawTextShadow(spriteBatch, finalSnippets, textPos);
+        base.DrawTextShadow(spriteBatch, textPos);
     }
 
     /// <summary>
     /// 绘制文本
     /// </summary>
-    protected override void DrawTextSelf(SpriteBatch spriteBatch, List<TextSnippet> finalSnippets, Vector2 textPos)
+    protected override void DrawTextSelf(SpriteBatch spriteBatch, Vector2 textPos)
     {
         CanDrawCursor = true;
-        base.DrawTextSelf(spriteBatch, finalSnippets, textPos);
+        base.DrawTextSelf(spriteBatch, textPos);
     }
 
     private int _cursorIndex;
@@ -229,6 +243,8 @@ public class SUIEditText : UITextView
     {
         if (Main.inputText.IsKeyDown(Keys.Left)) CursorIndex--;
         else if (Main.inputText.IsKeyDown(Keys.Right)) CursorIndex++;
+
+        _cursorFlashTimer = 60;
     }
 
     /// 删除光标前字符并使光标 -1

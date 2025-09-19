@@ -228,7 +228,7 @@ public class SUIItemSlot : UIView
         Vector2 textSize = font.MeasureString(stack) * 0.75f * ItemScale;
         Vector2 position = InnerBounds.Position + ((Vector2)InnerBounds.Size - textSize) * StackAlign;
 
-        foreach (var offset in UITextView.ShadowOffsets)
+        foreach (var offset in SnippetModule.ShadowOffsets)
         {
             spriteBatch.DrawString(font, stack, position + offset * 2f, Color.Black, 0f, Vector2.Zero, 0.75f, 0f, 1f);
         }
@@ -278,7 +278,7 @@ public class SUIItemSlot : UIView
             Vector2 vector3 = new Vector2(2f, -6f) * sizeScale;
             switch (item.type)
             {
-                case 5324:
+                case ItemID.RubblemakerSmall:
                 {
                     Texture2D value10 = TextureAssets.Extra[257].Value;
                     Rectangle rectangle5 = value10.Frame(3, 1, 2);
@@ -286,7 +286,7 @@ public class SUIItemSlot : UIView
                         color, 0f, rectangle5.Size() / 2f, 1f, SpriteEffects.None, 0f);
                     break;
                 }
-                case 5329:
+                case ItemID.RubblemakerMedium:
                 {
                     Texture2D value9 = TextureAssets.Extra[257].Value;
                     Rectangle rectangle4 = value9.Frame(3, 1, 1);
@@ -294,7 +294,7 @@ public class SUIItemSlot : UIView
                         color, 0f, rectangle4.Size() / 2f, 1f, SpriteEffects.None, 0f);
                     break;
                 }
-                case 5330:
+                case ItemID.RubblemakerLarge:
                 {
                     Texture2D value8 = TextureAssets.Extra[257].Value;
                     Rectangle rectangle3 = value8.Frame(3);

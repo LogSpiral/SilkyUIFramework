@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Input;
 using ReLogic.Localization.IME;
 using ReLogic.OS;
-using SilkyUIFramework.Helper;
 
 namespace SilkyUIFramework;
 
