@@ -1,5 +1,4 @@
 using Terraria.UI.Chat;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SilkyUIFramework.Elements;
 
