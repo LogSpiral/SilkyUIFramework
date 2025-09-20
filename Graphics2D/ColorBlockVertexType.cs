@@ -5,11 +5,6 @@ public struct ColorBlockVertextType : IVertexType
     public Vector2 Position;
     public Color Color;
 
-    public static readonly VertexDeclaration vertexDeclaration = new([
-        new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0),
-        new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0),
-    ]);
-
     public ColorBlockVertextType(Vector2 position, Color color)
     {
         Position = position;
@@ -23,7 +18,9 @@ public struct ColorBlockVertextType : IVertexType
         Color = color;
     }
 
-    public readonly VertexDeclaration VertexDeclaration => vertexDeclaration;
+    public VertexDeclaration VertexDeclaration { get; } = new(
+        new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0),
+        new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0));
 }
 
 /// <summary>
@@ -75,6 +72,7 @@ public class EffectBatch(GraphicsDevice graphicsDevice)
         _vertices[CurrentIndex] = vertextType;
         CurrentIndex++;
     }
+
     public void End()
     {
         if (!IsBegin)
@@ -96,5 +94,4 @@ public class EffectBatch(GraphicsDevice graphicsDevice)
 
         Effect.CurrentTechnique.Passes[0].Apply();
     }
-
 }
