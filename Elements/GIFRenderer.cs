@@ -41,7 +41,7 @@ public class GifRenderer
         var texture2Ds = new Texture2D[frameCount];
         var frameDelays = new int[frameCount];
 
-        for (int i = 0; i < frameCount; i++)
+        for (var i = 0; i < frameCount; i++)
         {
             var frame = image.Frames[i];
             var gifMetadata = frame.Metadata.GetGifMetadata();

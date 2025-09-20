@@ -26,6 +26,7 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
     /// <summary> 插入位置 </summary>
     public Dictionary<string, SilkyUIGroup> SilkyUIGroups { get; } = [];
+
     public Dictionary<string, List<Type>> SilkyUITypes { get; } = [];
 
     #endregion
@@ -43,11 +44,9 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
         types.Add(bodyType);
 
-        if (!SilkyUIGroups.TryGetValue(layerNode, out var group))
-        {
-            group = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
-            SilkyUIGroups[layerNode] = group;
-        }
+        if (SilkyUIGroups.TryGetValue(layerNode, out var group)) return;
+        group = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
+        SilkyUIGroups[layerNode] = group;
     }
 
     /// <summary>
@@ -55,19 +54,19 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     /// </summary>
     public bool TryGetInstance<TBody>(out TBody body) where TBody : BaseBody
     {
-        foreach (var (key, value) in SilkyUIGroups)
+        foreach (var (_, value) in SilkyUIGroups)
         {
             foreach (var item in value.SilkyUIs)
             {
-                if (item.BaseBody is TBody tBody)
-                {
-                    body = tBody;
-                    return true;
-                }
+                if (item.BaseBody is not TBody tBody)
+                    continue;
+
+                body = tBody;
+                return true;
             }
         }
 
-        body = default;
+        body = null;
         return false;
     }
 
@@ -100,7 +99,7 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
         if (uiLayerCount == 0) return;
 
-        var index = 0;
+        int index;
 
         foreach (var (layerNode, silkyUIGroup) in SilkyUIGroups)
         {
@@ -114,16 +113,15 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
         }
 
         // 游戏内全局 UI
-        index = layers.FindIndex(layers => layers.Name.Equals("Vanilla: Mouse Text"));
-        if (index >= 0)
-        {
-            var silkyUILayer = new LegacyGameInterfaceLayer("SilkyUI: GlobalUI", delegate
-            {
-                DrawGlobalUI(Main.gameTimeCache);
-                return true;
-            }, InterfaceScaleType.UI);
+        index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
 
-            layers.Insert(index, silkyUILayer);
-        }
+        if (index < 0) return;
+        var silkyUILayer = new LegacyGameInterfaceLayer("SilkyUI: GlobalUI", delegate
+        {
+            DrawGlobalUI(Main.gameTimeCache);
+            return true;
+        }, InterfaceScaleType.UI);
+
+        layers.Insert(index, silkyUILayer);
     }
 }

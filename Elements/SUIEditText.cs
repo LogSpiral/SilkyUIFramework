@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Humanizer;
+using Microsoft.Xna.Framework.Input;
 using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
@@ -6,8 +7,6 @@ namespace SilkyUIFramework.Elements;
 [XmlElementMapping("EditText")]
 public class SUIEditText : UITextView
 {
-    private float _cursorFlashTimer;
-
     public bool CanDrawCursor { get; set; }
 
     public Color CursorColor = Color.White;
@@ -65,21 +64,30 @@ public class SUIEditText : UITextView
         TextSize = SnippetModule.GetStringSize(Font, new Vector2(1f));
     }
 
+    private int _cursorFlashTimer;
+    public int CursorCycle { get; set; } = 120;
+
+    public void CursorToBrightest()
+    {
+        _cursorFlashTimer = CursorCycle / 2;
+    }
+
     protected override void DrawText(SpriteBatch spriteBatch)
     {
         // 光标颜色
         if (IsFocus)
         {
-            const int cycle = 45;
-            CursorFlashColor = _cursorFlashTimer switch
+            if (_cursorFlashTimer < CursorCycle)
             {
-                < cycle => CursorColor * (_cursorFlashTimer / cycle),
-                >= cycle => CursorColor * (2f - _cursorFlashTimer / cycle),
-                { } => CursorColor
-            };
+                CursorFlashColor = CursorColor * (_cursorFlashTimer / (CursorCycle / 2));
+            }
+            else
+            {
+                CursorFlashColor = CursorColor * (2 - _cursorFlashTimer / (CursorCycle / 2));
+            }
 
             _cursorFlashTimer++;
-            _cursorFlashTimer %= 90;
+            _cursorFlashTimer %= CursorCycle;
         }
         else CursorFlashColor = Color.Transparent;
 
@@ -241,15 +249,17 @@ public class SUIEditText : UITextView
     /// 移动光标
     private void MoveCursor()
     {
+        CursorToBrightest();
+
         if (Main.inputText.IsKeyDown(Keys.Left)) CursorIndex--;
         else if (Main.inputText.IsKeyDown(Keys.Right)) CursorIndex++;
-
-        _cursorFlashTimer = 60;
     }
 
     /// 删除光标前字符并使光标 -1
     private void DownBackspace()
     {
+        CursorToBrightest();
+
         if (CursorIndex == 0) return;
 
         if (Text.Length > 0)
@@ -260,6 +270,8 @@ public class SUIEditText : UITextView
     public void InsertText(string text)
     {
         if (string.IsNullOrEmpty(text)) return;
+
+        CursorToBrightest();
 
         Text = Text.Insert(CursorIndex, text);
         CursorIndex += text.Length;
@@ -322,36 +334,8 @@ public class SUIEditText : UITextView
             var fontOffset = GetFontOffset();
             textPos.Y += TextScale * fontOffset;
 
-            /*var curPos = textPos;
-            var list = FinalSnippets;
-            foreach (var line in FinalSnippets)
-            {
-                var text = line.Text;
-                Vector2 size = Font.MeasureString(text) * TextScale;
-                var area = new Bounds(textPos.X, textPos.Y, size.X, size.Y);
-                if (!area.Contains(mousePosition))
-                {
-                    if (text.Contains('\n'))
-                    {
-                        curPos.X = textPos.X;
-                        curPos.Y += size.Y;
-                    }
-                    else
-                        curPos.X += textPos.X;
-                    resultIndex += text.Length;
-                    continue;
-                }
-                float x = textPos.X;
-                int n = 0;
-                for (; x < mousePosition.X; n++)
-                {
-                    x += Font.MeasureString(text[n].ToString()).X * TextScale;
-                }
-                resultIndex += n;
-            }*/
-
-            int textLength = Text.Length;
-            int n = 0;
+            var textLength = Text.Length;
+            var n = 0;
             for (; textPos.X < mousePosition.X && n < textLength; n++)
                 textPos.X += Font.MeasureString(Text[n].ToString()).X * TextScale;
 

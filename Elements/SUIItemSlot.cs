@@ -128,7 +128,7 @@ public class SUIItemSlot : UIView
             // 鼠标上没有物品, 所以是首次拿起, 只有可以堆叠的物品可以用右键拿起
             if (Item.maxStack > 1)
             {
-                Main.mouseItem = new Item(Item.type, 1);
+                Main.mouseItem = new Item(Item.type);
                 Item.stack -= 1;
                 SoundEngine.PlaySound(SoundID.MenuTick);
             }
@@ -225,8 +225,8 @@ public class SUIItemSlot : UIView
     {
         var font = FontAssets.ItemStack.Value;
         var stack = string.Format(StackFormat, Item.stack);
-        Vector2 textSize = font.MeasureString(stack) * 0.75f * ItemScale;
-        Vector2 position = InnerBounds.Position + ((Vector2)InnerBounds.Size - textSize) * StackAlign;
+        var textSize = font.MeasureString(stack) * 0.75f * ItemScale;
+        var position = InnerBounds.Position + ((Vector2)InnerBounds.Size - textSize) * StackAlign;
 
         foreach (var offset in SnippetModule.ShadowOffsets)
         {
@@ -239,13 +239,13 @@ public class SUIItemSlot : UIView
         float sizeLimit = 32f, float sizeScale = 1f, Vector2? iconAlign = null)
     {
         Main.instance.LoadItem(item.type);
-        Texture2D texture2D = TextureAssets.Item[item.type].Value;
-        Rectangle frame = Main.itemAnimations[item.type]?.GetFrame(texture2D) ?? texture2D.Frame();
+        var texture2D = TextureAssets.Item[item.type].Value;
+        var frame = Main.itemAnimations[item.type]?.GetFrame(texture2D) ?? texture2D.Frame();
 
         sizeScale *= (frame.Width > sizeLimit || frame.Height > sizeLimit)
             ? frame.Width > frame.Height ? sizeLimit / frame.Width : sizeLimit / frame.Height
             : 1f;
-        Vector2 origin = frame.Size() * (iconAlign ?? new Vector2(0.5f));
+        var origin = frame.Size() * (iconAlign ?? new Vector2(0.5f));
 
         if (ItemLoader.PreDrawInInventory(item, spriteBatch, center, frame, item.GetAlpha(color),
                 item.GetColor(color), origin, sizeScale))
@@ -266,38 +266,38 @@ public class SUIItemSlot : UIView
 
         if (ItemID.Sets.DrawUnsafeIndicator[item.type])
         {
-            Vector2 vector2 = new Vector2(-4f, -4f) * sizeScale;
-            Texture2D value7 = TextureAssets.Extra[258].Value;
-            Rectangle rectangle2 = value7.Frame();
+            var vector2 = new Vector2(-4f, -4f) * sizeScale;
+            var value7 = TextureAssets.Extra[258].Value;
+            var rectangle2 = value7.Frame();
             Main.spriteBatch.Draw(value7, center + vector2 + new Vector2(14f) * sizeScale, rectangle2, color, 0f,
                 rectangle2.Size() / 2f, 1f, SpriteEffects.None, 0f);
         }
 
         if (item.type is ItemID.RubblemakerSmall or ItemID.RubblemakerMedium or ItemID.RubblemakerLarge)
         {
-            Vector2 vector3 = new Vector2(2f, -6f) * sizeScale;
+            var vector3 = new Vector2(2f, -6f) * sizeScale;
             switch (item.type)
             {
                 case ItemID.RubblemakerSmall:
                 {
-                    Texture2D value10 = TextureAssets.Extra[257].Value;
-                    Rectangle rectangle5 = value10.Frame(3, 1, 2);
+                    var value10 = TextureAssets.Extra[257].Value;
+                    var rectangle5 = value10.Frame(3, 1, 2);
                     Main.spriteBatch.Draw(value10, center + vector3 + new Vector2(16f) * sizeScale, rectangle5,
                         color, 0f, rectangle5.Size() / 2f, 1f, SpriteEffects.None, 0f);
                     break;
                 }
                 case ItemID.RubblemakerMedium:
                 {
-                    Texture2D value9 = TextureAssets.Extra[257].Value;
-                    Rectangle rectangle4 = value9.Frame(3, 1, 1);
+                    var value9 = TextureAssets.Extra[257].Value;
+                    var rectangle4 = value9.Frame(3, 1, 1);
                     Main.spriteBatch.Draw(value9, center + vector3 + new Vector2(16f) * sizeScale, rectangle4,
                         color, 0f, rectangle4.Size() / 2f, 1f, SpriteEffects.None, 0f);
                     break;
                 }
                 case ItemID.RubblemakerLarge:
                 {
-                    Texture2D value8 = TextureAssets.Extra[257].Value;
-                    Rectangle rectangle3 = value8.Frame(3);
+                    var value8 = TextureAssets.Extra[257].Value;
+                    var rectangle3 = value8.Frame(3);
                     Main.spriteBatch.Draw(value8, center + vector3 + new Vector2(16f) * sizeScale, rectangle3,
                         color, 0f, rectangle3.Size() / 2f, 1f, SpriteEffects.None, 0f);
                     break;

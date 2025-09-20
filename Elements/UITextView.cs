@@ -1,4 +1,5 @@
-﻿using Terraria.UI.Chat;
+﻿using Terraria.GameContent.ItemDropRules;
+using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
 
@@ -34,7 +35,10 @@ public class UITextView : UIView
 
     /// <summary> 当输入内容更改时触发 </summary>
     /// <returns>新值</returns>
-    protected virtual string OnContentChanging(string newText, string oldText) { return newText; }
+    protected virtual string OnContentChanging(string newText, string oldText)
+    {
+        return newText;
+    }
 
     /// <summary> 当内容更改后触发 </summary>
     protected virtual void OnContentChanged(string text) { }
@@ -42,7 +46,8 @@ public class UITextView : UIView
     /// <summary> 最大字符，只在输入时生效。 </summary>
     public int MaximumCharacters
     {
-        get; set
+        get;
+        set
         {
             if (field == value) return;
             field = value;
@@ -52,7 +57,8 @@ public class UITextView : UIView
 
     public virtual string Text
     {
-        get; set
+        get;
+        set
         {
             if (field is null) return;
             if (field.Equals(value)) return;
@@ -75,7 +81,8 @@ public class UITextView : UIView
     /// <summary> 是否自动换行 </summary>
     public bool WordWrap
     {
-        get; set
+        get;
+        set
         {
             if (field == value) return;
             field = value;
@@ -85,7 +92,8 @@ public class UITextView : UIView
 
     public int MaxLines
     {
-        get; set
+        get;
+        set
         {
             if (field == value) return;
             field = value;
@@ -95,7 +103,8 @@ public class UITextView : UIView
 
     public float TextScale
     {
-        get; set
+        get;
+        set
         {
             if (field == value) return;
             field = value;
@@ -116,6 +125,7 @@ public class UITextView : UIView
     #endregion
 
     protected readonly List<TextSnippet> IntermediateSnippets = [];
+
     //protected readonly List<TextSnippet> TextSnippets = [];
     protected SnippetModule SnippetModule { get; } = new();
 
@@ -185,39 +195,39 @@ public class UITextView : UIView
     {
         var innerSize = (Vector2)InnerBounds.Size;
 
-        var textSize = TextSize;
-        // 无字符时会出问题，加上这行就好了
-        textSize.Y = Math.Max(Font.LineSpacing, textSize.Y);
+        var textSize = TextSize * TextScale;
 
-        var textPos =
-            InnerBounds.Position
-            + TextOffset
-            + TextPercentOffset * innerSize
-            + TextAlign * (innerSize - textSize * TextScale)
-            - TextPercentOrigin * TextSize * TextScale;
-        var fontOffset = GetFontOffset();
-        textPos.Y += TextScale * fontOffset;
+        var textPosition =
+            InnerBounds.Position + TextOffset + TextPercentOffset * innerSize
+            + TextAlign * (innerSize - textSize)
+            - TextPercentOrigin * textSize;
+        textPosition.Y += TextScale * GetFontOffset();
 
-        DrawTextShadow(spriteBatch, textPos);
-        DrawTextSelf(spriteBatch, textPos);
+        DrawTextShadow(spriteBatch, textPosition);
+        DrawTextSelf(spriteBatch, textPosition);
     }
 
-    protected virtual void DrawTextShadow(SpriteBatch spriteBatch, Vector2 textPos)
+    protected virtual void DrawTextShadow(SpriteBatch spriteBatch, Vector2 textPosition)
     {
-        SnippetModule.DrawTextShadow(spriteBatch, Font, textPos, TextBorderColor, 0f, Vector2.Zero, new Vector2(TextScale), TextBorder);
+        SnippetModule.DrawTextShadow(spriteBatch, Font, textPosition, TextBorderColor, 0f, Vector2.Zero, new(TextScale), TextBorder);
     }
 
-    protected virtual void DrawTextSelf(SpriteBatch spriteBatch, Vector2 textPos)
+    protected virtual void DrawTextSelf(SpriteBatch spriteBatch, Vector2 textPosition)
     {
-        SnippetModule.DrawText(spriteBatch, Font, textPos, TextColor, 0f, Vector2.Zero, new Vector2(TextScale), out var snippet, IgnoreTextColor);
+        SnippetModule.DrawText(spriteBatch, Font, textPosition, TextColor, 0f, Vector2.Zero, new(TextScale), out var snippet, IgnoreTextColor);
         snippet?.OnHover();
     }
 
-    protected virtual float GetFontOffset()
+    protected virtual float GetFontOffset() => GetFontOffset(Font);
+
+    public static float GetFontOffset(DynamicSpriteFont font)
     {
-        if (IsDeathText) return DeathTextOffset;
-        if (IsMouseText) return MouseTextOffset;
-        return 0f;
+        if (font == FontAssets.DeathText.Value)
+        {
+            return DeathTextOffset;
+        }
+
+        return font == FontAssets.MouseText.Value ? MouseTextOffset : 0f;
     }
 }
 
@@ -227,12 +237,11 @@ public class ContentChangingEventArgs(string newText, string oldText) : EventArg
     public string OldText { get; } = oldText;
 }
 
-
 public class ContentChangedEventArgs(string text) : EventArgs
 {
     public string Text { get; } = text;
 }
 
-
 public delegate string ContentChangingEventHandler(UITextView sender, ContentChangingEventArgs e);
+
 public delegate void ContentChangedEventHandler(UITextView sender, ContentChangedEventArgs e);

@@ -2,9 +2,8 @@
 
 public partial class SilkyUIManager
 {
-    public SilkyUIGroup GlobalSilkyUIGroup { get; private set; }
-
-    public List<Type> GlobalBodyTypes { get; } = [];
+    private SilkyUIGroup GlobalSilkyUIGroup { get; set; }
+    private List<Type> GlobalBodyTypes { get; } = [];
 
     /// <summary> 注册全局 UI </summary>
     public void RegisterGlobalUI(Type bodyType)
@@ -25,7 +24,7 @@ public partial class SilkyUIManager
             var silkyUI = ServiceProvider.GetRequiredService<SilkyUI>();
             var body = ServiceProvider.GetRequiredService(type) as BaseBody;
 
-            silkyUI.Priority = type.GetCustomAttribute<RegisterGlobalUIAttribute>().Priority;
+            silkyUI.Priority = type.GetCustomAttribute<RegisterGlobalUIAttribute>()!.Priority;
             silkyUI.SetBody(body);
 
             GlobalSilkyUIGroup.Add(silkyUI);

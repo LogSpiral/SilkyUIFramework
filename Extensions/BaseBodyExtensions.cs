@@ -1,6 +1,6 @@
 ﻿namespace SilkyUIFramework.Extensions;
 
-static class BaseBodyExtensions
+internal static class BaseBodyExtensions
 {
     extension(BaseBody baseBody)
     {

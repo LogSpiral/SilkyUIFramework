@@ -88,7 +88,7 @@ public static class DrawHelper
         DrawString(position, text, textColor, borderColor, Vector2.Zero, scale, large, spread);
     }
 
-    public static void DrawString(Vector2 pos, string text, Color textColor, Color borderColor, Vector2 origin,
+    private static void DrawString(Vector2 pos, string text, Color textColor, Color borderColor, Vector2 origin,
         float textScale, bool large, float spread = 2f)
     {
         var spriteFont = (large ? FontAssets.DeathText : FontAssets.MouseText).Value;

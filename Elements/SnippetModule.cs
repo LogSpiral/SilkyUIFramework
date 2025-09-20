@@ -2,27 +2,26 @@ using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
 
-/// <summary>
-/// ¹ÜÀí»»ĞĞÎÄ±¾ÖĞµÄĞĞ¼¯ºÏ¡£
-/// </summary>
 public sealed class SnippetModule
 {
-    public List<SnippetLine> SnippetLines { get; } = [];
+    private List<SnippetLine> SnippetLines { get; } = [];
     public int Count => SnippetLines.Count;
 
     #region Properties
 
-    public DynamicSpriteFont Font
+    private DynamicSpriteFont Font
     {
-        get; private set
+        get;
+        set
         {
             if (value == null || field == value) return;
             field = value;
             _characterSpacing = field.CharacterSpacing;
         }
     }
-    public float MaxWidth { get; private set; }
-    public int MaxLines { get; private set; }
+
+    private float MaxWidth { get; set; }
+    private int MaxLines { get; set; }
 
     public void UpdateProperties(DynamicSpriteFont font, float maxWidth, int maxLines)
     {
@@ -34,27 +33,23 @@ public sealed class SnippetModule
     #endregion
 
     private float _characterSpacing;
-    public bool IsFull => MaxLines > 0 && SnippetLines.Count >= MaxLines;
+    private bool IsFull => MaxLines > 0 && SnippetLines.Count >= MaxLines;
 
-    public bool TryCreateNewLine()
+    private bool TryCreateNewLine()
     {
         if (IsFull) return false;
         SnippetLines.Add(new SnippetLine());
         return true;
     }
 
-    /// <summary>
-    /// ¼ì²éÊÇ·ñÓĞ×ã¹»µÄ¿Õ¼äÈİÄÉ¸ø¶¨µÄÎÄ±¾Æ¬¶Î¡£<br/>
-    /// Èç¹ûµ±Ç°ĞĞÃ»ÓĞÎÄ±¾Æ¬¶Î£¬Ôò×ÜÊÇ·µ»Ø true¡£
-    /// </summary>
-    public bool EnoughSpace(float width)
+    private bool EnoughSpace(float width)
     {
         var current = SnippetLines[^1];
         if (current.Count == 0) return true;
         return current.Width + _characterSpacing + width <= MaxWidth;
     }
 
-    public bool TryAdd(TextSnippet snippet, float width)
+    private bool TryAdd(TextSnippet snippet, float width)
     {
         var current = SnippetLines[^1];
         if (current.Count == 0)
@@ -74,7 +69,7 @@ public sealed class SnippetModule
         return true;
     }
 
-    public bool TryCommitToken(ref SnippetToken token)
+    private bool TryCommitToken(ref SnippetToken token)
     {
         if (token.Word == 0) return true;
 
@@ -114,9 +109,9 @@ public sealed class SnippetModule
                 var last = 0;
                 var text = snippet.Text;
                 var width = 0f;
-                for (int i = 0; i < text.Length; i++)
+                for (var i = 0; i < text.Length; i++)
                 {
-                    char c = text[i];
+                    var c = text[i];
                     if (c.Equals('\n'))
                     {
                         if (last < i)
@@ -173,8 +168,8 @@ public sealed class SnippetModule
                 {
                     var metrics = font.GetCharacterMetrics(c);
 
-                    // 1. ÅĞ¶Ïµ±Ç°×Ö·ûÊÇ·ñÎª¿Õ°××Ö·û
-                    bool isWhiteSpace = char.IsWhiteSpace(c);
+                    // 1. ï¿½Ğ¶Ïµï¿½Ç°ï¿½Ö·ï¿½ï¿½Ç·ï¿½Îªï¿½Õ°ï¿½ï¿½Ö·ï¿½
+                    var isWhiteSpace = char.IsWhiteSpace(c);
 
                     if (isWhiteSpace != token.IsWhiteSpace)
                     {
@@ -193,7 +188,7 @@ public sealed class SnippetModule
                         }
                         else
                         {
-                            // ¿Õ¸ñÊ±ºòÅĞ¶ÏÊÇ·ñ×ã¹»·ÅÈëÊ£Óà¿Õ¼ä
+                            // ï¿½Õ¸ï¿½Ê±ï¿½ï¿½ï¿½Ğ¶ï¿½ï¿½Ç·ï¿½ï¿½ã¹»ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Õ¼ï¿½
                             if (!EnoughSpace(token.Width + metrics.KernedWidth))
                             {
                                 if (!TryCommitToken(ref token)) return;
@@ -226,12 +221,6 @@ public sealed class SnippetModule
         TryCommitToken(ref token);
     }
 
-    /// <summary>
-    /// ¼ÆËãµ±Ç°¹ÜÀíÆ÷ÖĞËùÓĞĞĞµÄ×îÖÕäÖÈ¾³ß´ç¡£
-    /// </summary>
-    /// <param name="font">ÓÃÓÚ»ñÈ¡ĞĞ¸ßµÄ×ÖÌå¡£</param>
-    /// <param name="baseScale">Ó¦ÓÃÓÚËùÓĞÎÄ±¾µÄ»ù´¡Ëõ·Å±ÈÀı¡£</param>
-    /// <returns>Ò»¸ö Vector2£¬ÆäÖĞ X ÊÇ×î¿íĞĞµÄ¿í¶È£¬Y ÊÇËùÓĞĞĞµÄ×Ü¸ß¶È£¬¾ùÒÑÓ¦ÓÃ»ù´¡Ëõ·Å¡£</returns>
     public Vector2 GetStringSize(DynamicSpriteFont font, Vector2 baseScale)
     {
         if (SnippetLines.Count == 0) return new Vector2(0, font.LineSpacing * baseScale.Y);
@@ -241,25 +230,14 @@ public sealed class SnippetModule
         foreach (var line in SnippetLines)
         {
             size.X = Math.Max(size.X, line.Width);
-            size.Y += line.Snippets.Count > 0 ?
-                font.LineSpacing * line.Snippets.Max(snippet => snippet.Scale) : font.LineSpacing;
+            size.Y += line.Snippets.Count > 0
+                ? font.LineSpacing * line.Snippets.Max(snippet => snippet.Scale)
+                : font.LineSpacing;
         }
 
         return size * baseScale;
     }
 
-    /// <summary>
-    /// »æÖÆÒÑ¾­¹ı²¼¾ÖµÄËùÓĞÎÄ±¾ĞĞ¡£
-    /// </summary>
-    /// <param name="spriteBatch">ÓÃÓÚ»æÖÆµÄ SpriteBatch¡£</param>
-    /// <param name="font">ÓÃÓÚ»æÖÆÎÄ±¾µÄ×ÖÌå¡£</param>
-    /// <param name="position">Õû¸öÎÄ±¾¿éµÄÆğÊ¼»æÖÆÎ»ÖÃ£¨×óÉÏ½Ç£©¡£</param>
-    /// <param name="baseColor">»ù´¡ÑÕÉ«£¬ÓÃÓÚºöÂÔÑÕÉ«»ò×÷ÎªÄ¬ÈÏÉ«¡£</param>
-    /// <param name="rotation">ÎÄ±¾Ğı×ª½Ç¶È¡£</param>
-    /// <param name="origin">ÎÄ±¾Ğı×ªµÄÔ­µã¡£</param>
-    /// <param name="baseScale">Ó¦ÓÃÓÚËùÓĞÎÄ±¾µÄ»ù´¡Ëõ·Å±ÈÀı¡£</param>
-    /// <param name="hoveredSnippet">Êä³ö²ÎÊı£¬·µ»ØÊó±êĞüÍ£µÄ TextSnippet¡£</param>
-    /// <param name="ignoreColors">Èç¹ûÎª true£¬ÔòËùÓĞÎÄ±¾¶¼Ê¹ÓÃ baseColor »æÖÆ¡£</param>
     public void DrawText(SpriteBatch spriteBatch, DynamicSpriteFont font, Vector2 position, Color baseColor,
         float rotation, Vector2 origin, Vector2 baseScale, out TextSnippet hoveredSnippet, bool ignoreColors = false)
     {
@@ -280,26 +258,24 @@ public sealed class SnippetModule
 
             foreach (var snippet in line.Snippets)
             {
-
                 snippet.Update();
 
-                var snippetColor = ignoreColors ?
-                    baseColor : Color.FromNonPremultiplied(snippet.GetVisibleColor().ToVector4() * baseColor.ToVector4());
+                var snippetColor = ignoreColors
+                    ? baseColor
+                    : Color.FromNonPremultiplied(snippet.GetVisibleColor().ToVector4() * baseColor.ToVector4());
 
                 var scale = snippet.Scale * baseScale;
 
-                if (snippet is CursorSnippet cursor)
-                {
-                    cursor.Height = font.LineSpacing;
-                }
+                var uniquePosition = currentPosition;
+                if (snippet is CursorSnippet cursor) cursor.Font = Font;
 
-                if (!snippet.UniqueDraw(false, out var snippetSize, spriteBatch, currentPosition, snippetColor, scale.X))
+                if (!snippet.UniqueDraw(false, out var snippetSize, spriteBatch, uniquePosition, snippetColor, scale.X))
                 {
-                    spriteBatch.DrawString(font, snippet.Text, currentPosition, snippetColor, rotation, origin, scale.X, SpriteEffects.None, 0.0f);
+                    spriteBatch.DrawString(font, snippet.Text, currentPosition, snippetColor, rotation, origin, scale.X,
+                        SpriteEffects.None, 0.0f);
                     snippetSize = font.MeasureString(snippet.Text) * scale.X;
                 }
 
-                // Êó±êĞü¸¡¼ì²â
                 if (hoveredSnippet == null)
                 {
                     if (new Bounds(currentPosition, snippetSize).Contains(Main.MouseScreen))
@@ -322,7 +298,7 @@ public sealed class SnippetModule
         float rotation, Vector2 origin, Vector2 baseScale, float spread = 2f)
     {
         var span = ShadowOffsets.AsSpan();
-        for (int i = 0; i < span.Length; i++)
+        for (var i = 0; i < span.Length; i++)
         {
             DrawText(spriteBatch, font, position + span[i] * spread,
                 baseColor, rotation, origin, baseScale, out _, ignoreColors: true);

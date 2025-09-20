@@ -21,11 +21,10 @@ public static class RuntimeSafeHelper
     {
         if (actions == null || action == null) return;
 
-        var span = actions.GetInvocationList().OfType<T>().ToArray().AsSpan();
-        for (int i = 0; i < span.Length; i++)
+        foreach (var @delegate in actions.GetInvocationList().OfType<T>())
         {
-            var @delegate = span[i];
-            SafeInvoke(() => action(@delegate));
+            var delegate1 = @delegate;
+            SafeInvoke(() => action(delegate1));
         }
     }
 
@@ -33,7 +32,10 @@ public static class RuntimeSafeHelper
     {
         if (action is null) return;
 
-        try { action.Invoke(); }
+        try
+        {
+            action.Invoke();
+        }
         catch (Exception ex)
         {
             Logger?.Error("RuntimeHelper ErrorCapture", ex);

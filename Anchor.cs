@@ -91,14 +91,14 @@ public readonly struct Anchor(float pixels = 0f, float percent = 0f, float align
         if (part.EndsWith("px", StringComparison.OrdinalIgnoreCase) &&
             TryParseWithSuffix(part, "px", provider, out var px))
         {
-            result = new Anchor(px, 0f, 0f);
+            result = new Anchor(px);
             return true;
         }
 
         if (part.EndsWith("%", StringComparison.OrdinalIgnoreCase) &&
             TryParseWithSuffix(part, "%", provider, out var percent))
         {
-            result = new Anchor(0f, percent / 100f, 0f);
+            result = new Anchor(0f, percent / 100f);
             return true;
         }
 

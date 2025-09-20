@@ -5,8 +5,8 @@ namespace SilkyUIFramework.UserInterfaces.DialogBox;
 [RegisterGlobalUI("DialogBoxUI", 2000)]
 public class DialogBoxUI : BaseBody
 {
-    public UITextView TextView { get; set; }
-    public SUIEditText EditText { get; set; }
+    private UITextView TextView { get; set; }
+    private SUIEditText EditText { get; set; }
 
     protected override void OnInitialize()
     {
@@ -66,8 +66,9 @@ public class DialogBoxUI : BaseBody
 
         TextView.WordWrap = true;
         TextView.Text = $"[c/ff0000:[调试][c/ff0000:] 不会出现在发布版]\n" +
-            $"[c/ff0000:{GetType().FullName.Replace('.', '\\')}]";
+            $"[c/ff0000:{GetType().FullName!.Replace('.', '\\')}]";
 
+        EditText.Padding = 12f;
         EditText.Placeholder = "请输入";
         EditText.WordWrap = false;
         EditText.FitWidth = true;

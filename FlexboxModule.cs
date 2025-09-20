@@ -28,14 +28,7 @@ public partial class FlexboxModule
 
     private float MaxMainSize()
     {
-        var mainSize = 0f;
-
-        for (int i = 0; i < _flexLines.Count; i++)
-        {
-            mainSize = Math.Max(_flexLines[i].MainSize, mainSize);
-        }
-
-        return mainSize;
+        return _flexLines.Select(t => t.MainSize).Prepend(0f).Max();
     }
 
     private void SingleRow()
@@ -115,9 +108,8 @@ public partial class FlexboxModule
         mainSize = 0f;
         crossSize = (_flexLines.Count - 1) * gap;
 
-        for (int i = 0; i < _flexLines.Count; i++)
+        foreach (var line in _flexLines)
         {
-            var line = _flexLines[i];
             mainSize = Math.Max(mainSize, line.MainSize);
             crossSize += line.CrossSize;
         }
@@ -128,9 +120,8 @@ public partial class FlexboxModule
         var width = Parent.InnerBounds.Width;
         var gap = Gap.Width;
 
-        for (int i = 0; i < _flexLines.Count; i++)
+        foreach (var line in _flexLines)
         {
-            var line = _flexLines[i];
             var remaining = width - line.MainSize;
             switch (remaining)
             {
@@ -143,16 +134,15 @@ public partial class FlexboxModule
                         .OrderBy(item => item.AvailableGrowth).ToArray();
                     var totalGrow = growElements.Sum(el => el.Element.FlexGrow);
 
-                    for (int j = 0; j < growElements.Length; j++)
+                    foreach (var (element, availableGrowth) in growElements)
                     {
-                        var (Element, AvailableGrowth) = growElements[j];
                         var share = remaining / totalGrow;
-                        var alloc = Math.Min(AvailableGrowth, share * Element.FlexGrow);
+                        var alloc = Math.Min(availableGrowth, share * element.FlexGrow);
 
-                        SetOuterWidth(Element, Element.OuterBounds.Width + alloc);
+                        SetOuterWidth(element, element.OuterBounds.Width + alloc);
 
                         remaining -= alloc;
-                        totalGrow -= Element.FlexGrow;
+                        totalGrow -= element.FlexGrow;
                     }
 
                     break;
@@ -166,16 +156,15 @@ public partial class FlexboxModule
                         .OrderByDescending(item => item.AvailableShrink).ToArray();
                     var totalShrink = shrinkElements.Sum(el => el.Element.FlexShrink);
 
-                    for (int j = 0; j < shrinkElements.Length; j++)
+                    foreach (var (element, availableShrink) in shrinkElements)
                     {
-                        var (Element, AvailableShrink) = shrinkElements[j];
                         var share = remaining / totalShrink;
-                        var alloc = Math.Max(AvailableShrink, share * Element.FlexShrink);
+                        var alloc = Math.Max(availableShrink, share * element.FlexShrink);
 
-                        SetOuterWidth(Element, Element.OuterBounds.Width + alloc);
+                        SetOuterWidth(element, element.OuterBounds.Width + alloc);
 
                         remaining -= alloc;
-                        totalShrink -= Element.FlexShrink;
+                        totalShrink -= element.FlexShrink;
                     }
 
                     break;
@@ -189,9 +178,8 @@ public partial class FlexboxModule
     private void ColumnGrowOrShrink()
     {
         var height = Parent.InnerBounds.Height;
-        for (int i = 0; i < _flexLines.Count; i++)
+        foreach (var line in _flexLines)
         {
-            var line = _flexLines[i];
             var remaining = height - line.MainSize;
 
             switch (remaining)
@@ -205,18 +193,17 @@ public partial class FlexboxModule
                         .OrderBy(item => item.AvailableGrowth).ToArray();
                     var totalGrow = sortedElements.Sum(item => item.Element.FlexGrow);
 
-                    for (var j = 0; j < sortedElements.Length; j++)
+                    foreach (var (element, availableGrowth) in sortedElements)
                     {
-                        var (Element, AvailableGrowth) = sortedElements[j];
                         if (totalGrow <= 0) break;
 
                         var share = remaining / totalGrow;
-                        var alloc = Math.Min(AvailableGrowth, share * Element.FlexGrow);
+                        var alloc = Math.Min(availableGrowth, share * element.FlexGrow);
 
-                        SetOuterHeight(Element, Element.OuterBounds.Height + alloc);
+                        SetOuterHeight(element, element.OuterBounds.Height + alloc);
 
                         remaining -= alloc;
-                        totalGrow -= Element.FlexGrow;
+                        totalGrow -= element.FlexGrow;
                     }
 
                     line.UpdateMainSizeByColumn(Gap.Height);
@@ -231,18 +218,17 @@ public partial class FlexboxModule
                         .OrderByDescending(item => item.AvailableShrink).ToArray();
                     var totalShrink = sortedElements.Sum(el => el.Element.FlexShrink);
 
-                    for (var j = 0; j < sortedElements.Length; j++)
+                    foreach (var (element, availableShrink) in sortedElements)
                     {
-                        var (Element, AvailableShrink) = sortedElements[j];
                         if (totalShrink <= 0 || remaining >= 0) break;
 
                         var share = remaining / totalShrink;
-                        var alloc = Math.Max(AvailableShrink, share * Element.FlexShrink);
+                        var alloc = Math.Max(availableShrink, share * element.FlexShrink);
 
-                        SetOuterHeight(Element, Element.OuterBounds.Height + alloc);
+                        SetOuterHeight(element, element.OuterBounds.Height + alloc);
 
                         remaining -= alloc;
-                        totalShrink -= Element.FlexShrink;
+                        totalShrink -= element.FlexShrink;
                     }
 
                     line.UpdateMainSizeByColumn(Gap.Height);
@@ -253,6 +239,7 @@ public partial class FlexboxModule
     }
 
     private float _crossSize, _crossContent;
+
     private float UpdateCrossSize(float gap)
     {
         _crossContent = _flexLines.Sum(line => line.CrossSize);

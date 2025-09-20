@@ -7,30 +7,33 @@ public class GraphicsDeviceStates
     /// <summary>
     /// 混合模式
     /// </summary>
-    public BlendState BlendState { get; private set; }
+    private BlendState BlendState { get; init; }
 
     /// <summary>
     /// 采样状态
     /// </summary>
-    public SamplerState SamplerState { get; private set; }
+    private SamplerState SamplerState { get; init; }
 
     /// <summary>
     /// 深度
     /// </summary>
-    public DepthStencilState DepthStencilState { get; private set; }
+    private DepthStencilState DepthStencilState { get; init; }
 
     /// <summary>
     /// 光栅化
     /// </summary>
-    public RasterizerState RasterizerState { get; private set; }
-    public Matrix Matrix { get; private set; }
+    private RasterizerState RasterizerState { get; init; }
+
+    private Matrix Matrix { get; init; }
 
     /// <summary>
     /// 使用保存的状态 Begin
     /// </summary>
-    public void Begin(SpriteBatch spriteBatch, SpriteSortMode spriteSortMode, Effect effect = null, Matrix? matrix = null)
+    public void Begin(SpriteBatch spriteBatch, SpriteSortMode spriteSortMode, Effect effect = null,
+        Matrix? matrix = null)
     {
-        spriteBatch.Begin(spriteSortMode, BlendState, SamplerState, DepthStencilState, RasterizerState, effect, matrix ?? Matrix);
+        spriteBatch.Begin(spriteSortMode, BlendState, SamplerState, DepthStencilState, RasterizerState, effect,
+            matrix ?? Matrix);
     }
 
     public static GraphicsDeviceStates BackupStates(GraphicsDevice device, SpriteBatch spriteBatch)

@@ -9,9 +9,9 @@ public static class SDFRectangle
     public static void DrawHasBorder(Vector2 position, Vector2 size,
         Vector4 borderRadius, Color backgroundColor, float border, Color borderColor, Matrix matrix)
     {
-        MatrixHelper.Transform2SDFMatrix(ref matrix);
+        matrix.Transform2SDFMatrix();
 
-        float innerShrinkage = 1 / Main.UIScale;
+        var innerShrinkage = 1 / Main.UIScale;
 
         SetSmoothstepRange();
         SetMatrixWithBgColor(matrix, backgroundColor);
@@ -31,9 +31,9 @@ public static class SDFRectangle
     public static void DrawNoBorder(Vector2 position, Vector2 size,
         Vector4 borderRadius, Color backgroundColor, Matrix matrix)
     {
-        MatrixHelper.Transform2SDFMatrix(ref matrix);
+        matrix.Transform2SDFMatrix();
 
-        float innerShrinkage = 1 / Main.UIScale;
+        var innerShrinkage = 1 / Main.UIScale;
 
         SetSmoothstepRange();
         SetMatrixWithBgColor(matrix, backgroundColor);
@@ -49,9 +49,9 @@ public static class SDFRectangle
 
     public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size, Vector4 borderRadius, Matrix matrix)
     {
-        MatrixHelper.Transform2SDFMatrix(ref matrix);
+        matrix.Transform2SDFMatrix();
 
-        float innerShrinkage = 1 / Main.UIScale;
+        var innerShrinkage = 1 / Main.UIScale;
 
         SetSmoothstepRange();
         Effect.Parameters["uTransformMatrix"].SetValue(matrix);
@@ -72,7 +72,7 @@ public static class SDFRectangle
     public static void SampleVersion(Texture2D texture2D, Vector2 position, Vector2 size,
         Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize, Vector4 borderRadius, Color color, Matrix matrix)
     {
-        MatrixHelper.Transform2SDFMatrix(ref matrix);
+        matrix.Transform2SDFMatrix();
 
         SetSmoothstepRange();
         Effect.Parameters["uBackgroundColor"].SetValue(color.ToVector4());
@@ -93,7 +93,7 @@ public static class SDFRectangle
     public static void DrawShadow(Vector2 position, Vector2 size,
         Vector4 borderRadius, Color backgroundColor, float shadowBlurSize, Matrix matrix)
     {
-        MatrixHelper.Transform2SDFMatrix(ref matrix);
+        matrix.Transform2SDFMatrix();
 
         SetSmoothstepRange();
         SetMatrixWithBgColor(matrix, backgroundColor);
@@ -108,7 +108,7 @@ public static class SDFRectangle
         SpriteEffectPass.Apply();
     }
 
-    #region SET
+    #region Setter
 
     private static void SetMatrixWithBgColor(Matrix matrix, Color backgroundColor)
     {
@@ -127,8 +127,7 @@ public static class SDFRectangle
     private static readonly SDFGraphicsVertexType[] RectangleVertexData = new SDFGraphicsVertexType[16];
     private static readonly short[] IndexData = [0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15];
 
-    private static void SetRectanglePrimitives(float innerShrinkage,
-        Vector2 position, Vector2 size, Vector4 borderRadius)
+    private static void SetRectanglePrimitives(float innerShrinkage, Vector2 position, Vector2 size, Vector4 borderRadius)
     {
         position -= new Vector2(innerShrinkage);
         size += new Vector2(innerShrinkage * 2);
@@ -154,11 +153,8 @@ public static class SDFRectangle
         vertexData.SetBorderRadius(borderRadius.W, 12);
     }
 
-    /// <summary>
-    /// 设置并绘制图元
-    /// </summary>
-    private static void SetRectanglePrimitives(float innerShrinkage,
-        Vector2 position, Vector2 size, Vector4 borderRadius, Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize)
+    /// <summary> 设置并绘制图元 </summary>
+    private static void SetRectanglePrimitives(float innerShrinkage, Vector2 position, Vector2 size, Vector4 borderRadius, Vector2 textureCoordinatesPosition, Vector2 textureCoordinatesSize)
     {
         position -= new Vector2(innerShrinkage);
         size += new Vector2(innerShrinkage * 2);
@@ -190,9 +186,7 @@ public static class SDFRectangle
         vertexData.SetBorderRadius(borderRadius.W, 12);
     }
 
-    /// <summary>
-    /// 设置顶点位置
-    /// </summary>
+    /// <summary> 设置顶点位置 </summary>
     public static void SetPosition(this SDFGraphicsVertexType[] vertexData, Vector2 position, Vector2 size, int indexOffset)
     {
         vertexData[indexOffset].Position = position;
@@ -201,9 +195,7 @@ public static class SDFRectangle
         vertexData[indexOffset + 3].Position = position + size;
     }
 
-    /// <summary>
-    /// 设置圆角
-    /// </summary>
+    /// <summary> 设置圆角 </summary>
     public static void SetBorderRadius(this SDFGraphicsVertexType[] vertexData, float borderRadius, int indexOffset)
     {
         vertexData[indexOffset].BorderRadius = borderRadius;
@@ -212,9 +204,7 @@ public static class SDFRectangle
         vertexData[indexOffset + 3].BorderRadius = borderRadius;
     }
 
-    /// <summary>
-    /// 设置当前点与边界的距离
-    /// </summary>
+    /// <summary> 设置当前点与边界的距离 </summary>
     public static void SetDistanceFromEdge(this SDFGraphicsVertexType[] vertexData, Vector2 size, float borderRadius, int a, int b, int c, int d, int indexOffset)
     {
         vertexData[indexOffset + a].DistanceFromEdge = new Vector2(borderRadius);
@@ -226,10 +216,6 @@ public static class SDFRectangle
     /// <summary>
     /// 设置捕获图元的位置
     /// </summary>
-    /// <param name="vertexData"></param>
-    /// <param name="position"></param>
-    /// <param name="size"></param>
-    /// <param name="indexOffset"></param>
     public static void SetTextureCoordinates(this SDFGraphicsVertexType[] vertexData, Vector2 position, Vector2 size, int indexOffset)
     {
         vertexData[indexOffset].TextureCoordinates = position;

@@ -76,7 +76,7 @@ public partial class UIElementGroup
 
         float? availableWidth = FitWidth ? null : InnerBounds.Width;
         float? availableHeight = FitHeight ? null : InnerBounds.Height;
-        for (int i = 0; i < LayoutElements.Count; i++)
+        for (var i = 0; i < LayoutElements.Count; i++)
         {
             var cacheWidth = availableWidth;
             var cacheHeight = availableHeight;
@@ -98,7 +98,7 @@ public partial class UIElementGroup
     protected virtual void RecalculateChildrenWidth()
     {
         if (LayoutElements.Count <= 0) return;
-        for (int i = 0; i < LayoutElements.Count; i++)
+        for (var i = 0; i < LayoutElements.Count; i++)
         {
             LayoutElements[i].RecalculateWidth();
         }
@@ -113,7 +113,7 @@ public partial class UIElementGroup
 
         if (!FitWidth)
         {
-            for (int i = 0; i < LayoutElements.Count; i++)
+            for (var i = 0; i < LayoutElements.Count; i++)
             {
                 LayoutElements[i].RefreshWidth(InnerBounds.Width);
             }
@@ -138,7 +138,7 @@ public partial class UIElementGroup
     protected virtual void RecalculateChildrenHeight()
     {
         if (LayoutElements.Count <= 0) return;
-        for (int i = 0; i < LayoutElements.Count; i++)
+        for (var i = 0; i < LayoutElements.Count; i++)
         {
             LayoutElements[i].RecalculateHeight();
         }
@@ -153,7 +153,7 @@ public partial class UIElementGroup
 
         if (!FitHeight)
         {
-            for (int i = 0; i < LayoutElements.Count; i++)
+            for (var i = 0; i < LayoutElements.Count; i++)
             {
                 LayoutElements[i].RefreshHeight(innerSize.Height);
             }

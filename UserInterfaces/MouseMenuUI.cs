@@ -19,20 +19,22 @@ public enum MouseAnchor
 
 #if true
 
-[RegisterGlobalUI("MouseMenuUI", 1000)]
+[RegisterGlobalUI(priority: 1000)]
 public partial class MouseMenuUI : BaseBody, IMouseMenu
 {
     public static bool IsShow { get; set; }
+
     public override bool Enabled
     {
         get
         {
             if (IsShow) return true;
-            return !SwitchTimer.IsReverseCompleted;
+            return !_switchTimer.IsReverseCompleted;
         }
         set => IsShow = value;
     }
-    public override bool IsInteractable => SwitchTimer.IsForward;
+
+    public override bool IsInteractable => _switchTimer.IsForward;
 
     public override Bounds BlurBounds => MenuContainer.Bounds;
     public override Vector4 BlurBorderRadius => MenuContainer.BorderRadius;
@@ -55,34 +57,25 @@ public partial class MouseMenuUI : BaseBody, IMouseMenu
         base.OnLeftMouseDown(evt);
     }
 
-    public override void OnRightMouseDown(UIMouseEvent evt)
-    {
-        base.OnRightMouseDown(evt);
-    }
-
-    protected override void Update(GameTime gameTime)
-    {
-        base.Update(gameTime);
-    }
-
-    public readonly AnimationTimer SwitchTimer = new(3);
+    private readonly AnimationTimer _switchTimer = new(3);
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        if (IsShow) SwitchTimer.StartUpdate();
-        else SwitchTimer.StartReverseUpdate();
+        if (IsShow) _switchTimer.StartUpdate();
+        else _switchTimer.StartReverseUpdate();
 
-        SwitchTimer.Update(gameTime);
+        _switchTimer.Update(gameTime);
 
-        UseRenderTarget = SwitchTimer.IsUpdating;
-        Opacity = SwitchTimer.Lerp(0f, 1f);
+        UseRenderTarget = _switchTimer.IsUpdating;
+        Opacity = _switchTimer.Lerp(0f, 1f);
 
-        RenderTargetMatrix = Matrix.CreateTranslation(0, SwitchTimer.Lerp(10f, 0), 0);
+        RenderTargetMatrix = Matrix.CreateTranslation(0, _switchTimer.Lerp(10f, 0), 0);
 
         base.UpdateStatus(gameTime);
     }
 
-    public void OpenMenu(MouseAnchor mouseAnchor, Vector2 mousePosition, List<string> contents, MouseMenuCallback callback)
+    public void OpenMenu(MouseAnchor mouseAnchor, Vector2 mousePosition, List<string> contents,
+        MouseMenuCallback callback)
     {
         Enabled = true;
 
@@ -116,7 +109,7 @@ public partial class MouseMenuUI : BaseBody, IMouseMenu
 
         ScrollView.Container.RemoveAllChildren();
 
-        for (int i = 0; i < contents.Count; i++)
+        for (var i = 0; i < contents.Count; i++)
         {
             var text = new MouseMenuItem(contents[i], i).Join(ScrollView.Container);
             text.MouseMenuCallback = callback;

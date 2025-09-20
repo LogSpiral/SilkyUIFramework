@@ -7,28 +7,29 @@ public partial class SilkyUISystem : ModSystem
 {
     public static SilkyUISystem Instance => ModContent.GetInstance<SilkyUISystem>();
 
-    public ILog Logger { get; private set; }
+    private ILog Logger { get; set; }
 
     /// <summary>
     /// 服务提供者，用于依赖注入
     /// </summary>
     public static IServiceProvider ServiceProvider { get; private set; }
 
-    public static IMouseMenu GetRequiredService<IMouseMenu>()
+    public static TMouseMenu GetRequiredService<TMouseMenu>()
     {
-        return ServiceProvider.GetRequiredService<IMouseMenu>();
+        return ServiceProvider.GetRequiredService<TMouseMenu>();
     }
 
-    public IEnumerable<Assembly> Assemblies { get; private set; }
+    private IEnumerable<Assembly> Assemblies { get; set; }
 
     public SilkyUIManager SilkyUIManager { get; private set; }
 
     public override void PostSetupContent()
     {
-        foreach (var data in Assemblies.Select(assembly => (Assembly: assembly, Types: AssemblyManager.GetLoadableTypes(assembly))))
+        foreach (var data in Assemblies.Select(assembly =>
+                     (Assembly: assembly, Types: AssemblyManager.GetLoadableTypes(assembly))))
         {
             ScanAndRegisterGameUI(data.Assembly, data.Types);
-            ScanAndRegisterGloablUI(data.Assembly, data.Types);
+            ScanAndRegisterGlobalUI(data.Assembly, data.Types);
         }
 
         SilkyUIManager.InitializeGlobalUI();
@@ -47,7 +48,7 @@ public partial class SilkyUISystem : ModSystem
         }
     }
 
-    private void ScanAndRegisterGloablUI(Assembly assembly, Type[] types)
+    private void ScanAndRegisterGlobalUI(Assembly assembly, Type[] types)
     {
         Logger.Info($"Scan Global User Interface in {assembly.FullName}");
 
@@ -88,7 +89,7 @@ public class SilkyUIPlayer : ModPlayer
             {
                 var silkyUI = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUI>();
 
-                silkyUI.Priority = type.GetCustomAttribute<RegisterUIAttribute>().Priority;
+                silkyUI.Priority = type.GetCustomAttribute<RegisterUIAttribute>()!.Priority;
                 silkyUI.SetBody(SilkyUISystem.ServiceProvider.GetRequiredService(type) as BaseBody);
 
                 group.Add(silkyUI);

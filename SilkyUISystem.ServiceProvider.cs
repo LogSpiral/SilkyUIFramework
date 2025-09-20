@@ -46,8 +46,8 @@ public partial class SilkyUISystem
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddSingleton(sp => SilkyUIFramework.Instance.Logger);
-        serviceCollection.AddSingleton(sp => Instance);
+        serviceCollection.AddSingleton(_ => SilkyUIFramework.Instance.Logger);
+        serviceCollection.AddSingleton(_ => Instance);
 
         foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
         {

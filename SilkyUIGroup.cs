@@ -11,10 +11,8 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
     public IReadOnlyList<SilkyUI> SilkyUIs => _silkyUIs;
 
-    public SilkyUI CurrentUI { get; internal set; }
-
-    public SilkyUI MouseHoverUI { get; private set; }
-    public SilkyUI MouseFocusUI { get; private set; }
+    private SilkyUI MouseHoverUI { get; set; }
+    private SilkyUI MouseFocusUI { get; set; }
 
     public bool HasHoverUI => MouseHoverUI != null;
     public bool HasFocusUI => MouseFocusUI != null;
@@ -57,14 +55,11 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
     public void UpdateUI(GameTime gameTime)
     {
-        CurrentUI = null;
         MouseHoverUI = null;
         MouseFocusUI = null;
 
-        foreach (var ui in _silkyUIs)
+        foreach (var ui in _silkyUIs.Where(ui => (ui) is not null))
         {
-            if ((CurrentUI = ui) is null) continue;
-
             ui.PreUpdate();
 
             if (!ui.Update(gameTime)) continue;
@@ -75,17 +70,14 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
                 SilkyUIManager.MouseHoverGroup = this;
             }
 
-            if (ui.HasFocusElement)
-            {
-                MouseFocusUI = ui;
-                SilkyUIManager.MouseFocusGroup = this;
-            }
+            if (!ui.HasFocusElement) continue;
+
+            MouseFocusUI = ui;
+            SilkyUIManager.MouseFocusGroup = this;
         }
 
         if (MouseFocusUI?.MouseFocusElement is { OccupyPlayerInput: true } inputElement)
             Main.CurrentInputTextTakerOverride = inputElement;
-
-        CurrentUI = null;
     }
 
     public void ModifyInterfaceLayers(List<GameInterfaceLayer> layers, int index)
@@ -94,7 +86,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
         {
             if (silkyUI.BaseBody.GetRegisterUI() is not { } registerUI) continue;
 
-            var silkyUILayer = new SilkyUILayer(this, silkyUI, registerUI.Name, registerUI.InterfaceScaleType);
+            var silkyUILayer = new SilkyUILayer(silkyUI, registerUI.Name, registerUI.InterfaceScaleType);
 
             layers.Insert(index + 1, silkyUILayer);
         }
@@ -106,19 +98,15 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
         var reversedList = new List<SilkyUI>(_silkyUIs);
         reversedList.Reverse();
 
-        foreach (var silkyUI in reversedList)
+        foreach (var silkyUI in reversedList.Where(silkyUI => silkyUI.BaseBody.GetRegisterGlobalUI() is not null))
         {
-            if (silkyUI.BaseBody.GetRegisterGlobalUI() is not { } globalUI) continue;
-
             silkyUI.TransformMatrix = Main.UIScaleMatrix;
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred,
                 null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, silkyUI.TransformMatrix);
 
-            CurrentUI = silkyUI;
             silkyUI.Draw(gameTime, Main.spriteBatch);
-            CurrentUI = null;
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred,

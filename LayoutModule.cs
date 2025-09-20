@@ -22,12 +22,14 @@ public abstract class LayoutModule(UIElementGroup parent)
     /// </summary>
     public virtual void PostPrepare() { }
 
-    public virtual void ModifyAvailableSize(UIView view, int index, ref float? availableWidth, ref float? availableHeight) { }
+    public virtual void ModifyAvailableSize(UIView view, int index, ref float? availableWidth,
+        ref float? availableHeight) { }
 
     /// <summary>
     /// 通常用于统计子元素的一些信息
     /// </summary>
     public virtual void PostPrepareChildren() { }
+
     public virtual void PostRecalculateWidth() { }
     public virtual void PostRecalculateChildrenWidth() { }
     public virtual void PostResizeChildrenWidth() { }

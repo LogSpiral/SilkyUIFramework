@@ -6,7 +6,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
 {
     private float _crossOffsetCache, _crossGapCache;
 
-    public override sealed void PostPrepare()
+    public sealed override void PostPrepare()
     {
         switch (_flexDirection)
         {
@@ -28,7 +28,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public override sealed void PostPrepareChildren()
+    public sealed override void PostPrepareChildren()
     {
         switch (_flexDirection)
         {
@@ -48,7 +48,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public override sealed void PostResizeChildrenWidth()
+    public sealed override void PostResizeChildrenWidth()
     {
         switch (_flexDirection)
         {
@@ -59,11 +59,12 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                 if (_flexWrap) WrapRow();
                 else
                 {
-                    for (var i = 0; i < _flexLines.Count; i++)
+                    foreach (var t in _flexLines)
                     {
-                        _flexLines[i].UpdateMainSizeByRow(Gap.Width);
+                        t.UpdateMainSizeByRow(Gap.Width);
                     }
                 }
+
                 RowGrowOrShrink();
                 break;
             }
@@ -75,18 +76,17 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                     if (remaining > 0)
                     {
                         var share = remaining / _flexLines.Count;
-                        for (int i = 0; i < _flexLines.Count; i++) _flexLines[i].CrossSize += share;
+                        foreach (var t in _flexLines)
+                            t.CrossSize += share;
                     }
                 }
 
                 if (_crossAlignment != Stretch) break;
-                for (int i = 0; i < _flexLines.Count; i++)
+                foreach (var line in _flexLines)
                 {
-                    var line = _flexLines[i];
-                    for (int j = 0; j < line.Elements.Count; j++)
+                    foreach (var el in line.Elements.Where(el =>
+                                 el.FitWidth || !(el.OuterBounds.Width >= line.CrossSize)))
                     {
-                        var el = line.Elements[j];
-                        if (!el.FitWidth && el.OuterBounds.Width >= line.CrossSize) continue;
                         SetOuterWidth(el, line.CrossSize);
                     }
                 }
@@ -96,7 +96,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public override sealed void PostRecalculateHeight()
+    public sealed override void PostRecalculateHeight()
     {
         if (!FitHeight) return;
         switch (_flexDirection)
@@ -111,30 +111,29 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public override sealed void PostRecalculateChildrenHeight()
+    public sealed override void PostRecalculateChildrenHeight()
     {
         switch (_flexDirection)
         {
             default:
             case FlexDirection.Row:
-                for (int i = 0; i < _flexLines.Count; i++)
+                foreach (var line in _flexLines)
                 {
-                    var line = _flexLines[i];
                     line.CrossSize = line.MaxOuterHeight();
                 }
 
                 break;
             case FlexDirection.Column:
-                for (int i = 0; i < _flexLines.Count; i++)
+                foreach (var line in _flexLines)
                 {
-                    _flexLines[i].UpdateMainSizeByColumn(Gap.Height);
+                    line.UpdateMainSizeByColumn(Gap.Height);
                 }
 
                 break;
         }
     }
 
-    public override sealed void PostResizeChildrenHeight()
+    public sealed override void PostResizeChildrenHeight()
     {
         switch (_flexDirection)
         {
@@ -147,22 +146,20 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                     if (remaining > 0)
                     {
                         var share = remaining / _flexLines.Count;
-                        for (int i = 0; i < _flexLines.Count; i++)
+                        foreach (var line in _flexLines)
                         {
-                            _flexLines[i].CrossSize += share;
+                            line.CrossSize += share;
                         }
                     }
                 }
 
                 if (_crossAlignment == Stretch)
                 {
-                    for (int i = 0; i < _flexLines.Count; i++)
+                    foreach (var line in _flexLines)
                     {
-                        var line = _flexLines[i];
-                        for (int j = 0; j < line.Elements.Count; j++)
+                        foreach (var el in line.Elements.Where(el =>
+                                     el.FitHeight || !(el.OuterBounds.Height >= line.CrossSize)))
                         {
-                            var el = line.Elements[j];
-                            if (!el.FitHeight && el.OuterBounds.Height >= line.CrossSize) continue;
                             SetOuterHeight(el, line.CrossSize);
                         }
                     }
@@ -171,8 +168,8 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                 var innerBounds = Parent.InnerBounds;
                 var gap = Gap;
 
-                for (int i = 0; i < _flexLines.Count; i++)
-                    _flexLines[i].UpdateMainAlignment(_mainAlignment, innerBounds.Width, gap.Width);
+                foreach (var line in _flexLines)
+                    line.UpdateMainAlignment(_mainAlignment, innerBounds.Width, gap.Width);
 
                 UpdateCrossContentAlignment(innerBounds.Height, gap.Height);
                 break;
@@ -182,18 +179,19 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                 if (_flexWrap) WrapColumn();
                 else
                 {
-                    for (int i = 0; i < _flexLines.Count; i++)
+                    foreach (var line in _flexLines)
                     {
-                        _flexLines[i].UpdateMainSizeByColumn(Gap.Height);
+                        line.UpdateMainSizeByColumn(Gap.Height);
                     }
                 }
+
                 ColumnGrowOrShrink();
 
                 var innerBounds = Parent.InnerBounds;
                 var gap = Gap;
 
-                for (int i = 0; i < _flexLines.Count; i++)
-                    _flexLines[i].UpdateMainAlignment(_mainAlignment, innerBounds.Height, gap.Height);
+                foreach (var line in _flexLines)
+                    line.UpdateMainAlignment(_mainAlignment, innerBounds.Height, gap.Height);
 
                 UpdateCrossContentAlignment(innerBounds.Width, gap.Width);
                 break;
@@ -201,7 +199,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public override sealed void ModifyLayoutOffset()
+    public sealed override void ModifyLayoutOffset()
     {
         var crossStart = _crossOffsetCache;
         var crossGap = _crossGapCache;
@@ -210,14 +208,12 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         {
             case FlexDirection.Row:
             {
-                for (int i = 0; i < _flexLines.Count; i++)
+                foreach (var line in _flexLines)
                 {
-                    var line = _flexLines[i];
                     var left = line.MainOffset;
 
-                    for (int j = 0; j < line.Elements.Count; j++)
+                    foreach (var el in line.Elements)
                     {
-                        var el = line.Elements[j];
                         var crossOffset = CalculateCrossOffset(line.CrossSize, el.OuterBounds.Height);
                         el.SetLayoutOffset(left, crossStart + crossOffset);
                         left += el.OuterBounds.Width + line.MainGap;
@@ -230,14 +226,12 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
             }
             case FlexDirection.Column:
             {
-                for (int i = 0; i < _flexLines.Count; i++)
+                foreach (var line in _flexLines)
                 {
-                    var line = _flexLines[i];
                     var top = line.MainOffset;
 
-                    for (int j = 0; j < line.Elements.Count; j++)
+                    foreach (var el in line.Elements)
                     {
-                        var el = line.Elements[j];
                         var itemCrossOffset = CalculateCrossOffset(line.CrossSize, el.OuterBounds.Width);
                         el.SetLayoutOffset(crossStart + itemCrossOffset, top);
                         top += el.OuterBounds.Height + line.MainGap;

@@ -33,7 +33,7 @@ public class HorizontalRule : UIView
         BackgroundColor = SUIColor.Border;
 
         Width = new Dimension(0f, 1f);
-        Height = new Dimension(2f, 0f);
+        Height = new Dimension(2f);
     }
 }
 
@@ -46,6 +46,6 @@ public class VerticalRule : UIView
         BackgroundColor = SUIColor.Border;
 
         Height = new Dimension(0f, 1f);
-        Width = new Dimension(2f, 0f);
+        Width = new Dimension(2f);
     }
 }

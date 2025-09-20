@@ -2,7 +2,7 @@
 
 public class RectangleRender
 {
-    public float Border { get; set; } = 0f;
+    public float Border { get; set; }
     public Color BorderColor { get; set; } = Color.Transparent;
     public Color BackgroundColor { get; set; } = Color.Transparent;
     public Vector4 BorderRadius { get; set; } = Vector4.Zero;

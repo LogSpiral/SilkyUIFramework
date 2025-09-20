@@ -3,52 +3,33 @@ namespace SilkyUIFramework;
 public class FlexLine
 {
     public readonly List<UIView> Elements;
+
     private FlexLine() => Elements = [];
     private FlexLine(IReadOnlyList<UIView> elements) => Elements = [.. elements];
 
     public float MainSize { get; set; }
     public float CrossSize { get; set; }
 
-    public float GetFenceGap(float gap) => (Elements.Count - 1) * gap;
+    private float GetFenceGap(float gap) => (Elements.Count - 1) * gap;
 
     public float MaxOuterWidth()
     {
-        var width = 0f;
-
-        for (var i = 0; i < Elements.Count; i++)
-            width = Math.Max(Elements[i].OuterBounds.Width, width);
-
-        return width;
+        return Elements.Select(t => t.OuterBounds.Width).Prepend(0f).Max();
     }
 
     public float MaxOuterHeight()
     {
-        var height = 0f;
-
-        for (var i = 0; i < Elements.Count; i++)
-            height = Math.Max(Elements[i].OuterBounds.Height, height);
-
-        return height;
+        return Elements.Select(t => t.OuterBounds.Height).Prepend(0f).Max();
     }
 
-    public float SumOuterWidth()
+    private float SumOuterWidth()
     {
-        var width = 0f;
-
-        for (var i = 0; i < Elements.Count; i++)
-            width += Elements[i].OuterBounds.Width;
-
-        return width;
+        return Elements.Sum(t => t.OuterBounds.Width);
     }
 
-    public float SumOuterHeight()
+    private float SumOuterHeight()
     {
-        var height = 0f;
-
-        for (var i = 0; i < Elements.Count; i++)
-            height += Elements[i].OuterBounds.Height;
-
-        return height;
+        return Elements.Sum(t => t.OuterBounds.Height);
     }
 
     public void UpdateMainSizeByRow(float gap) => MainSize = SumOuterWidth() + GetFenceGap(gap);

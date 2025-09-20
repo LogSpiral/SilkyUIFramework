@@ -11,16 +11,17 @@ public static class TextSnippetHelper
         return new PlainSnippet(text, snippet.Color, snippet.Scale);
     }
 
-    public static Vector2 GetStringSize(DynamicSpriteFont font, List<TextSnippet> snippets, Vector2 baseScale, float maxWidth = -1f)
+    public static Vector2 GetStringSize(DynamicSpriteFont font, List<TextSnippet> snippets, Vector2 baseScale,
+        float maxWidth = -1f)
     {
         // 当前光标（或绘制点）的位置
         var currentPosition = Vector2.Zero;
         // 计算出的文本总尺寸（包围盒）
         var totalSize = Vector2.Zero;
         // 一个基础空格的未缩放宽度
-        float baseSpaceWidth = font.MeasureString(" ").X;
+        var baseSpaceWidth = font.MeasureString(" ").X;
         // 当前行所有片段中最大的缩放比例，用于计算行高
-        float maxScaleOnCurrentLine = 0.0f;
+        var maxScaleOnCurrentLine = 0.0f;
 
         // --- 定义一个处理换行的局部函数，以避免代码重复 ---
         void HandleNewLine()
@@ -34,10 +35,11 @@ public static class TextSnippetHelper
         foreach (var snippet in snippets)
         {
             snippet.Update();
-            float snippetScale = snippet.Scale;
+            var snippetScale = snippet.Scale;
 
             // --- 处理特殊绘制的片段（例如图标） ---
-            if (snippet.UniqueDraw(true, out var uniqueSnippetSize, null, Vector2.Zero, Color.White, baseScale.X * snippetScale))
+            if (snippet.UniqueDraw(true, out var uniqueSnippetSize, null, Vector2.Zero, Color.White,
+                    baseScale.X * snippetScale))
             {
                 currentPosition.X += uniqueSnippetSize.X;
                 totalSize.X = Math.Max(totalSize.X, currentPosition.X);
@@ -45,11 +47,11 @@ public static class TextSnippetHelper
             }
             else // --- 处理普通文本片段 ---
             {
-                string[] lines = snippet.Text.Split('\n');
-                for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+                var lines = snippet.Text.Split('\n');
+                for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
                 {
-                    string[] words = lines[lineIndex].Split(' ');
-                    for (int wordIndex = 0; wordIndex < words.Length; ++wordIndex)
+                    var words = lines[lineIndex].Split(' ');
+                    for (var wordIndex = 0; wordIndex < words.Length; ++wordIndex)
                     {
                         // 在单词之间添加空格的宽度
                         if (wordIndex > 0)
@@ -58,8 +60,8 @@ public static class TextSnippetHelper
                         }
 
                         // 【优化点1】: 只调用一次 MeasureString
-                        Vector2 unscaledWordSize = font.MeasureString(words[wordIndex]);
-                        float scaledWordWidth = unscaledWordSize.X * baseScale.X * snippetScale;
+                        var unscaledWordSize = font.MeasureString(words[wordIndex]);
+                        var scaledWordWidth = unscaledWordSize.X * baseScale.X * snippetScale;
 
                         // --- 检查是否需要自动换行 ---
                         if (maxWidth > 0f && currentPosition.X + scaledWordWidth > maxWidth && currentPosition.X > 0f)
@@ -76,12 +78,12 @@ public static class TextSnippetHelper
 
                         // 更新文本总尺寸
                         totalSize.X = Math.Max(totalSize.X, currentPosition.X);
-                        float scaledWordHeight = unscaledWordSize.Y * baseScale.Y * snippetScale;
+                        var scaledWordHeight = unscaledWordSize.Y * baseScale.Y * snippetScale;
                         totalSize.Y = Math.Max(totalSize.Y, currentPosition.Y + scaledWordHeight);
                     }
 
                     // --- 处理显式换行符 '\n' ---
-                    bool isExplicitNewline = lines.Length > 1 && lineIndex < lines.Length - 1;
+                    var isExplicitNewline = lines.Length > 1 && lineIndex < lines.Length - 1;
                     if (isExplicitNewline)
                     {
                         // 【优化点2】: 调用提取的局部函数
@@ -97,7 +99,7 @@ public static class TextSnippetHelper
     /// <summary> [tag/options:text] </summary>
     public static List<TextSnippet> Parse(this List<TextSnippet> snippets, string input, Color baseColor)
     {
-        if (snippets == null) return snippets;
+        if (snippets == null) return null;
         snippets.Clear();
 
         // 删除文本中回车 (怎么会有回车捏?)
@@ -147,10 +149,10 @@ public static class TextSnippetHelper
 
     public static List<TextSnippet> ConvertPlainSnippet(this List<TextSnippet> snippets)
     {
-        if (snippets == null) return snippets;
+        if (snippets == null) return null;
 
         var span = CollectionsMarshal.AsSpan(snippets);
-        for (int i = 0; i < span.Length; i++)
+        for (var i = 0; i < span.Length; i++)
         {
             var snippet = span[i];
 
