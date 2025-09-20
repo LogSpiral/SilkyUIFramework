@@ -57,20 +57,25 @@ public class UITextView : UIView
     {
         get; set
         {
-            if (field is null) return;
-            if (field.Equals(value)) return;
+            if (value is null) return;
+            if (value.Equals(field)) return;
             if (MaximumCharacters > 0 && value.Length > MaximumCharacters) value = value[..MaximumCharacters];
 
-            if (ContentChanging != null)
-                value = ContentChanging.Invoke(this, new ContentChangingEventArgs(value, field));
+            var changingEventArgs = new ContentChangingEventArgs(value, field);
+            RuntimeSafeHelper.SafeInvoke(ContentChanging, action =>
+            {
+                changingEventArgs.NewText = value = action(this, changingEventArgs);
+            });
+
             value = OnContentChanging(value, field);
 
-            if (field?.Equals(value) ?? value is null) return;
+            if (value.Equals(field)) return;
 
             field = value;
             MarkLayoutDirty();
 
-            ContentChanged?.Invoke(this, new ContentChangedEventArgs(field));
+            var changedEventArgs = new ContentChangedEventArgs(field);
+            RuntimeSafeHelper.SafeInvoke(ContentChanged, action => action(this, changedEventArgs));
             OnContentChanged(field);
         }
     } = string.Empty;
@@ -120,7 +125,6 @@ public class UITextView : UIView
 
     protected readonly List<TextSnippet> IntermediateSnippets = [];
 
-    //protected readonly List<TextSnippet> TextSnippets = [];
     protected SnippetModule SnippetModule { get; } = new();
 
     public UITextView()

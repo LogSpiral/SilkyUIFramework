@@ -10,7 +10,7 @@ public class DialogBoxUI : BaseBody
 
     protected override void OnInitialize()
     {
-        Enabled = true;
+        Enabled = false;
         EnableBlur = true;
         OverflowHidden = true;
         BorderRadius = new Vector4(12f);
@@ -55,12 +55,13 @@ public class DialogBoxUI : BaseBody
 
     protected override void UpdateStatus(GameTime gameTime)
     {
+        Enabled = false;
         base.UpdateStatus(gameTime);
         OverflowHidden = true;
 
-        SetLeft(0f, 0f, 0.75f);
-        SetTop(0f, 0f, 0.5f);
-        SetSize(300f, 500f);
+        SetLeft(0f, 0f, 0.5f);
+        SetTop(0f, 0f, 0.25f);
+        SetSize(550f, 500f);
 
         //MarkLayoutDirty();
 
@@ -68,11 +69,16 @@ public class DialogBoxUI : BaseBody
         TextView.Text = $"[c/ff0000:[调试][c/ff0000:] 不会出现在发布版]\n" +
             $"[c/ff0000:{GetType().FullName!.Replace('.', '\\')}]";
 
+        if (Children.Count >= 3 && Children[2] is SUIEditText editText)
+        {
+            editText.Placeholder = "被你发现了 =)";
+        }
+
         EditText.Padding = 12f;
         EditText.Placeholder = "请输入";
-        EditText.WordWrap = false;
+        EditText.WordWrap = true;
         EditText.FitWidth = true;
-        EditText.Width = new Dimension(0f, 1f);
+        EditText.MaxWidth = new Dimension(0f, 1f);
         EditText.UseDeathText();
     }
 }

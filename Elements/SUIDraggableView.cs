@@ -16,7 +16,7 @@ public class SUIDraggableView : UIElementGroup
 
     public SUIDraggableView()
     {
-        BackgroundColor = SUIColor.Background * 0.75f;
+        BackgroundColor = Color.Black * 0.25f;
     }
 
     public SUIDraggableView(UIElementGroup controlTarget) : base()

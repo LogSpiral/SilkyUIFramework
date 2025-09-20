@@ -51,19 +51,11 @@ public class SUIEditText : UITextView
         IntermediateSnippets.AddRange(IntermediateSnippets2);
 
         SnippetModule.UpdateProperties(Font, maxWidth, MaxLines);
-        // 自动换行 & 指定宽度
-        if (WordWrap)
-        {
-            // 进行换行
-            SnippetModule.WordWrapSnippets(IntermediateSnippets);
-        }
-        else
-        {
-            SnippetModule.FromSnippets(IntermediateSnippets);
-        }
 
-        // 计算文本大小
-        TextSize = SnippetModule.GetStringSize(Font, new Vector2(1f));
+        if (WordWrap) SnippetModule.WordWrapSnippets(IntermediateSnippets);
+        else SnippetModule.FromSnippets(IntermediateSnippets);
+
+        TextSize = SnippetModule.GetStringSize(Font, Vector2.One);
     }
 
     protected override void DrawSnippets(SpriteBatch spriteBatch)
