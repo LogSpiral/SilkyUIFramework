@@ -23,7 +23,8 @@ public abstract class LayoutModule(UIElementGroup parent)
     public virtual void PostPrepare() { }
 
     public virtual void ModifyAvailableSize(UIView view, int index, ref float? availableWidth,
-        ref float? availableHeight) { }
+        ref float? availableHeight)
+    { }
 
     /// <summary>
     /// 通常用于统计子元素的一些信息

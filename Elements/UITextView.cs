@@ -1,5 +1,4 @@
-﻿using Terraria.GameContent.ItemDropRules;
-using Terraria.UI.Chat;
+﻿using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
 
@@ -46,8 +45,7 @@ public class UITextView : UIView
     /// <summary> 最大字符，只在输入时生效。 </summary>
     public int MaximumCharacters
     {
-        get;
-        set
+        get; set
         {
             if (field == value) return;
             field = value;
@@ -57,8 +55,7 @@ public class UITextView : UIView
 
     public virtual string Text
     {
-        get;
-        set
+        get; set
         {
             if (field is null) return;
             if (field.Equals(value)) return;
@@ -81,8 +78,7 @@ public class UITextView : UIView
     /// <summary> 是否自动换行 </summary>
     public bool WordWrap
     {
-        get;
-        set
+        get; set
         {
             if (field == value) return;
             field = value;
@@ -92,8 +88,7 @@ public class UITextView : UIView
 
     public int MaxLines
     {
-        get;
-        set
+        get; set
         {
             if (field == value) return;
             field = value;
@@ -103,8 +98,7 @@ public class UITextView : UIView
 
     public float TextScale
     {
-        get;
-        set
+        get; set
         {
             if (field == value) return;
             field = value;
@@ -144,13 +138,13 @@ public class UITextView : UIView
 
         if (FitWidth)
         {
-            RecalculateText(MaxInnerWidth);
+            RecalculateString(MaxInnerWidth);
             SetInnerBoundsWidth(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
         }
         else
         {
             CalculateBoundsWidth(width ?? 0);
-            RecalculateText(InnerBounds.Width);
+            RecalculateString(InnerBounds.Width);
         }
 
         if (FitHeight)
@@ -162,12 +156,12 @@ public class UITextView : UIView
 
     public override void RecalculateHeight()
     {
-        RecalculateText(InnerBounds.Width);
+        RecalculateString(InnerBounds.Width);
 
         if (FitHeight) SetInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
     }
 
-    protected virtual void RecalculateText(float maxWidth)
+    protected virtual void RecalculateString(float maxWidth)
     {
         IntermediateSnippets.Parse(Text, Color.White).ConvertPlainSnippet();
 
@@ -188,32 +182,20 @@ public class UITextView : UIView
     protected override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         base.Draw(gameTime, spriteBatch);
-        DrawText(spriteBatch);
+        DrawSnippets(spriteBatch);
     }
 
-    protected virtual void DrawText(SpriteBatch spriteBatch)
+    protected virtual void DrawSnippets(SpriteBatch spriteBatch)
     {
         var innerSize = (Vector2)InnerBounds.Size;
 
         var textSize = TextSize * TextScale;
 
-        var textPosition =
-            InnerBounds.Position + TextOffset + TextPercentOffset * innerSize
-            + TextAlign * (innerSize - textSize)
-            - TextPercentOrigin * textSize;
+        var textPosition = InnerBounds.Position + TextOffset + TextPercentOffset * innerSize
+            + TextAlign * (innerSize - textSize) - TextPercentOrigin * textSize;
         textPosition.Y += TextScale * GetFontOffset();
 
-        DrawTextShadow(spriteBatch, textPosition);
-        DrawTextSelf(spriteBatch, textPosition);
-    }
-
-    protected virtual void DrawTextShadow(SpriteBatch spriteBatch, Vector2 textPosition)
-    {
         SnippetModule.DrawTextShadow(spriteBatch, Font, textPosition, TextBorderColor, 0f, Vector2.Zero, new(TextScale), TextBorder);
-    }
-
-    protected virtual void DrawTextSelf(SpriteBatch spriteBatch, Vector2 textPosition)
-    {
         SnippetModule.DrawText(spriteBatch, Font, textPosition, TextColor, 0f, Vector2.Zero, new(TextScale), out var snippet, IgnoreTextColor);
         snippet?.OnHover();
     }
@@ -222,11 +204,7 @@ public class UITextView : UIView
 
     public static float GetFontOffset(DynamicSpriteFont font)
     {
-        if (font == FontAssets.DeathText.Value)
-        {
-            return DeathTextOffset;
-        }
-
+        if (font == FontAssets.DeathText.Value) return DeathTextOffset;
         return font == FontAssets.MouseText.Value ? MouseTextOffset : 0f;
     }
 }

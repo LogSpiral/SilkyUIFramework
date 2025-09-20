@@ -238,8 +238,9 @@ public sealed class SnippetModule
         return size * baseScale;
     }
 
-    public void DrawText(SpriteBatch spriteBatch, DynamicSpriteFont font, Vector2 position, Color baseColor,
-        float rotation, Vector2 origin, Vector2 baseScale, out TextSnippet hoveredSnippet, bool ignoreColors = false)
+    public void DrawText(SpriteBatch spriteBatch, DynamicSpriteFont font,
+        Vector2 position, Color baseColor, float rotation, Vector2 origin, Vector2 baseScale,
+        out TextSnippet hoveredSnippet, bool ignoreColors = false, bool drawableSpecialSnippet = true)
     {
         hoveredSnippet = null;
         if (baseColor == Color.Transparent) return;
@@ -255,6 +256,7 @@ public sealed class SnippetModule
             }
 
             var maxScale = line.Snippets.Max(l => l.Scale);
+            var lineHeight = font.LineSpacing * maxScale * baseScale.Y;
 
             foreach (var snippet in line.Snippets)
             {
@@ -267,13 +269,16 @@ public sealed class SnippetModule
                 var scale = snippet.Scale * baseScale;
 
                 var uniquePosition = currentPosition;
-                if (snippet is CursorSnippet cursor) cursor.Font = Font;
-
-                if (!snippet.UniqueDraw(false, out var snippetSize, spriteBatch, uniquePosition, snippetColor, scale.X))
+                if (snippet is CursorSnippet cursor)
                 {
-                    spriteBatch.DrawString(font, snippet.Text, currentPosition, snippetColor, rotation, origin, scale.X,
-                        SpriteEffects.None, 0.0f);
-                    snippetSize = font.MeasureString(snippet.Text) * scale.X;
+                    cursor.Font = Font;
+                    cursor.TrueHeight = lineHeight;
+                }
+
+                if (!snippet.UniqueDraw(!drawableSpecialSnippet, out var snippetSize, spriteBatch, uniquePosition, snippetColor, scale.X))
+                {
+                    spriteBatch.DrawString(font, snippet.Text, currentPosition, snippetColor, rotation, origin, scale, 0, 0f);
+                    snippetSize = font.MeasureString(snippet.Text) * scale;
                 }
 
                 if (hoveredSnippet == null)
@@ -288,20 +293,20 @@ public sealed class SnippetModule
             }
 
             currentPosition.X = position.X;
-            currentPosition.Y += font.LineSpacing * maxScale * baseScale.Y;
+            currentPosition.Y += lineHeight;
         }
     }
 
     public static readonly Vector2[] ShadowOffsets = [-Vector2.UnitX, Vector2.UnitX, -Vector2.UnitY, Vector2.UnitY];
 
-    public void DrawTextShadow(SpriteBatch spriteBatch, DynamicSpriteFont font, Vector2 position, Color baseColor,
-        float rotation, Vector2 origin, Vector2 baseScale, float spread = 2f)
+    public void DrawTextShadow(SpriteBatch spriteBatch, DynamicSpriteFont font,
+        Vector2 position, Color baseColor, float rotation, Vector2 origin, Vector2 baseScale, float spread = 2f)
     {
         var span = ShadowOffsets.AsSpan();
         for (var i = 0; i < span.Length; i++)
         {
-            DrawText(spriteBatch, font, position + span[i] * spread,
-                baseColor, rotation, origin, baseScale, out _, ignoreColors: true);
+            DrawText(spriteBatch, font,
+                position + span[i] * spread, baseColor, rotation, origin, baseScale, out _, ignoreColors: true, false);
         }
     }
 }

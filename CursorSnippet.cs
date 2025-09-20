@@ -7,6 +7,8 @@ public class CursorSnippet : TextSnippet
     private readonly SUIEditText _editText;
     public DynamicSpriteFont Font { get; set; }
 
+    public float TrueHeight { get; set; }
+
     public CursorSnippet(SUIEditText editText)
     {
         Text = " ";
@@ -24,9 +26,9 @@ public class CursorSnippet : TextSnippet
             return true;
         }
 
-        size = new Vector2(0, Font.LineSpacing * scale);
+        size = new Vector2(0, TrueHeight);
 
-        if (_editText.CanDrawCursor)
+        if (!justCheckingString)
         {
             position.Y -= UITextView.GetFontOffset(Font) * scale;
 

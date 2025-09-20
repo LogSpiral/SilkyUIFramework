@@ -255,5 +255,5 @@ public class SilkyUI(SilkyUIManager manager)
     /// 光栅化：无正反，启用裁切
     /// </summary>
     public static RasterizerState RasterizerStateForOverflowHidden { get; set; } = new RasterizerState
-        { CullMode = CullMode.None, ScissorTestEnable = true, };
+    { CullMode = CullMode.None, ScissorTestEnable = true, };
 }

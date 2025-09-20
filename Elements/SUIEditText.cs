@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
@@ -7,7 +6,6 @@ namespace SilkyUIFramework.Elements;
 [XmlElementMapping("EditText")]
 public class SUIEditText : UITextView
 {
-    public bool CanDrawCursor { get; set; }
 
     public Color CursorColor = Color.White;
     public Color CursorFlashColor { get; set; }
@@ -22,10 +20,14 @@ public class SUIEditText : UITextView
             if (value == null) return;
             if (value.Equals(field)) return;
             field = value;
-            if (Text.Equals(string.Empty))
+            if (string.IsNullOrEmpty(Text))
                 MarkLayoutDirty();
         }
     } = string.Empty;
+
+
+    public Color PlaceholderColor { get; set; } = Color.Gray;
+    public Color PlaceholderBorderColor { get; set; } = Color.Black;
 
     public SUIEditText()
     {
@@ -35,7 +37,7 @@ public class SUIEditText : UITextView
 
     public readonly CursorSnippet CursorSnippet;
 
-    protected override void RecalculateText(float maxWidth)
+    protected override void RecalculateString(float maxWidth)
     {
         var text = Text.Length == 0 ? Placeholder : Text;
 
@@ -64,6 +66,24 @@ public class SUIEditText : UITextView
         TextSize = SnippetModule.GetStringSize(Font, new Vector2(1f));
     }
 
+    protected override void DrawSnippets(SpriteBatch spriteBatch)
+    {
+        var innerSize = (Vector2)InnerBounds.Size;
+
+        var textSize = TextSize * TextScale;
+
+        var textPosition = InnerBounds.Position + TextOffset + TextPercentOffset * innerSize
+            + TextAlign * (innerSize - textSize) - TextPercentOrigin * textSize;
+        textPosition.Y += TextScale * GetFontOffset();
+
+        var borderColor = string.IsNullOrEmpty(Text) ? PlaceholderBorderColor : TextBorderColor;
+        var color = string.IsNullOrEmpty(Text) ? PlaceholderColor : TextColor;
+
+        SnippetModule.DrawTextShadow(spriteBatch, Font, textPosition, borderColor, 0f, Vector2.Zero, new(TextScale), TextBorder);
+        SnippetModule.DrawText(spriteBatch, Font, textPosition, color, 0f, Vector2.Zero, new(TextScale), out var snippet, IgnoreTextColor);
+        snippet?.OnHover();
+    }
+
     private int _cursorFlashTimer;
     public int CursorCycle { get; set; } = 120;
 
@@ -72,9 +92,10 @@ public class SUIEditText : UITextView
         _cursorFlashTimer = CursorCycle / 2;
     }
 
-    protected override void DrawText(SpriteBatch spriteBatch)
+    protected override void UpdateStatus(GameTime gameTime)
     {
-        // 光标颜色
+        base.UpdateStatus(gameTime);
+
         if (IsFocus)
         {
             if (_cursorFlashTimer < CursorCycle)
@@ -90,26 +111,6 @@ public class SUIEditText : UITextView
             _cursorFlashTimer %= CursorCycle;
         }
         else CursorFlashColor = Color.Transparent;
-
-        base.DrawText(spriteBatch);
-    }
-
-    /// <summary>
-    /// 绘制文本阴影
-    /// </summary>
-    protected override void DrawTextShadow(SpriteBatch spriteBatch, Vector2 textPos)
-    {
-        CanDrawCursor = false;
-        base.DrawTextShadow(spriteBatch, textPos);
-    }
-
-    /// <summary>
-    /// 绘制文本
-    /// </summary>
-    protected override void DrawTextSelf(SpriteBatch spriteBatch, Vector2 textPos)
-    {
-        CanDrawCursor = true;
-        base.DrawTextSelf(spriteBatch, textPos);
     }
 
     private int _cursorIndex;
@@ -297,6 +298,7 @@ public class SUIEditText : UITextView
     {
         base.OnGotFocus(evt);
 
+        CursorToBrightest();
         RePositioningCursorIndex(evt.MousePosition);
         LastInputText = Text;
         StartTakingInput?.Invoke(this, evt);
