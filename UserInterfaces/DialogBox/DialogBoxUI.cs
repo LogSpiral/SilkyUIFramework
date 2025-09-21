@@ -2,7 +2,7 @@
 
 namespace SilkyUIFramework.UserInterfaces.DialogBox;
 
-[RegisterGlobalUI("DialogBoxUI", 2000)]
+[RegisterGlobalUI(priority: 2000)]
 public class DialogBoxUI : BaseBody
 {
     private UITextView TextView { get; set; }
@@ -10,7 +10,7 @@ public class DialogBoxUI : BaseBody
 
     protected override void OnInitialize()
     {
-        Enabled = false;
+        Enabled = true;
         EnableBlur = true;
         OverflowHidden = true;
         BorderRadius = new Vector4(12f);
@@ -55,7 +55,6 @@ public class DialogBoxUI : BaseBody
 
     protected override void UpdateStatus(GameTime gameTime)
     {
-        Enabled = false;
         base.UpdateStatus(gameTime);
         OverflowHidden = true;
 
