@@ -3,18 +3,16 @@
 [XmlElementMapping("Cross")]
 public class SUICross : UIView
 {
-    public float
-        CrossSize = 24f,
-        CrossRounded = 4,
-        CrossBorder = 2;
+    public float CrossSize { get; set; } = 24f;
+    public float CrossRounded { get; set; } = 4;
+    public float CrossBorder { get; set; } = 2;
 
-    public Color
-        CrossBorderColor,
-        CrossBorderHoverColor,
-        CrossBackgroundColor,
-        CrossBackgroundHoverColor;
+    public Color CrossBorderColor { get; set; }
+    public Color CrossBorderHoverColor { get; set; }
+    public Color CrossBackgroundColor { get; set; }
+    public Color CrossBackgroundHoverColor { get; set; }
 
-    public Vector2 CrossOffset = Vector2.Zero;
+    public Vector2 CrossOffset { get; set; } = Vector2.Zero;
 
     public SUICross() { }
 

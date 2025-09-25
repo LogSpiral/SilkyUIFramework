@@ -9,6 +9,12 @@ namespace SilkyUIFramework;
 [XmlElementMapping("ElementGroup")]
 public partial class UIElementGroup : UIView
 {
+    public UIElementGroup()
+    {
+        FlexboxModule = new FlexboxModule(this);
+        GridModule = new GridModule(this);
+    }
+
     public bool OverflowHidden { get; set; }
 
     /// <summary> 需要持续调用，以保证所有元素都被初始化 </summary>
@@ -54,13 +60,13 @@ public partial class UIElementGroup : UIView
     }
 
     /// <summary>
-    /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutChildren"/>)
+    /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutElements"/>)
     /// </summary>
     public override void CleanupDirtyMark()
     {
         base.CleanupDirtyMark();
 
-        foreach (var child in LayoutChildren)
+        foreach (var child in LayoutElements)
         {
             child.CleanupDirtyMark();
         }
@@ -105,7 +111,10 @@ public partial class UIElementGroup : UIView
 
             if (!changing) return;
         }
-        else { return; }
+        else
+        {
+            return;
+        }
 
         MarkLayoutDirty();
         MarkPositionDirty();
@@ -114,7 +123,10 @@ public partial class UIElementGroup : UIView
 
         foreach (var child in children)
         {
-            RuntimeHelper.ErrorCapture(() => { if (SilkyUI != null) child.HandleEnterTree(SilkyUI); });
+            RuntimeHelper.ErrorCapture(() =>
+            {
+                if (SilkyUI != null) child.HandleEnterTree(SilkyUI);
+            });
             RuntimeHelper.ErrorCapture(child.Initialize);
         }
     }
@@ -135,7 +147,10 @@ public partial class UIElementGroup : UIView
             Elements.Insert(index.Value, child);
             child.Parent = this;
         }
-        else { return; }
+        else
+        {
+            return;
+        }
 
         MarkLayoutDirty();
         MarkPositionDirty();
@@ -241,9 +256,9 @@ public partial class UIElementGroup : UIView
         var topLeft = Vector2.Transform(bounds.Position, SilkyUI.TransformMatrix);
         var rightBottom = Vector2.Transform(bounds.RightBottom, SilkyUI.TransformMatrix);
         var rectangle = new Rectangle(
-                (int)Math.Floor(topLeft.X), (int)Math.Floor(topLeft.Y),
-                (int)Math.Ceiling(rightBottom.X - topLeft.X),
-                (int)Math.Ceiling(rightBottom.Y - topLeft.Y));
+            (int)Math.Floor(topLeft.X), (int)Math.Floor(topLeft.Y),
+            (int)Math.Ceiling(rightBottom.X - topLeft.X),
+            (int)Math.Ceiling(rightBottom.Y - topLeft.Y));
 
         var scissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
         return Rectangle.Intersect(rectangle, scissorRectangle);
@@ -259,7 +274,8 @@ public partial class UIElementGroup : UIView
             var scissor = Rectangle.Intersect(GetClippingRectangle(spriteBatch), originalScissor);
             spriteBatch.GraphicsDevice.ScissorRectangle = scissor;
             var deviceStatus = Main.graphics.GraphicsDevice.BackupStates(spriteBatch);
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null,
+                SilkyUI.TransformMatrix);
 
             foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(innerBounds)))
             {
@@ -281,32 +297,29 @@ public partial class UIElementGroup : UIView
 
     #endregion
 
-    protected readonly List<UIView> FreeChildren = [];
-    protected readonly List<UIView> LayoutChildren = [];
+    protected readonly List<UIView> FreeElements = [];
+    protected readonly List<UIView> LayoutElements = [];
+    public IReadOnlyList<UIView> FreeChildren => FreeElements;
+    public IReadOnlyList<UIView> LayoutChildren => LayoutElements;
 
     protected virtual void ClassifyChildren()
     {
         ElementsCache.Clear();
         ElementsCache.AddRange(Elements.Where(el => !el.Invalid));
 
-        FreeChildren.Clear();
-        LayoutChildren.Clear();
+        FreeElements.Clear();
+        LayoutElements.Clear();
 
         foreach (var child in ElementsCache)
         {
             if (child.Positioning.IsFree)
             {
-                FreeChildren.Add(child);
+                FreeElements.Add(child);
             }
             else
             {
-                LayoutChildren.Add(child);
+                LayoutElements.Add(child);
             }
-        }
-
-        if (LayoutChildren.Count <= 0)
-        {
-            FlexLines.Clear();
         }
     }
 

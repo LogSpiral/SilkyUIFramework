@@ -1,8 +1,6 @@
 ﻿namespace SilkyUIFramework;
 
-/// <summary>
-/// flex 容器的布局方向
-/// </summary>
+/// <summary> Flexbox 布局方向 </summary>
 public enum FlexDirection { Row, Column }
 
 /// <summary> 主轴对其方式 </summary>

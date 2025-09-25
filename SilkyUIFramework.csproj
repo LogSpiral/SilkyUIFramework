@@ -27,4 +27,8 @@
 		<AdditionalFiles Include="**/*.txt" Exclude="bin/**/*;obj/**/*" Pack="true" ModPath="%(Identity)" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Assets\Images\" />
+	</ItemGroup>
+
 </Project>

@@ -80,7 +80,7 @@ public abstract partial class BasicBody : UIElementGroup
     {
         if (LayoutIsDirty)
         {
-            LayoutFromFree();
+            UpdateLayoutFromFree();
             CleanupDirtyMark();
         }
 
