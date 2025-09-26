@@ -1,4 +1,5 @@
-﻿using Terraria.UI.Chat;
+﻿using SilkyUIFramework.Components;
+using Terraria.UI.Chat;
 
 namespace SilkyUIFramework.Elements;
 

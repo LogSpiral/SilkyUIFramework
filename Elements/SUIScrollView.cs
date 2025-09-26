@@ -1,4 +1,6 @@
-﻿namespace SilkyUIFramework.Elements;
+﻿using SilkyUIFramework.Layout;
+
+namespace SilkyUIFramework.Elements;
 
 /// <summary> 滚动方向 </summary>
 public enum Direction

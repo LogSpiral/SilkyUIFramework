@@ -1,4 +1,5 @@
-﻿using static SilkyUIFramework.CrossAlignment;
+﻿using SilkyUIFramework.Layout;
+using static SilkyUIFramework.Layout.CrossAlignment;
 
 namespace SilkyUIFramework;
 

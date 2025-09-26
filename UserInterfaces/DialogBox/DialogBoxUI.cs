@@ -1,4 +1,4 @@
-﻿#if DEBUG && true
+﻿#if DEBUG && false
 
 namespace SilkyUIFramework.UserInterfaces.DialogBox;
 

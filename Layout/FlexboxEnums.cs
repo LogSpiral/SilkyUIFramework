@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework.Layout;
 
 /// <summary> Flexbox 布局方向 </summary>
 public enum FlexDirection

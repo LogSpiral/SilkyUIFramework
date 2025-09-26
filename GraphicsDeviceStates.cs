@@ -4,6 +4,8 @@ public class GraphicsDeviceStates
 {
     private GraphicsDeviceStates() { }
 
+    private SpriteBatch SpriteBatch { get; init; }
+
     /// <summary>
     /// 混合模式
     /// </summary>
@@ -29,17 +31,16 @@ public class GraphicsDeviceStates
     /// <summary>
     /// 使用保存的状态 Begin
     /// </summary>
-    public void Begin(SpriteBatch spriteBatch, SpriteSortMode spriteSortMode, Effect effect = null,
-        Matrix? matrix = null)
+    public void Begin(SpriteSortMode spriteSortMode = 0, Effect effect = null, Matrix? matrix = null)
     {
-        spriteBatch.Begin(spriteSortMode, BlendState, SamplerState, DepthStencilState, RasterizerState, effect,
-            matrix ?? Matrix);
+        SpriteBatch.Begin(spriteSortMode, BlendState, SamplerState, DepthStencilState, RasterizerState, effect, matrix ?? Matrix);
     }
 
     public static GraphicsDeviceStates BackupStates(GraphicsDevice device, SpriteBatch spriteBatch)
     {
         return new GraphicsDeviceStates
         {
+            SpriteBatch = spriteBatch,
             BlendState = device.BlendState,
             SamplerState = device.SamplerStates[0],
             DepthStencilState = device.DepthStencilState,

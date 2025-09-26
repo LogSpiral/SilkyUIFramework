@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework.Components;
 
 public class RectangleRender
 {

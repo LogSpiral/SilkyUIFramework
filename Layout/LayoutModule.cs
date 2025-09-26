@@ -1,4 +1,4 @@
-﻿namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework.Layout;
 
 /// <summary>
 /// 布局模型<br/>

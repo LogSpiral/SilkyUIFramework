@@ -1,4 +1,6 @@
-﻿namespace SilkyUIFramework.Elements;
+﻿using SilkyUIFramework.Layout;
+
+namespace SilkyUIFramework.Elements;
 
 public partial class UIElementGroup
 {

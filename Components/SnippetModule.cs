@@ -1,6 +1,6 @@
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.Elements;
+namespace SilkyUIFramework.Components;
 
 public sealed class SnippetModule
 {

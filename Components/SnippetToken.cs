@@ -1,6 +1,6 @@
 using Terraria.UI.Chat;
 
-namespace SilkyUIFramework.Elements;
+namespace SilkyUIFramework.Components;
 
 public ref struct SnippetToken(float maxWidth, float spacing)
 {
