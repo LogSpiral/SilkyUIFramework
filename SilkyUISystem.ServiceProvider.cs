@@ -36,12 +36,6 @@ public partial class SilkyUISystem
         SilkyUIManager = ServiceProvider.GetRequiredService<SilkyUIManager>();
     }
 
-    public override void Unload()
-    {
-        Assemblies = null;
-        ServiceProvider = null;
-    }
-
     private ServiceProvider BuildServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
@@ -51,18 +45,18 @@ public partial class SilkyUISystem
 
         foreach (var types in Assemblies.Select(AssemblyManager.GetLoadableTypes))
         {
-            ScanRegisterServices(serviceCollection, types);
+            RegisterServices(serviceCollection, ScanServices(types));
 
             foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
             {
                 if (type.GetCustomAttribute<RegisterUIAttribute>() != null)
                 {
-                    RegisterService(serviceCollection, ServiceLifetime.Transient, type);
+                    RegisterServiceImplementation(serviceCollection, ServiceLifetime.Transient, type);
                 }
 
                 if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
                 {
-                    RegisterService(serviceCollection, ServiceLifetime.Singleton, type);
+                    RegisterServiceImplementation(serviceCollection, ServiceLifetime.Singleton, type);
                 }
             }
         }
@@ -70,18 +64,22 @@ public partial class SilkyUISystem
         return serviceCollection.BuildServiceProvider();
     }
 
-    /// <summary> 注册服务 </summary>
-    private static void ScanRegisterServices(IServiceCollection services, Type[] types)
+    private static IEnumerable<(Type, ServiceAttribute)> ScanServices(Type[] types)
     {
-        foreach (var type in types)
-        {
-            if (type.GetCustomAttribute<ServiceAttribute>() is not { } serviceAttribute) continue;
+        return types
+            .Select(type => (Type: type, Service: type.GetCustomAttribute<ServiceAttribute>()))
+            .Where((values, index) => values.Service != null);
+    }
 
-            RegisterService(services, serviceAttribute.Lifetime, type);
+    private static void RegisterServices(IServiceCollection services, IEnumerable<(Type, ServiceAttribute)> values)
+    {
+        foreach (var (Type, Service) in values)
+        {
+            RegisterServiceImplementation(services, Service.Lifetime, Type);
         }
     }
 
-    private static void RegisterService(IServiceCollection services, ServiceLifetime lifetime, Type implType)
+    private static void RegisterServiceImplementation(IServiceCollection services, ServiceLifetime lifetime, Type implType)
     {
         var interfaces = implType.GetInterfaces();
 
@@ -115,4 +113,9 @@ public partial class SilkyUISystem
         }
     }
 
+    public override void Unload()
+    {
+        Assemblies = null;
+        ServiceProvider = null;
+    }
 }

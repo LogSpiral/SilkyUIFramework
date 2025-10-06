@@ -28,36 +28,38 @@ public partial class SilkyUISystem : ModSystem
         foreach (var data in Assemblies.Select(assembly =>
                      (Assembly: assembly, Types: AssemblyManager.GetLoadableTypes(assembly))))
         {
-            ScanAndRegisterGameUI(data.Assembly, data.Types);
-            ScanAndRegisterGlobalUI(data.Assembly, data.Types);
+            RegisterGameUI(ScanGameUI(data.Types));
+            RegisterGlobalUI(ScanGlobalUI(data.Types));
         }
 
         SilkyUIManager.InitializeGlobalUI();
     }
 
-    private void ScanAndRegisterGameUI(Assembly assembly, Type[] types)
+    private static IEnumerable<(Type, string)> ScanGameUI(Type[] types)
     {
-        Logger.Info($"Scan Game User Interface in {assembly.FullName}");
+        return types
+            .Select(type => (Type: type, type.GetCustomAttribute<RegisterUIAttribute>()?.LayerNode))
+            .Where((values, index) => values.LayerNode != null);
+    }
 
-        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
+    private void RegisterGameUI(IEnumerable<(Type, string)> types)
+    {
+        foreach (var (Type, LayerNode) in types)
         {
-            if (type.GetCustomAttribute<RegisterUIAttribute>() is { } attribute)
-            {
-                SilkyUIManager.RegisterUI(type, attribute.LayerNode);
-            }
+            SilkyUIManager.RegisterUI(Type, LayerNode);
         }
     }
 
-    private void ScanAndRegisterGlobalUI(Assembly assembly, Type[] types)
+    private static IEnumerable<Type> ScanGlobalUI(Type[] types)
     {
-        Logger.Info($"Scan Global User Interface in {assembly.FullName}");
+        return types.Where(type => type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null);
+    }
 
-        foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
+    private void RegisterGlobalUI(IEnumerable<Type> types)
+    {
+        foreach (var type in types)
         {
-            if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
-            {
-                SilkyUIManager.RegisterGlobalUI(type);
-            }
+            SilkyUIManager.RegisterGlobalUI(type);
         }
     }
 
