@@ -1,5 +1,3 @@
-using System;
-
 namespace SilkyUIFramework.Extensions;
 
 public static class Vector2Extensions

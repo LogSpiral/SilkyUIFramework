@@ -1,5 +1,4 @@
-﻿using log4net;
-using Terraria.ModLoader.Core;
+﻿using SilkyUIFramework.Bootstrap;
 
 namespace SilkyUIFramework;
 
@@ -7,85 +6,50 @@ public partial class SilkyUISystem : ModSystem
 {
     public static SilkyUISystem Instance => ModContent.GetInstance<SilkyUISystem>();
 
-    private ILog Logger { get; set; }
-
-    /// <summary>
-    /// 服务提供者，用于依赖注入
-    /// </summary>
     public static IServiceProvider ServiceProvider { get; private set; }
-
-    public static TMouseMenu GetRequiredService<TMouseMenu>()
-    {
-        return ServiceProvider.GetRequiredService<TMouseMenu>();
-    }
-
-    private IEnumerable<Assembly> Assemblies { get; set; }
 
     public SilkyUIManager SilkyUIManager { get; private set; }
 
+    private UIAssemblyScanner _assemblyScanner;
+
+    public override void Load()
+    {
+        _assemblyScanner = new UIAssemblyScanner();
+        ServiceProvider = UIDependencyRegistrar.BuildServiceProvider(_assemblyScanner.GetAllTypes());
+
+        SilkyUIManager = ServiceProvider.GetRequiredService<SilkyUIManager>();
+    }
+
+    public override void Unload()
+    {
+        _assemblyScanner = null;
+        ServiceProvider = null;
+    }
+
     public override void PostSetupContent()
     {
-        foreach (var data in Assemblies.Select(assembly =>
-                     (Assembly: assembly, Types: AssemblyManager.GetLoadableTypes(assembly))))
-        {
-            RegisterGameUI(ScanGameUI(data.Types));
-            RegisterGlobalUI(ScanGlobalUI(data.Types));
-        }
-
+        UIBootstrapper.RegisterUI(SilkyUIManager, _assemblyScanner.GetAllTypes());
         SilkyUIManager.InitializeGlobalUI();
     }
 
-    private static IEnumerable<(Type, string)> ScanGameUI(Type[] types)
-    {
-        return types
-            .Select(type => (Type: type, type.GetCustomAttribute<RegisterUIAttribute>()?.LayerNode))
-            .Where((values, index) => values.LayerNode != null);
-    }
-
-    private void RegisterGameUI(IEnumerable<(Type, string)> types)
-    {
-        foreach (var (Type, LayerNode) in types)
-        {
-            SilkyUIManager.RegisterUI(Type, LayerNode);
-        }
-    }
-
-    private static IEnumerable<Type> ScanGlobalUI(Type[] types)
-    {
-        return types.Where(type => type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null);
-    }
-
-    private void RegisterGlobalUI(IEnumerable<Type> types)
-    {
-        foreach (var type in types)
-        {
-            SilkyUIManager.RegisterGlobalUI(type);
-        }
-    }
-
     public override void UpdateUI(GameTime gameTime)
-    {
-        SilkyUIManager.UpdateUI(gameTime);
-    }
+        => SilkyUIManager.UpdateUI(gameTime);
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
-    {
-        SilkyUIManager.ModifyInterfaceLayers(layers);
-    }
+        => SilkyUIManager.ModifyInterfaceLayers(layers);
 }
 
 public class SilkyUIPlayer : ModPlayer
 {
-    // 每次进入游戏时，重新创建 UI 实例
     public override void OnEnterWorld()
     {
         if (SilkyUISystem.Instance.SilkyUIManager is not { } manager) return;
 
-        foreach (var (layerNode, group) in manager.SilkyUIGroups)
+        foreach (var (layerNode, group) in manager.GameUILayerGroups)
         {
             group.Clear();
 
-            if (!manager.SilkyUITypes.TryGetValue(layerNode, out var types)) continue;
+            if (!manager.GameUILayerBodyTypesRegistry.TryGetValue(layerNode, out var types)) continue;
 
             foreach (var type in types)
             {

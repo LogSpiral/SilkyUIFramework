@@ -17,10 +17,9 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
     public bool HasHoverUI => MouseHoverUI != null;
     public bool HasFocusUI => MouseFocusUI != null;
 
-    public SilkyUIGroup Add(SilkyUI ui)
+    public void Add(SilkyUI ui)
     {
         _originalSilkyUIs.Add(ui);
-        return this;
     }
 
     public bool Remove(SilkyUI ui)
@@ -42,7 +41,7 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
         }
     }
 
-    public void Order()
+    private void Order()
     {
         var order = _originalSilkyUIs.OrderByDescending(value => value.Priority).ToArray();
 
@@ -54,6 +53,12 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
     }
 
     public void UpdateUI(GameTime gameTime)
+    {
+        Order();
+        Update(gameTime);
+    }
+
+    public void Update(GameTime gameTime)
     {
         MouseHoverUI = null;
         MouseFocusUI = null;
@@ -82,6 +87,8 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
 
     public void ModifyInterfaceLayers(List<GameInterfaceLayer> layers, int index)
     {
+        Order();
+
         foreach (var silkyUI in _silkyUIs)
         {
             if (silkyUI.BaseBody.GetRegisterUI() is not { } registerUI) continue;
@@ -92,9 +99,10 @@ public class SilkyUIGroup(SilkyUIManager silkyUIManager)
         }
     }
 
-    // 绘制 UI
     public void Draw(GameTime gameTime)
     {
+        Order();
+
         var reversedList = new List<SilkyUI>(_silkyUIs);
         reversedList.Reverse();
 

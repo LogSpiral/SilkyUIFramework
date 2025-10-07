@@ -3,23 +3,26 @@
 public partial class SilkyUIManager
 {
     private SilkyUIGroup GlobalSilkyUIGroup { get; set; }
-    private List<Type> GlobalBodyTypes { get; } = [];
 
-    /// <summary> 注册全局 UI </summary>
-    public void RegisterGlobalUI(Type bodyType)
+    /// <summary>
+    /// 扫描到的所有 Global UI 的 <see cref="Type"/>
+    /// </summary>
+    private List<Type> GlobalUIBodyTypesRegistry { get; } = [];
+
+    public void RegisterGlobalUI(IEnumerable<Type> types)
     {
-        Logger.Info($"Register Global UI: \"{bodyType.Name}\"");
+        if (_isRegistrationCompleted) return;
 
-        GlobalBodyTypes.Add(bodyType);
+        GlobalUIBodyTypesRegistry.AddRange(types);
     }
 
     public void InitializeGlobalUI()
     {
         if (Main.netMode == NetmodeID.Server) return;
 
-        GlobalSilkyUIGroup = ServiceProvider.GetService<SilkyUIGroup>();
+        GlobalSilkyUIGroup = ServiceProvider.GetRequiredService<SilkyUIGroup>();
 
-        foreach (var type in GlobalBodyTypes)
+        foreach (var type in GlobalUIBodyTypesRegistry)
         {
             var silkyUI = ServiceProvider.GetRequiredService<SilkyUI>();
             var body = ServiceProvider.GetRequiredService(type) as BaseBody;
@@ -39,7 +42,6 @@ public partial class SilkyUIManager
         MouseFocusGroup = null;
 
         CurrentSilkyUIGroup = GlobalSilkyUIGroup;
-        CurrentSilkyUIGroup?.Order();
         CurrentSilkyUIGroup?.UpdateUI(gameTime);
 
         CurrentSilkyUIGroup = null;
@@ -49,7 +51,6 @@ public partial class SilkyUIManager
     {
         if (Main.netMode == NetmodeID.Server) return;
 
-        GlobalSilkyUIGroup?.Order();
         GlobalSilkyUIGroup?.Draw(gameTime);
     }
 }

@@ -1,18 +1,12 @@
-﻿using log4net;
-
-namespace SilkyUIFramework;
+﻿namespace SilkyUIFramework;
 
 [Service(ServiceLifetime.Singleton)]
-public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logger)
+public partial class SilkyUIManager(IServiceProvider serviceProvider)
 {
-    private ILog Logger { get; } = logger;
     private IServiceProvider ServiceProvider { get; } = serviceProvider;
 
     #region Fields and Propertices
 
-    /// <summary>
-    /// 当前的 <see cref="UserInterface"/> 所在 List
-    /// </summary>
     public SilkyUIGroup CurrentSilkyUIGroup { get; private set; }
 
     public SilkyUIGroup MouseHoverGroup { get; internal set; }
@@ -25,28 +19,29 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     private readonly List<string> _layerOrders = [];
 
     /// <summary> 插入位置 </summary>
-    public Dictionary<string, SilkyUIGroup> SilkyUIGroups { get; } = [];
+    public Dictionary<string, SilkyUIGroup> GameUILayerGroups { get; } = [];
 
-    public Dictionary<string, List<Type>> SilkyUITypes { get; } = [];
+    /// <summary>
+    /// string 是 LayerNode
+    /// </summary>
+    public Dictionary<string, List<Type>> GameUILayerBodyTypesRegistry { get; } = [];
 
     #endregion
+
+    private bool _isRegistrationCompleted = false;
 
     /// <summary> 注册游戏内 UI </summary>
     public void RegisterUI(Type bodyType, string layerNode)
     {
-        Logger.Info($"Register Game UI: \"{bodyType.Name}\", \"{layerNode}\"");
+        if (_isRegistrationCompleted) return;
 
-        if (!SilkyUITypes.TryGetValue(layerNode, out var types))
+        var list = GameUILayerBodyTypesRegistry.TryGetValue(layerNode, out var types) ? types : (GameUILayerBodyTypesRegistry[layerNode] = []);
+        list.Add(bodyType);
+
+        if (!GameUILayerGroups.ContainsKey(layerNode))
         {
-            types = [];
-            SilkyUITypes[layerNode] = types;
+            GameUILayerGroups[layerNode] = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
         }
-
-        types.Add(bodyType);
-
-        if (SilkyUIGroups.TryGetValue(layerNode, out var group)) return;
-        group = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
-        SilkyUIGroups[layerNode] = group;
     }
 
     /// <summary>
@@ -54,11 +49,11 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
     /// </summary>
     public bool TryGetInstance<TBody>(out TBody body) where TBody : BaseBody
     {
-        foreach (var (_, value) in SilkyUIGroups)
+        foreach (var (_, value) in GameUILayerGroups)
         {
-            foreach (var item in value.SilkyUIs)
+            foreach (var silkyUI in value.SilkyUIs)
             {
-                if (item.BaseBody is not TBody tBody)
+                if (silkyUI.BaseBody is not TBody tBody)
                     continue;
 
                 body = tBody;
@@ -72,13 +67,10 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
     public void UpdateUI(GameTime gameTime)
     {
-        CurrentSilkyUIGroup = null;
-
         // 它是绘制顺序, 所以事件处理要倒序
-        foreach (var layerNode in _layerOrders.Where(SilkyUIGroups.ContainsKey).Reverse())
+        foreach (var layerNode in _layerOrders.Where(GameUILayerGroups.ContainsKey).Reverse())
         {
-            CurrentSilkyUIGroup = SilkyUIGroups[layerNode];
-            CurrentSilkyUIGroup.Order();
+            CurrentSilkyUIGroup = GameUILayerGroups[layerNode];
             CurrentSilkyUIGroup.UpdateUI(gameTime);
         }
 
@@ -101,13 +93,11 @@ public partial class SilkyUIManager(IServiceProvider serviceProvider, ILog logge
 
         int index;
 
-        foreach (var (layerNode, silkyUIGroup) in SilkyUIGroups)
+        foreach (var (layerNode, silkyUIGroup) in GameUILayerGroups)
         {
-            silkyUIGroup.Order();
-
             // 找到图层节点
             index = layers.FindIndex(layer => layer.Name.Equals(layerNode));
-            if (index <= -1) return;
+            if (index <= -1) continue;
 
             silkyUIGroup.ModifyInterfaceLayers(layers, index);
         }
