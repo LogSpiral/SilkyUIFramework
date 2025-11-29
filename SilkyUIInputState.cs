@@ -80,12 +80,13 @@ public class SilkyUIInputState(SilkyUIRenderSystem renderSystem)
 
     internal void UpdateFocusedElement()
     {
-        if (FocusedElement?.SilkyUI?.RootNode is { Enabled: true }) return;
+        if (FocusedElement?.SilkyUI?.RootNode is { Enabled: true, IsInteractable: true }) return;
 
+        var previousFocusTarget = FocusedElement;
         FocusedElement = null;
 
-        if (FocusedElement != null)
-            RuntimeSafeHelper.SafeInvoke(() => FocusedElement.OnGotFocus(new(FocusedElement, MousePosition)));
+        if (previousFocusTarget != null)
+            RuntimeSafeHelper.SafeInvoke(() => previousFocusTarget.OnLostFocus(new(previousFocusTarget, MousePosition)));
     }
 
     internal void UpdateFocusElement(UIView hoveredElement)
