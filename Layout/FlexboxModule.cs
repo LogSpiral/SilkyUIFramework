@@ -1,7 +1,6 @@
-﻿using SilkyUIFramework.Layout;
-using static SilkyUIFramework.Layout.CrossAlignment;
+﻿using static SilkyUIFramework.Layout.CrossAlignment;
 
-namespace SilkyUIFramework;
+namespace SilkyUIFramework.Layout;
 
 public partial class FlexboxModule
 {
@@ -58,14 +57,9 @@ public partial class FlexboxModule
         {
             var element = elements[i];
 
-            var mainAxisSize = element.OuterBounds.Width;
-            var crossAxisSize = element.OuterBounds.Height;
-
-            if (line.MainSize + mainAxisSize + gap <= availableSize)
+            if (line.MainSize + element.OuterBounds.Width + gap <= availableSize)
             {
-                line.Elements.Add(element);
-                line.MainSize += mainAxisSize + gap;
-                line.CrossSize = Math.Max(line.CrossSize, crossAxisSize);
+                line.AddByRow(element, gap);
                 continue;
             }
 
@@ -88,14 +82,9 @@ public partial class FlexboxModule
         {
             var element = elements[i];
 
-            var mainAxisSize = element.OuterBounds.Height;
-            var crossAxisSize = element.OuterBounds.Width;
-
-            if (line.MainSize + mainAxisSize + gap <= maxMainAxisSize)
+            if (line.MainSize + element.OuterBounds.Height + gap <= maxMainAxisSize)
             {
-                line.Elements.Add(element);
-                line.MainSize += mainAxisSize + gap;
-                line.CrossSize = Math.Max(line.CrossSize, crossAxisSize);
+                line.AddByColumn(element, gap);
                 continue;
             }
 
@@ -140,7 +129,7 @@ public partial class FlexboxModule
                         var share = remaining / totalGrow;
                         var alloc = Math.Min(availableGrowth, share * element.FlexGrow);
 
-                        SetOuterWidth(element, element.OuterBounds.Width + alloc);
+                        SetOuterWidthClamped(element, element.OuterBounds.Width + alloc);
 
                         remaining -= alloc;
                         totalGrow -= element.FlexGrow;
@@ -162,7 +151,7 @@ public partial class FlexboxModule
                         var share = remaining / totalShrink;
                         var alloc = Math.Max(availableShrink, share * element.FlexShrink);
 
-                        SetOuterWidth(element, element.OuterBounds.Width + alloc);
+                        SetOuterWidthClamped(element, element.OuterBounds.Width + alloc);
 
                         remaining -= alloc;
                         totalShrink -= element.FlexShrink;
@@ -201,7 +190,7 @@ public partial class FlexboxModule
                         var share = remaining / totalGrow;
                         var alloc = Math.Min(availableGrowth, share * element.FlexGrow);
 
-                        SetOuterHeight(element, element.OuterBounds.Height + alloc);
+                        SetOuterHeightClamped(element, element.OuterBounds.Height + alloc);
 
                         remaining -= alloc;
                         totalGrow -= element.FlexGrow;
@@ -226,7 +215,7 @@ public partial class FlexboxModule
                         var share = remaining / totalShrink;
                         var alloc = Math.Max(availableShrink, share * element.FlexShrink);
 
-                        SetOuterHeight(element, element.OuterBounds.Height + alloc);
+                        SetOuterHeightClamped(element, element.OuterBounds.Height + alloc);
 
                         remaining -= alloc;
                         totalShrink -= element.FlexShrink;

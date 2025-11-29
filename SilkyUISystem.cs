@@ -1,4 +1,4 @@
-﻿using SilkyUIFramework.Bootstrap;
+﻿using Terraria.ModLoader.Core;
 
 namespace SilkyUIFramework;
 
@@ -9,57 +9,42 @@ public partial class SilkyUISystem : ModSystem
     public static IServiceProvider ServiceProvider { get; private set; }
 
     public SilkyUIManager SilkyUIManager { get; private set; }
+    private SilkyUIRegistrar SilkyUIRegistrar { get; set; }
 
-    private UIAssemblyScanner _assemblyScanner;
+    private IReadOnlyList<Assembly> Assemblies { get; set; }
+    private IEnumerable<Type[]> GetLoadableTypes() => Assemblies.Select(AssemblyManager.GetLoadableTypes);
 
     public override void Load()
     {
-        _assemblyScanner = new UIAssemblyScanner();
-        ServiceProvider = UIDependencyRegistrar.BuildServiceProvider(_assemblyScanner.GetAllTypes());
+        Assemblies = [.. ModLoader.Mods.Select(m => m.Code)];
+
+        ServiceProvider = ServiceProviderBuilder.BuildServiceProvider(GetLoadableTypes());
 
         SilkyUIManager = ServiceProvider.GetRequiredService<SilkyUIManager>();
+        SilkyUIRegistrar = ServiceProvider.GetRequiredService<SilkyUIRegistrar>();
     }
 
     public override void Unload()
     {
-        _assemblyScanner = null;
         ServiceProvider = null;
     }
 
     public override void PostSetupContent()
     {
-        UIBootstrapper.RegisterUI(SilkyUIManager, _assemblyScanner.GetAllTypes());
-        SilkyUIManager.InitializeGlobalUI();
+        SilkyUIRegistrar.RegisterUI(GetLoadableTypes());
+        SilkyUIManager.Initialize();
     }
 
-    public override void UpdateUI(GameTime gameTime)
-        => SilkyUIManager.UpdateUI(gameTime);
-
-    public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
-        => SilkyUIManager.ModifyInterfaceLayers(layers);
+    public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers) =>
+        SilkyUIManager.ModifyInterfaceLayers(layers);
 }
 
 public class SilkyUIPlayer : ModPlayer
 {
     public override void OnEnterWorld()
     {
-        if (SilkyUISystem.Instance.SilkyUIManager is not { } manager) return;
+        if (SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIRenderSystem>() is not { } renderSystem) return;
 
-        foreach (var (layerNode, group) in manager.GameUILayerGroups)
-        {
-            group.Clear();
-
-            if (!manager.GameUILayerBodyTypesRegistry.TryGetValue(layerNode, out var types)) continue;
-
-            foreach (var type in types)
-            {
-                var silkyUI = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUI>();
-
-                silkyUI.Priority = type.GetCustomAttribute<RegisterUIAttribute>()!.Priority;
-                silkyUI.SetBody(SilkyUISystem.ServiceProvider.GetRequiredService(type) as BaseBody);
-
-                group.Add(silkyUI);
-            }
-        }
+        renderSystem.ReloadGameGroups();
     }
 }

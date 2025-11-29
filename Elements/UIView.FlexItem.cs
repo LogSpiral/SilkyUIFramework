@@ -5,7 +5,8 @@ public partial class UIView
     /// <summary> 弹性项目的增长因子 </summary>
     public float FlexGrow
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
@@ -19,7 +20,8 @@ public partial class UIView
     /// <summary> 弹性项目的收缩因子 </summary>
     public float FlexShrink
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
@@ -32,13 +34,13 @@ public partial class UIView
 
     public bool GridArea
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
 
-            if (Parent == null) return;
-            if (Parent.LayoutType != LayoutType.Grid) return;
+            if (Parent?.LayoutType is not LayoutType.Grid) return;
             MarkLayoutDirty();
         }
     }
@@ -57,7 +59,8 @@ public partial class UIView
 
     public int RowStart
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
@@ -68,9 +71,11 @@ public partial class UIView
             MarkLayoutDirty();
         }
     }
+
     public int RowEnd
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
@@ -84,7 +89,8 @@ public partial class UIView
 
     public int ColumnStart
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;
@@ -98,7 +104,8 @@ public partial class UIView
 
     public int ColumnEnd
     {
-        get; set
+        get;
+        set
         {
             if (value == field) return;
             field = value;

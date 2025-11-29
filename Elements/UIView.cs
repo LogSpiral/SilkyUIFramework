@@ -50,6 +50,9 @@ public partial class UIView
         Parent?.NotifyParentChildDirty();
     }
 
+    /// <summary>
+    /// 清理 <see cref="LayoutIsDirty"/>
+    /// </summary>
     public virtual void CleanupDirtyMark() => LayoutIsDirty = false;
 
     #endregion
@@ -138,12 +141,12 @@ public partial class UIView
         set
         {
             if (field == value) return;
-            var freeChanged = field.IsFree != value.IsFree;
+            var isFree = field.IsFree == value.IsFree;
 
             field = value;
             MarkPositionDirty();
 
-            if (!freeChanged) return;
+            if (isFree) return;
             LayoutIsDirty = true;
             Parent?.NotifyParentChildDirty();
         }

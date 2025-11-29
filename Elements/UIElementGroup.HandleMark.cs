@@ -13,6 +13,8 @@ public partial class UIElementGroup
         }
     }
 
+    #region Elements Z Index Order
+
     public bool ElementsOrderIsDirty { get; set; } = true;
 
     protected List<UIView> ElementsInOrder { get; } = [];
@@ -31,6 +33,8 @@ public partial class UIElementGroup
             item.UpdateElementsOrder();
         }
     }
+
+    #endregion
 
     public override void UpdateLayout()
     {
@@ -57,8 +61,7 @@ public partial class UIElementGroup
     protected void UpdateLayoutFromFree()
     {
         var container = GetParentInnerSpace();
-        Prepare(container.Width, container.Height);
-        RecalculateWidth();
+        PreMeasure(container.Width, container.Height);
         ResizeChildrenWidth();
         RecalculateHeight();
         ResizeChildrenHeight();
@@ -69,8 +72,7 @@ public partial class UIElementGroup
 
     protected void UpdateLayoutFromFlow()
     {
-        PrepareChildren();
-        RecalculateChildrenWidth();
+        PreMeasureChildren();
         ResizeChildrenWidth();
         RecalculateChildrenHeight();
         ResizeChildrenHeight();

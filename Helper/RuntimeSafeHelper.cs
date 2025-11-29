@@ -12,8 +12,7 @@ public static class RuntimeSafeHelper
         get
         {
             if (field != null) return field;
-            field = ModContent.GetInstance<SilkyUIFramework>()?.Logger;
-            return field;
+            return field = ModContent.GetInstance<SilkyUIFramework>()?.Logger;
         }
     }
 

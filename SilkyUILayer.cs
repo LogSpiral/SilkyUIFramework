@@ -7,7 +7,7 @@ public class SilkyUILayer(SilkyUI silkyUI, string name, InterfaceScaleType scale
 
     public override bool DrawSelf()
     {
-        SilkyUI.TransformMatrix = ScaleType switch
+        var matrix = ScaleType switch
         {
             InterfaceScaleType.Game => Main.GameViewMatrix.ZoomMatrix,
             InterfaceScaleType.UI => Main.UIScaleMatrix,
@@ -16,8 +16,9 @@ public class SilkyUILayer(SilkyUI silkyUI, string name, InterfaceScaleType scale
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred,
-            null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, matrix);
 
+        SilkyUI.TransformMatrix = matrix;
         SilkyUI.Draw(Main.gameTimeCache, Main.spriteBatch);
         return true;
     }

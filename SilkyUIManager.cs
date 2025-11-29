@@ -1,117 +1,64 @@
 ﻿namespace SilkyUIFramework;
 
-[Service(ServiceLifetime.Singleton)]
-public partial class SilkyUIManager(IServiceProvider serviceProvider)
+[Service]
+public class SilkyUIManager(IServiceProvider provider, SilkyUIRegistrar registrar, SilkyUIRenderSystem renderSystem, SilkyUIInputState inputState)
 {
-    private IServiceProvider ServiceProvider { get; } = serviceProvider;
+    private readonly IServiceProvider _provider = provider;
+    private readonly SilkyUIRegistrar _registrar = registrar;
+    private readonly SilkyUIRenderSystem _renderSystem = renderSystem;
+    private readonly SilkyUIInputState _inputState = inputState;
 
-    #region Fields and Propertices
-
-    public SilkyUIGroup CurrentSilkyUIGroup { get; private set; }
-
-    public SilkyUIGroup MouseHoverGroup { get; internal set; }
-    public SilkyUIGroup MouseFocusGroup { get; internal set; }
-
-    public bool HasHoverGroup => MouseHoverGroup != null;
-    public bool HasFocusGroup => MouseFocusGroup != null;
-
-    /// <summary> 界面层顺序 </summary>
-    private readonly List<string> _layerOrders = [];
-
-    /// <summary> 插入位置 </summary>
-    public Dictionary<string, SilkyUIGroup> GameUILayerGroups { get; } = [];
-
-    /// <summary>
-    /// string 是 LayerNode
-    /// </summary>
-    public Dictionary<string, List<Type>> GameUILayerBodyTypesRegistry { get; } = [];
-
-    #endregion
-
-    private bool _isRegistrationCompleted = false;
-
-    /// <summary> 注册游戏内 UI </summary>
-    public void RegisterUI(Type bodyType, string layerNode)
+    public void Initialize()
     {
-        if (_isRegistrationCompleted) return;
+        if (Main.netMode == NetmodeID.Server) return;
 
-        var list = GameUILayerBodyTypesRegistry.TryGetValue(layerNode, out var types) ? types : (GameUILayerBodyTypesRegistry[layerNode] = []);
-        list.Add(bodyType);
+        var globalGroup = _provider.GetRequiredService<SilkyUIGroup>();
 
-        if (!GameUILayerGroups.ContainsKey(layerNode))
+        foreach (var type in _registrar.BodyTypesForGlobalUI)
         {
-            GameUILayerGroups[layerNode] = SilkyUISystem.ServiceProvider.GetRequiredService<SilkyUIGroup>();
-        }
-    }
-
-    /// <summary>
-    /// 获取游戏内 UI 实例
-    /// </summary>
-    public bool TryGetInstance<TBody>(out TBody body) where TBody : BaseBody
-    {
-        foreach (var (_, value) in GameUILayerGroups)
-        {
-            foreach (var silkyUI in value.SilkyUIs)
-            {
-                if (silkyUI.BaseBody is not TBody tBody)
-                    continue;
-
-                body = tBody;
-                return true;
-            }
+            var silkyUI = _provider.GetRequiredService<SilkyUI>();
+            silkyUI.Priority = type.GetCustomAttribute<RegisterGlobalUIAttribute>()!.Priority;
+            silkyUI.SetBody(_provider.GetRequiredService(type) as BaseBody);
+            globalGroup.Add(silkyUI);
         }
 
-        body = null;
-        return false;
-    }
-
-    public void UpdateUI(GameTime gameTime)
-    {
-        // 它是绘制顺序, 所以事件处理要倒序
-        foreach (var layerNode in _layerOrders.Where(GameUILayerGroups.ContainsKey).Reverse())
+        var gameGroups = new Dictionary<string, SilkyUIGroup>();
+        foreach (var (layerNode, _) in _registrar.BodyTypesForGameUI)
         {
-            CurrentSilkyUIGroup = GameUILayerGroups[layerNode];
-            CurrentSilkyUIGroup.UpdateUI(gameTime);
+            gameGroups[layerNode] = _provider.GetRequiredService<SilkyUIGroup>();
         }
 
-        CurrentSilkyUIGroup = null;
+        _renderSystem.SetGroups(globalGroup, gameGroups);
     }
 
-    /// <summary> 修改界面层级 </summary>
+    public void Update(GameTime gameTime)
+    {
+        if (Main.hideUI) return;
+
+        UpdateInput();
+        _renderSystem.Update(gameTime);
+    }
+
+    private void UpdateInput()
+    {
+        _inputState.UpdateMouseStatus();
+        _inputState.UpdateHoverTarget();
+        _inputState.UpdateMouseEvent();
+        _inputState.UpdateScrollEvent();
+    }
+
     public void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
     {
-        var uiLayerCount = _layerOrders.Count;
-
-        _layerOrders.Clear();
-
-        foreach (var layer in layers.Where(layer => !_layerOrders.Contains(layer.Name)))
-        {
-            _layerOrders.Add(layer.Name);
-        }
-
-        if (uiLayerCount == 0) return;
-
-        int index;
-
-        foreach (var (layerNode, silkyUIGroup) in GameUILayerGroups)
-        {
-            // 找到图层节点
-            index = layers.FindIndex(layer => layer.Name.Equals(layerNode));
-            if (index <= -1) continue;
-
-            silkyUIGroup.ModifyInterfaceLayers(layers, index);
-        }
-
-        // 游戏内全局 UI
-        index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
-
-        if (index < 0) return;
-        var silkyUILayer = new LegacyGameInterfaceLayer("SilkyUI: GlobalUI", delegate
-        {
-            DrawGlobalUI(Main.gameTimeCache);
-            return true;
-        }, InterfaceScaleType.UI);
-
-        layers.Insert(index, silkyUILayer);
+        _renderSystem.ModifyInterfaceLayers(layers);
     }
+
+    public void HandleIME() => _inputState.HandleIME();
+
+    public void Draw(GameTime gameTime)
+    {
+        _renderSystem.Draw(gameTime);
+        _inputState.HandleInput(Main.spriteBatch);
+    }
+
+    public bool TryGetInstance<TBody>(out TBody body) where TBody : BaseBody => _renderSystem.TryGetInstance(out body);
 }

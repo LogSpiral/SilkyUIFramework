@@ -2,7 +2,7 @@ global using SilkyUIFramework;
 
 namespace SilkyUIFramework;
 
-public enum MouseButtonType
+public enum MouseButtonType : int
 {
     Left,
     Middle,

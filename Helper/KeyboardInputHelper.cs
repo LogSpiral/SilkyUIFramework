@@ -3,16 +3,8 @@ using ReLogic.OS;
 
 namespace SilkyUIFramework.Helper;
 
-public static class EditTextHelper
+public static class KeyboardInputHelper
 {
-    public static bool CanLineBreak()
-    {
-        return Keys.Enter.JustPressed() &&
-               (Main.inputText.IsShiftKeyDown() ||
-                Main.inputText.IsControlKeyDown() ||
-                Main.inputText.IsAltKeyDown());
-    }
-
     public static string GetPlayerInput()
     {
         Main.inputTextEnter = false;
@@ -27,14 +19,20 @@ public static class EditTextHelper
             switch (key)
             {
                 case Keys.Enter:
+                {
                     Main.inputTextEnter = true;
                     break;
+                }
                 case Keys.Escape:
+                {
                     Main.inputTextEscape = true;
                     break;
+                }
                 case >= Keys.Space and not Keys.F16:
+                {
                     text += keyString;
                     break;
+                }
             }
         }
 

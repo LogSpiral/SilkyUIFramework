@@ -66,20 +66,20 @@ public class SUIImage : UIView
         FitHeight = true;
     }
 
-    public override void Prepare(float? width, float? height)
+    public override void PreMeasure(float? width, float? height)
     {
-        base.Prepare(width, height);
+        base.PreMeasure(width, height);
 
         if (Texture2D == null || Texture2D.Value == null) return;
 
         if (FitWidth)
         {
-            SetInnerBoundsWidth(Texture2D.Value.Width);
+            SetInnerBoundsWidthRaw(Texture2D.Value.Width);
         }
 
         if (FitHeight)
         {
-            SetInnerBoundsHeight(Texture2D.Value.Height);
+            SetInnerBoundsHeightRaw(Texture2D.Value.Height);
         }
     }
 

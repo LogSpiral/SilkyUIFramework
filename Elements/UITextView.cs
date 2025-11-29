@@ -136,7 +136,7 @@ public class UITextView : UIView
 
     public Vector2 TextSize { get; protected set; } = Vector2.Zero;
 
-    public override void Prepare(float? width, float? height)
+    public override void PreMeasure(float? width, float? height)
     {
         CalculateWidthConstraints(width ?? 0);
         CalculateHeightConstraints(height ?? 0);
@@ -144,7 +144,7 @@ public class UITextView : UIView
         if (FitWidth)
         {
             RecalculateString(MaxInnerWidth);
-            SetInnerBoundsWidth(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
+            SetInnerBoundsWidthRaw(MathHelper.Clamp(TextSize.X * TextScale, MinInnerWidth, MaxInnerWidth));
         }
         else
         {
@@ -154,7 +154,7 @@ public class UITextView : UIView
 
         if (FitHeight)
         {
-            SetInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+            SetInnerBoundsHeightRaw(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
         }
         else CalculateBoundsHeight(height ?? 0);
     }
@@ -163,7 +163,7 @@ public class UITextView : UIView
     {
         RecalculateString(InnerBounds.Width);
 
-        if (FitHeight) SetInnerBoundsHeight(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
+        if (FitHeight) SetInnerBoundsHeightRaw(MathHelper.Clamp(TextSize.Y * TextScale, MinInnerHeight, MaxInnerHeight));
     }
 
     protected virtual void RecalculateString(float maxWidth)

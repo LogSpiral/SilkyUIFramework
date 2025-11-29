@@ -1,36 +1,37 @@
-﻿using SilkyUIFramework.Layout;
-using static SilkyUIFramework.Layout.CrossAlignment;
+﻿using static SilkyUIFramework.Layout.CrossAlignment;
 
-namespace SilkyUIFramework;
+namespace SilkyUIFramework.Layout;
 
 public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
 {
     private float _crossOffsetCache, _crossGapCache;
 
-    public sealed override void PostPrepare()
+    public sealed override void PreMeasure()
     {
+        // 测量尺寸 + 设定宽高
         switch (_flexDirection)
         {
             default:
             case FlexDirection.Row:
             {
                 MeasureSize(Gap.Width, out var mainSize, out var crossSize);
-                if (FitWidth) SetInnerWidth(Parent, mainSize);
-                if (FitHeight) SetInnerHeight(Parent, crossSize);
+                if (FitWidth) SetInnerWidthClamped(Parent, mainSize);
+                if (FitHeight) SetInnerHeightClamped(Parent, crossSize);
                 break;
             }
             case FlexDirection.Column:
             {
                 MeasureSize(Gap.Height, out var mainSize, out var crossSize);
-                if (FitWidth) SetInnerWidth(Parent, crossSize);
-                if (FitHeight) SetInnerHeight(Parent, mainSize);
+                if (FitWidth) SetInnerWidthClamped(Parent, crossSize);
+                if (FitHeight) SetInnerHeightClamped(Parent, mainSize);
                 break;
             }
         }
     }
 
-    public sealed override void PostPrepareChildren()
+    public sealed override void PreMeasureChildren()
     {
+        // 确定换行与方向
         switch (_flexDirection)
         {
             default:
@@ -49,7 +50,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public sealed override void PostResizeChildrenWidth()
+    public sealed override void ResizeChildrenWidth()
     {
         switch (_flexDirection)
         {
@@ -88,7 +89,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                     foreach (var el in line.Elements.Where(el =>
                                  el.FitWidth || !(el.OuterBounds.Width >= line.CrossSize)))
                     {
-                        SetOuterWidth(el, line.CrossSize);
+                        SetOuterWidthClamped(el, line.CrossSize);
                     }
                 }
 
@@ -97,22 +98,22 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public sealed override void PostRecalculateHeight()
+    public sealed override void RecalculateHeight()
     {
         if (!FitHeight) return;
         switch (_flexDirection)
         {
             default:
             case FlexDirection.Row:
-                SetInnerHeight(Parent, UpdateCrossSize(Gap.Height));
+                SetInnerHeightClamped(Parent, UpdateCrossSize(Gap.Height));
                 break;
             case FlexDirection.Column:
-                SetInnerHeight(Parent, MaxMainSize());
+                SetInnerHeightClamped(Parent, MaxMainSize());
                 break;
         }
     }
 
-    public sealed override void PostRecalculateChildrenHeight()
+    public sealed override void RecalculateChildrenHeight()
     {
         switch (_flexDirection)
         {
@@ -134,7 +135,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
         }
     }
 
-    public sealed override void PostResizeChildrenHeight()
+    public sealed override void ResizeChildrenHeight()
     {
         switch (_flexDirection)
         {
@@ -161,7 +162,7 @@ public partial class FlexboxModule(UIElementGroup parent) : LayoutModule(parent)
                         foreach (var el in line.Elements.Where(el =>
                                      el.FitHeight || !(el.OuterBounds.Height >= line.CrossSize)))
                         {
-                            SetOuterHeight(el, line.CrossSize);
+                            SetOuterHeightClamped(el, line.CrossSize);
                         }
                     }
                 }

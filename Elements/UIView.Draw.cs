@@ -31,7 +31,6 @@ public partial class UIView
     /// <summary>
     /// 与 <see cref="Update(GameTime)"/> 不同，此方法在 <see cref="Draw(GameTime, SpriteBatch)"/> 方法之前调用，用于更新动画相关状态
     /// </summary>
-    /// <param name="gameTime"></param>
     protected virtual void UpdateStatus(GameTime gameTime)
     {
         if (IsMouseHovering)
@@ -61,8 +60,6 @@ public partial class UIView
         RuntimeSafeHelper.SafeInvoke(DrawAction, action => action(gameTime, spriteBatch));
         RuntimeSafeHelper.SafeInvoke(() => Draw(gameTime, spriteBatch));
 
-        var position = Bounds.Position;
-        var size = Bounds.Size;
-        RectangleRender.DrawOnlyBorder(position, size, SilkyUI.TransformMatrix);
+        RectangleRender.DrawOnlyBorder(Bounds.Position, Bounds.Size, SilkyUI.TransformMatrix);
     }
 }

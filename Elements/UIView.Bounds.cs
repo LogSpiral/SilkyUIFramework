@@ -190,24 +190,26 @@ public partial class UIView
         if (!LayoutIsDirty) return;
 
         var availableSize = GetParentInnerSpace();
-        Prepare(availableSize.Width, availableSize.Height);
-        RecalculateWidth();
+        PreMeasure(availableSize.Width, availableSize.Height);
         RecalculateHeight();
         CleanupDirtyMark();
     }
 
-    public virtual void Prepare(float? width, float? height)
+    /// <summary>
+    /// 预测量元素宽高
+    /// </summary>
+    public virtual void PreMeasure(float? width, float? height)
     {
         CalculateWidthConstraints(width ?? 0);
         CalculateHeightConstraints(height ?? 0);
 
         if (FitWidth)
-            SetInnerBoundsWidth(MathHelper.Clamp(0f, MinInnerWidth, MaxInnerWidth));
+            SetInnerBoundsWidthRaw(MathHelper.Clamp(0f, MinInnerWidth, MaxInnerWidth));
         else
             CalculateBoundsWidth(width ?? 0);
 
         if (FitHeight)
-            SetInnerBoundsHeight(MathHelper.Clamp(0f, MinInnerHeight, MaxInnerHeight));
+            SetInnerBoundsHeightRaw(MathHelper.Clamp(0f, MinInnerHeight, MaxInnerHeight));
         else
             CalculateBoundsHeight(height ?? 0);
     }
@@ -219,8 +221,6 @@ public partial class UIView
         if (FitWidth) return;
         CalculateBoundsWidth(availableWidth);
     }
-
-    public virtual void RecalculateWidth() { }
 
     public virtual void RecalculateHeight() { }
 
@@ -302,6 +302,11 @@ public partial class UIView
 
     #endregion
 
+    /// <summary>
+    /// 计算边界宽度<br/>
+    /// 根据 <see cref="BoxSizing"/> 决定边界宽度应用于 <see cref="Bounds"/> 还是 <see cref="InnerBounds"/>
+    /// </summary>
+    /// <param name="availableWidth">父元素可用宽度</param>
     protected void CalculateBoundsWidth(float availableWidth)
     {
         WidthValue = _width.CalculateSize(availableWidth);
@@ -309,16 +314,21 @@ public partial class UIView
 
         switch (BoxSizing)
         {
+            default:
             case BoxSizing.Border:
-                SetBoundsWidth(WidthValue);
+                SetBoundsWidthRaw(WidthValue);
                 break;
             case BoxSizing.Content:
-                SetInnerBoundsWidth(WidthValue);
+                SetInnerBoundsWidthRaw(WidthValue);
                 break;
-            default: goto case BoxSizing.Border;
         }
     }
 
+    /// <summary>
+    /// 计算边界高度<br/>
+    /// 根据 <see cref="BoxSizing"/> 决定边界高度应用于 <see cref="Bounds"/> 还是 <see cref="InnerBounds"/>
+    /// </summary>
+    /// <param name="availableHeight">父元素可用宽度</param>
     protected void CalculateBoundsHeight(float availableHeight)
     {
         HeightValue = _height.CalculateSize(availableHeight);
@@ -326,54 +336,54 @@ public partial class UIView
 
         switch (BoxSizing)
         {
+            default:
             case BoxSizing.Border:
-                SetBoundsHeight(HeightValue);
+                SetBoundsHeightRaw(HeightValue);
                 break;
             case BoxSizing.Content:
-                SetInnerBoundsHeight(HeightValue);
+                SetInnerBoundsHeightRaw(HeightValue);
                 break;
-            default: goto case BoxSizing.Border;
         }
     }
 
     #region 设置 Bounds 的方法，包括 OuterBounds, Bounds, InnerBounds
 
-    protected internal void SetOuterBoundsWidth(float width)
+    internal void SetOuterBoundsWidthRaw(float width)
     {
         OuterBounds.Width = width;
         Bounds.Width = width -= Margin.Horizontal;
         InnerBounds.Width = width - Padding.Horizontal - Border * 2;
     }
 
-    protected internal void SetOuterBoundsHeight(float height)
+    internal void SetOuterBoundsHeightRaw(float height)
     {
         OuterBounds.Height = height;
         Bounds.Height = height -= Margin.Vertical;
         InnerBounds.Height = height - Padding.Vertical - Border * 2;
     }
 
-    protected internal void SetBoundsWidth(float width)
+    private void SetBoundsWidthRaw(float width)
     {
         Bounds.Width = width;
         InnerBounds.Width = width - Padding.Horizontal - Border * 2;
         OuterBounds.Width = width + Margin.Horizontal;
     }
 
-    protected internal void SetBoundsHeight(float height)
+    private void SetBoundsHeightRaw(float height)
     {
         Bounds.Height = height;
         InnerBounds.Height = height - Padding.Vertical - Border * 2;
         OuterBounds.Height = height + Margin.Vertical;
     }
 
-    protected internal void SetInnerBoundsWidth(float width)
+    public void SetInnerBoundsWidthRaw(float width)
     {
         InnerBounds.Width = width;
         Bounds.Width = width += Padding.Horizontal + Border * 2;
         OuterBounds.Width = width + Margin.Horizontal;
     }
 
-    protected internal void SetInnerBoundsHeight(float height)
+    public void SetInnerBoundsHeightRaw(float height)
     {
         InnerBounds.Height = height;
         Bounds.Height = height += Padding.Vertical + Border * 2;

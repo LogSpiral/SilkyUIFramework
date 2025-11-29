@@ -2,3 +2,4 @@ displayName = SilkyUI
 author = 太阳照常升起
 version = 0.2.25.09171
 hideCode = false
+homepage = https://github.com/487666123/SilkyUIFramework

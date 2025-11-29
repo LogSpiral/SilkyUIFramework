@@ -26,13 +26,9 @@ public readonly struct CanvasSize(int width, int height) : IEquatable<CanvasSize
 /// <summary>
 /// 渲染目标对象池，用于管理和复用 RenderTarget2D 实例
 /// </summary>
+[Service]
 public sealed class RenderTargetPool : IDisposable
 {
-    /// <summary>
-    /// 获取 RenderTargetPool 的单例实例
-    /// </summary>
-    public static RenderTargetPool Instance { get; } = new();
-
     // 图形设备引用
     private readonly GraphicsDevice _graphicsDevice = Main.graphics.GraphicsDevice;
 

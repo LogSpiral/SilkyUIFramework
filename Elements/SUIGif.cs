@@ -48,20 +48,20 @@ public class SUIGif : UIView
         FitHeight = true;
     }
 
-    public override void Prepare(float? width, float? height)
+    public override void PreMeasure(float? width, float? height)
     {
-        base.Prepare(width, height);
+        base.PreMeasure(width, height);
 
         if (GifRenderer == null) return;
 
         if (FitWidth)
         {
-            SetInnerBoundsWidth(GifRenderer.Width);
+            SetInnerBoundsWidthRaw(GifRenderer.Width);
         }
 
         if (FitHeight)
         {
-            SetInnerBoundsWidth(GifRenderer.Height);
+            SetInnerBoundsWidthRaw(GifRenderer.Height);
         }
     }
 

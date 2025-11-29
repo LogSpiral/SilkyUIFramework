@@ -1,26 +1,43 @@
-﻿using MonoMod.Cil;
-
-namespace SilkyUIFramework.Hooks;
+﻿namespace SilkyUIFramework.Hooks;
 
 internal class UIHookInstaller : ILoadable
 {
     public void Load(Mod mod)
     {
-        On_Main.DoUpdate_HandleInput += (orig, self) =>
+        On_Main.UpdateUIStates += (orig, self) =>
         {
+            SilkyUISystem.Instance?.SilkyUIManager?.Update(Main.gameTimeCache);
             orig(self);
-            PlayerInput.SetZoom_UI();
-            SilkyUISystem.Instance?.SilkyUIManager?.UpdateGlobalUI(Main.gameTimeCache);
-            PlayerInput.SetZoom_World();
         };
 
-        IL_Main.DrawMenu += il =>
+        On_Main.DrawThickCursor += (orig, smart) =>
         {
-            var c = new ILCursor(il);
-            if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor)))) return;
-            if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0))) return;
-            c.EmitDelegate(() => SilkyUISystem.Instance?.SilkyUIManager?.DrawGlobalUI(Main.gameTimeCache));
+            SilkyUISystem.Instance?.SilkyUIManager?.Draw(Main.gameTimeCache);
+            return orig(smart);
         };
+
+        On_Main.DoDraw += (orig, self, gameTime) =>
+        {
+            RuntimeSafeHelper.SafeInvoke(static delegate { SilkyUISystem.Instance?.SilkyUIManager?.HandleIME(); });
+            orig(self, gameTime);
+        };
+
+        //On_Main.DrawInterface += (orig, self, gametime) =>
+        //{
+        //    orig(self, gametime);
+        //};
+
+        //IL_Main.DrawMenu += il =>
+        //{
+        //    var c = new ILCursor(il);
+
+        //    if (!c.TryGotoNext(MoveType.Before, i => i.MatchCall<Main>(nameof(Main.DrawThickCursor)))) return;
+        //    if (!c.TryGotoPrev(MoveType.Before, i => i.MatchLdcI4(0))) return;
+
+        //    SilkyUIFramework.Instance.Logger?.Info("IL_Main.DrawMenu success!");
+
+        //    c.EmitDelegate(HandleInput);
+        //};
     }
 
     public void Unload() { }

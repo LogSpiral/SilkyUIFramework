@@ -4,10 +4,30 @@ namespace SilkyUIFramework;
 
 public class GridModule(UIElementGroup parent) : LayoutModule(parent)
 {
-    public TemplateDimensions[] Rows { get; set; } = [];
-    public TemplateDimensions[] Columns { get; set; } = [];
+    /// <summary>
+    /// 行数据
+    /// </summary>
+    private TemplateDefinition[] _rows;
 
-    public bool[,] Marks;
+    /// <summary>
+    /// 列数据
+    /// </summary>
+    private TemplateDefinition[] _columns;
+
+    /// <summary>
+    /// 行值
+    /// </summary>
+    private float[] _rowValues;
+
+    /// <summary>
+    /// 列值
+    /// </summary>
+    private float[] _columnValues;
+
+    /// <summary>
+    /// 格子标记
+    /// </summary>
+    private bool[,] _markers;
 
     private float _rowsFraction = 0f;
     private float _columnsFraction = 0f;
@@ -18,75 +38,89 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
     {
         base.UpdateCacheStatus();
 
-        _rowsFraction = 0;
-        for (var i = 0; i < Rows.Length; i++)
-        {
-            _rowsFraction = Rows[i].Fraction;
-        }
+        var rows = _rows.AsSpan();
+        var columns = _columns.AsSpan();
 
-        _columnsFraction = 0;
-        for (var i = 0; i < Columns.Length; i++)
-        {
-            _columnsFraction = Columns[i].Fraction;
-        }
+        _rowValues = new float[rows.Length];
+        _columnValues = new float[columns.Length];
+        _markers = new bool[rows.Length, columns.Length];
 
-        _columnsFenceGap = (Rows.Length - 1) * Gap.Width;
-        _rowsFenceGap = (Rows.Length - 1) * Gap.Height;
+        var rowValues = _rowValues.AsSpan();
+        var columnValues = _columnValues.AsSpan();
 
-        Marks = new bool[Rows.Length, Columns.Length];
+        // 更新 fr 和 gap 行和列的总和
+        #region update fr and gap
+
+        _rowsFraction = _rows.Where(row => row.TemplateType is TemplateType.Fraction).Sum(row => row.Value);
+        _columnsFraction =
+            _columns.Where(column => column.TemplateType is TemplateType.Fraction).Sum(column => column.Value);
+
+        _columnsFenceGap = (rows.Length - 1) * Gap.Width;
+        _rowsFenceGap = (rows.Length - 1) * Gap.Height;
+
+        #endregion
 
         var availableSize = Parent.InnerBounds;
 
+        // 初始化行和列的值
+        // 自适应的时候只计算 pixels 行列的值
+        // 固定大小时计算 percent + pixels 行列的值
+        // fr 和 auto 行列值在 prepareChildren 之后计算
+        #region row and column values
+
         if (FitWidth)
         {
-            for (var i = 0; i < Columns.Length; i++) Columns[i].Value = Columns[i].Pixels;
+            for (var i = 0; i < columns.Length; i++)
+            {
+                columnValues[i] = columns[i].TemplateType switch
+                {
+                    TemplateType.Pixels => columns[i].Value,
+                    { } => 0f
+                };
+            }
         }
         else
         {
-            var remaining = availableSize.Width - _columnsFenceGap;
-
-            for (var i = 0; i < Columns.Length; i++)
+            for (var i = 0; i < columns.Length; i++)
             {
-                Columns[i].Recalculate(availableSize.Width);
-                remaining -= Columns[i].Pixels;
-            }
-
-            if (remaining > 0)
-            {
-                var share = remaining / Columns.Length;
-                for (var i = 0; i < Columns.Length; i++)
+                columnValues[i] = columns[i].TemplateType switch
                 {
-                    Columns[i].Value += share;
-                }
+                    TemplateType.Percent => columns[i].Value * availableSize.Width,
+                    TemplateType.Pixels => columns[i].Value,
+                    { } => 0f
+                };
             }
         }
 
         if (FitHeight)
         {
-            for (var i = 0; i < Rows.Length; i++) Rows[i].Value = Rows[i].Pixels;
+            for (var i = 0; i < rows.Length; i++)
+            {
+                rowValues[i] = rows[i].TemplateType switch
+                {
+                    TemplateType.Pixels => rows[i].Value,
+                    { } => 0f
+                };
+            }
         }
         else
         {
-            var remaining = availableSize.Height - _rowsFenceGap;
-
-            for (var i = 0; i < Rows.Length; i++)
+            for (var i = 0; i < rows.Length; i++)
             {
-                Rows[i].Recalculate(availableSize.Height);
-                remaining -= Rows[i].Pixels;
-            }
-
-            if (remaining > 0)
-            {
-                var share = remaining / Rows.Length;
-                for (var i = 0; i < Rows.Length; i++)
+                rowValues[i] = rows[i].TemplateType switch
                 {
-                    Rows[i].Value += share;
-                }
+                    TemplateType.Percent => rows[i].Value * availableSize.Width,
+                    TemplateType.Pixels => rows[i].Value,
+                    { } => 0f
+                };
             }
         }
 
-        if (Rows.Length > 1) _rowsFenceGap = (Rows.Length - 1) * Gap.Height;
-        if (Columns.Length > 1) _columnsFenceGap = (Columns.Length - 1) * Gap.Width;
+        #endregion
+
+        // 计算间隔
+        _rowsFenceGap = rows.Length > 0 ? (rows.Length - 1) * Gap.Height : 0f;
+        _columnsFenceGap = columns.Length > 0 ? (columns.Length - 1) * Gap.Width : 0f;
     }
 
     private void UpdateLocking(int rowStart, int rowEnd, int columnStart, int columnEnd)
@@ -95,14 +129,14 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
         columnStart--;
         if (rowStart < 0) rowStart = 0;
         if (columnStart < 0) columnStart = 0;
-        if (rowEnd > Columns.Length) rowEnd = Columns.Length;
-        if (columnEnd > Columns.Length) columnEnd = Columns.Length;
+        if (rowEnd > _columns.Length) rowEnd = _columns.Length;
+        if (columnEnd > _columns.Length) columnEnd = _columns.Length;
 
         for (var i = rowStart; i < rowEnd; i++)
         {
             for (var j = columnStart; j < columnEnd; j++)
             {
-                Marks[i, j] = true;
+                _markers[i, j] = true;
             }
         }
     }
@@ -111,12 +145,12 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
     {
         start--;
         if (start < 0) start = 0;
-        if (end > Columns.Length) end = Columns.Length;
+        if (end > _columns.Length) end = _columns.Length;
 
         var width = 0f;
         for (var i = start; i < end; i++)
         {
-            width = Columns[i].Value;
+            width = _columns[i].Value;
         }
 
         return width;
@@ -126,21 +160,21 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
     {
         start--;
         if (start < 0) start = 0;
-        if (end > Rows.Length) end = Rows.Length;
+        if (end > _rows.Length) end = _rows.Length;
 
         var height = 0f;
         for (var i = start; i < end; i++)
         {
-            height = Rows[i].Value;
+            height = _rows[i].Value;
         }
 
         return height;
     }
 
-    public sealed override void PostPrepare() { }
+    public sealed override void PreMeasure() { }
 
-    public override void ModifyAvailableSize(UIView view,
-        int index, ref float? availableWidth, ref float? availableHeight)
+    public override void ModifyAvailableSize(UIView view, int index,
+        ref float? availableWidth, ref float? availableHeight)
     {
         if (!view.GridArea) return;
 
@@ -150,27 +184,25 @@ public class GridModule(UIElementGroup parent) : LayoutModule(parent)
     }
 }
 
-public struct TemplateDimensions(bool auto, float pixels, float fraction, float percent)
+public enum TemplateType
 {
-    public readonly bool Auto = auto;
-    public readonly float Fraction = fraction;
-    public readonly float Pixels = pixels;
-    public readonly float Percent = percent;
+    Auto,
+    Fraction,
+    Pixels,
+    Percent
+}
 
-    public float Value { get; set; }
+public readonly struct TemplateDefinition(TemplateType templateType, float value = 0f)
+{
+    public TemplateType TemplateType { get; } = templateType;
+    public float Value { get; } = value;
 
-    public void Recalculate(float availableSize)
+    public static IEnumerable<TemplateDefinition> Repeat(int quantity, TemplateType templateType, float value = 0f)
     {
-        Value = Pixels + availableSize * Percent;
-    }
-
-    public static TemplateDimensions[] Repeat(int quantity, bool auto = false, float pixels = 0f, float fraction = 0f,
-        float percent = 0f)
-    {
-        var units = new TemplateDimensions[quantity];
+        var units = new TemplateDefinition[quantity];
         for (var i = 0; i < units.Length; i++)
         {
-            units[i] = new TemplateDimensions(auto, pixels, fraction, percent);
+            units[i] = new TemplateDefinition(templateType, value);
         }
 
         return units;

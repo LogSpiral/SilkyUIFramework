@@ -71,7 +71,8 @@ public static class BlurHelper
 
         var original = device.GetRenderTargets();
 
-        var renderTargetSwap = RenderTargetPool.Instance.Rent(renderTarget.Width, renderTarget.Height);
+        var renderTargetPool = SilkyUISystem.ServiceProvider.GetRequiredService<RenderTargetPool>();
+        var renderTargetSwap = renderTargetPool.Rent(renderTarget.Width, renderTarget.Height);
 
         ModAsset.BlurEffect.Value.Parameters["uPixelSize"]
             .SetValue(Vector2.One / new Vector2(renderTarget.Width, renderTarget.Height));
@@ -100,7 +101,7 @@ public static class BlurHelper
 
         device.RestoreRenderTargets(original);
 
-        RenderTargetPool.Instance.Return(renderTargetSwap);
+        renderTargetPool.Return(renderTargetSwap);
     }
 
     private static void SelectBlurEffectPasses(BlurMixingNumber blurType, out EffectPass blurX, out EffectPass blurY)

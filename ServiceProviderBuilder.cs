@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿namespace SilkyUIFramework;
 
-namespace SilkyUIFramework.Bootstrap;
-
-internal static class UIDependencyRegistrar
+internal static class ServiceProviderBuilder
 {
     public static IServiceProvider BuildServiceProvider(IEnumerable<Type[]> allTypes)
     {
@@ -16,12 +14,12 @@ internal static class UIDependencyRegistrar
 
             foreach (var type in types.Where(type => type.IsSubclassOf(typeof(BaseBody))))
             {
-                if (type.GetCustomAttribute<RegisterUIAttribute>() != null)
+                if (type.IsDefined(typeof(RegisterUIAttribute)))
                 {
                     Register(services, ServiceLifetime.Transient, type);
                 }
 
-                if (type.GetCustomAttribute<RegisterGlobalUIAttribute>() != null)
+                if (type.IsDefined(typeof(RegisterGlobalUIAttribute)))
                 {
                     Register(services, ServiceLifetime.Singleton, type);
                 }

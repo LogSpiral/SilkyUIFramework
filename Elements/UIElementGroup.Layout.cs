@@ -34,7 +34,7 @@ public partial class UIElementGroup
     public void SetGap(float gap) => Gap = gap;
     public void SetGap(float width, float height) => Gap = Gap.With(width, height);
 
-    private readonly FlexboxModule FlexboxModule;
+    private readonly Layout.FlexboxModule FlexboxModule;
     private readonly GridModule GridModule;
 
     public LayoutModule LayoutModule
@@ -59,53 +59,39 @@ public partial class UIElementGroup
 
     #endregion
 
-    public override void Prepare(float? width, float? height)
+    public override void PreMeasure(float? width, float? height)
     {
-        base.Prepare(width, height);
+        base.PreMeasure(width, height);
 
-        PrepareChildren();
+        PreMeasureChildren();
 
         if (LayoutElements.Count <= 0) return;
-        LayoutModule?.PostPrepare();
+        LayoutModule?.PreMeasure();
     }
 
-    public virtual void PrepareChildren()
+    /// <summary>
+    /// 预测量子元素宽高
+    /// </summary>
+    public virtual void PreMeasureChildren()
     {
         ClassifyChildren();
         if (LayoutElements.Count <= 0) return;
 
+        // 有子元素时，后续需要布局计算，所以同步缓存
         LayoutModule?.UpdateCacheStatus();
 
         float? availableWidth = FitWidth ? null : InnerBounds.Width;
         float? availableHeight = FitHeight ? null : InnerBounds.Height;
+
         for (var i = 0; i < LayoutElements.Count; i++)
         {
             var cacheWidth = availableWidth;
             var cacheHeight = availableHeight;
-            LayoutModule.ModifyAvailableSize(LayoutElements[i], i, ref cacheWidth, ref cacheHeight);
-            LayoutElements[i].Prepare(cacheWidth, cacheHeight);
+            LayoutModule?.ModifyAvailableSize(LayoutElements[i], i, ref cacheWidth, ref cacheHeight);
+            LayoutElements[i].PreMeasure(cacheWidth, cacheHeight);
         }
 
-        LayoutModule?.PostPrepareChildren();
-    }
-
-    public override void RecalculateWidth()
-    {
-        base.RecalculateWidth();
-        RecalculateChildrenWidth();
-
-        LayoutModule?.PostRecalculateWidth();
-    }
-
-    protected virtual void RecalculateChildrenWidth()
-    {
-        if (LayoutElements.Count <= 0) return;
-        for (var i = 0; i < LayoutElements.Count; i++)
-        {
-            LayoutElements[i].RecalculateWidth();
-        }
-
-        LayoutModule?.PostRecalculateChildrenWidth();
+        LayoutModule?.PreMeasureChildren();
     }
 
     /// <summary> 重设宽度 </summary>
@@ -115,13 +101,13 @@ public partial class UIElementGroup
 
         if (!FitWidth)
         {
-            for (var i = 0; i < LayoutElements.Count; i++)
+            foreach (var element in LayoutElements)
             {
-                LayoutElements[i].RefreshWidth(InnerBounds.Width);
+                element.RefreshWidth(InnerBounds.Width);
             }
         }
 
-        LayoutModule?.PostResizeChildrenWidth();
+        LayoutModule?.ResizeChildrenWidth();
 
         foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {
@@ -134,18 +120,18 @@ public partial class UIElementGroup
         base.RecalculateHeight();
         RecalculateChildrenHeight();
 
-        LayoutModule?.PostRecalculateHeight();
+        LayoutModule?.RecalculateHeight();
     }
 
     protected virtual void RecalculateChildrenHeight()
     {
         if (LayoutElements.Count <= 0) return;
-        for (var i = 0; i < LayoutElements.Count; i++)
+        foreach (var element in LayoutElements)
         {
-            LayoutElements[i].RecalculateHeight();
+            element.RecalculateHeight();
         }
 
-        LayoutModule?.PostRecalculateChildrenHeight();
+        LayoutModule?.RecalculateChildrenHeight();
     }
 
     protected virtual void ResizeChildrenHeight()
@@ -155,13 +141,13 @@ public partial class UIElementGroup
 
         if (!FitHeight)
         {
-            for (var i = 0; i < LayoutElements.Count; i++)
+            foreach (var element in LayoutElements)
             {
-                LayoutElements[i].RefreshHeight(innerSize.Height);
+                element.RefreshHeight(innerSize.Height);
             }
         }
 
-        LayoutModule?.PostResizeChildrenHeight();
+        LayoutModule?.ResizeChildrenHeight();
 
         foreach (var item in LayoutElements.OfType<UIElementGroup>())
         {

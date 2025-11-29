@@ -8,7 +8,7 @@ public partial class UIElementGroup : UIView
 {
     public UIElementGroup()
     {
-        FlexboxModule = new FlexboxModule(this);
+        FlexboxModule = new Layout.FlexboxModule(this);
         GridModule = new GridModule(this);
     }
 
@@ -31,8 +31,17 @@ public partial class UIElementGroup : UIView
     }
 
     protected List<UIView> Elements { get; } = [];
+
+    /// <summary>
+    /// 实际用于更新和绘制的元素
+    /// </summary>
     protected List<UIView> ElementsCache { get; } = [];
+
     public IReadOnlyList<UIView> Children => Elements;
+
+    /// <summary>
+    /// 实际用于更新和绘制的元素
+    /// </summary>
     public IReadOnlyList<UIView> ChildrenCache => ElementsCache;
 
     public int IndexOf(UIView view) => Elements.IndexOf(view);
@@ -65,7 +74,7 @@ public partial class UIElementGroup : UIView
     }
 
     /// <summary>
-    /// 尺寸与布局完成后, 清理脏标记 (只会清理 <see cref="LayoutElements"/>)
+    /// 清理脏标记 (只会清理 <see cref="LayoutElements"/>)
     /// </summary>
     public override void CleanupDirtyMark()
     {
@@ -258,7 +267,8 @@ public partial class UIElementGroup : UIView
             (int)Math.Ceiling(rightBottom.X - topLeft.X),
             (int)Math.Ceiling(rightBottom.Y - topLeft.Y));
 
-        var device = spriteBatch.GraphicsDevice; var viewport = device.Viewport;
+        var device = spriteBatch.GraphicsDevice;
+        var viewport = device.Viewport;
         var scissorRectangle = device.ScissorRectangle;
         scissorRectangle.X -= viewport.X;
         scissorRectangle.Y -= viewport.Y;
@@ -277,19 +287,23 @@ public partial class UIElementGroup : UIView
 
             if (IndependentRenderTarget && scissorRectangle.Width > 0 && scissorRectangle.Height > 0)
             {
-                var renderTarget = RenderTargetPool.Instance.Rent(scissorRectangle.Width, scissorRectangle.Height);
+                var renderTargetPool = SilkyUISystem.ServiceProvider.GetRequiredService<RenderTargetPool>();
+                var renderTarget = renderTargetPool.Rent(scissorRectangle.Width, scissorRectangle.Height);
 
                 RuntimeSafeHelper.SafeInvoke(() =>
                 {
                     var binding = device.GetRenderTargets();
                     var viewport = device.Viewport;
 
-                    device.SetRenderTarget(renderTarget); device.Clear(Color.Transparent);
+                    device.SetRenderTarget(renderTarget);
+                    device.Clear(Color.Transparent);
 
-                    device.Viewport = device.Viewport.WithXy(-scissorRectangle.X, -scissorRectangle.Y).IncreaseSize(scissorRectangle.X, scissorRectangle.Y);
+                    device.Viewport = device.Viewport.WithXy(-scissorRectangle.X, -scissorRectangle.Y)
+                        .IncreaseSize(scissorRectangle.X, scissorRectangle.Y);
                     device.ScissorRectangle = new Rectangle(0, 0, scissorRectangle.Width, scissorRectangle.Height);
 
-                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null,
+                        SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
 
                     foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(InnerBounds)))
                     {
@@ -303,16 +317,18 @@ public partial class UIElementGroup : UIView
                     device.ScissorRectangle = originalScissor;
 
                     DrawRenderTarget(spriteBatch, renderTarget, scissorRectangle.Position);
-                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+                    spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null,
+                        SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
                 });
 
-                RenderTargetPool.Instance.Return(renderTarget);
+                renderTargetPool.Return(renderTarget);
 
                 return;
             }
 
             device.ScissorRectangle = scissorRectangle;
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null,
+                SilkyUI.TransformMatrix);
 
             foreach (var child in ElementsInOrder.Where(el => el.OuterBounds.Intersects(InnerBounds)))
             {
@@ -322,7 +338,8 @@ public partial class UIElementGroup : UIView
             spriteBatch.End();
 
             device.ScissorRectangle = originalScissor;
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null, SilkyUI.TransformMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, SilkyUI.RasterizerStateForOverflowHidden, null,
+                SilkyUI.TransformMatrix);
 
             return;
         }
@@ -348,6 +365,12 @@ public partial class UIElementGroup : UIView
     public IReadOnlyList<UIView> FreeChildren => FreeElements;
     public IReadOnlyList<UIView> LayoutChildren => LayoutElements;
 
+    /// <summary>
+    /// 分类子元素, 在 <see cref="PreMeasureChildren"/> 首行调用 <br/>
+    /// 实际用于更新和绘制的元素存于 <see cref="ElementsCache"/><br/>
+    /// 用于布局的元素存于 <see cref="LayoutChildren"/>
+    /// 自由元素 (不受布局控制) 存于 <see cref="FreeChildren"/>
+    /// </summary>
     protected virtual void ClassifyChildren()
     {
         ElementsCache.Clear();

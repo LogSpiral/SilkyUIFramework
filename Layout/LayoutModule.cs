@@ -10,6 +10,9 @@ public abstract class LayoutModule(UIElementGroup parent)
     protected Size Gap;
     protected bool FitWidth, FitHeight;
 
+    /// <summary>
+    /// 更新缓存状态, 将父元素中布局计算相关值复制到本类 (能避免一次寻址 (管他有没有用，就这么搞了))
+    /// </summary>
     public virtual void UpdateCacheStatus()
     {
         Gap = Parent.Gap;
@@ -18,25 +21,26 @@ public abstract class LayoutModule(UIElementGroup parent)
     }
 
     /// <summary>
-    /// 通常在 FitWidth 或者 FitHeight 有效时，主动设定元素大小
+    /// 通常在 FitWidth 或 FitHeight 有为 true 时，直接设定元素大小
     /// </summary>
-    public virtual void PostPrepare() { }
+    public virtual void PreMeasure() { }
 
-    public virtual void ModifyAvailableSize(UIView view, int index, ref float? availableWidth,
-        ref float? availableHeight)
+    /// <summary>
+    /// 修改子元素可用空间, 初始分配时调用
+    /// </summary>
+    public virtual void ModifyAvailableSize(UIView view, int index,
+        ref float? availableWidth, ref float? availableHeight)
     { }
 
     /// <summary>
-    /// 通常用于统计子元素的一些信息
+    /// 通常用于统计一些子元素的信息<br/>
+    /// 在 <see cref="PreMeasure"/> 之前调用
     /// </summary>
-    public virtual void PostPrepareChildren() { }
-
-    public virtual void PostRecalculateWidth() { }
-    public virtual void PostRecalculateChildrenWidth() { }
-    public virtual void PostResizeChildrenWidth() { }
-    public virtual void PostRecalculateHeight() { }
-    public virtual void PostRecalculateChildrenHeight() { }
-    public virtual void PostResizeChildrenHeight() { }
+    public virtual void PreMeasureChildren() { }
+    public virtual void ResizeChildrenWidth() { }
+    public virtual void RecalculateHeight() { }
+    public virtual void RecalculateChildrenHeight() { }
+    public virtual void ResizeChildrenHeight() { }
     public virtual void ModifyLayoutOffset() { }
 
     #region SetBounds Methods
@@ -44,33 +48,33 @@ public abstract class LayoutModule(UIElementGroup parent)
     /// <summary>
     /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Width
     /// </summary>
-    protected static void SetInnerWidth(UIView target, float width)
+    protected static void SetInnerWidthClamped(UIView target, float width)
     {
-        target.SetInnerBoundsWidth(MathHelper.Clamp(width, target.MinInnerWidth, target.MaxInnerWidth));
+        target.SetInnerBoundsWidthRaw(MathHelper.Clamp(width, target.MinInnerWidth, target.MaxInnerWidth));
     }
 
     /// <summary>
     /// 通常用于 OnPrepare 阶段直接设置 OuterBounds.Height
     /// </summary>
-    protected static void SetInnerHeight(UIView target, float height)
+    protected static void SetInnerHeightClamped(UIView target, float height)
     {
-        target.SetInnerBoundsHeight(MathHelper.Clamp(height, target.MinInnerHeight, target.MaxInnerHeight));
+        target.SetInnerBoundsHeightRaw(MathHelper.Clamp(height, target.MinInnerHeight, target.MaxInnerHeight));
     }
 
     /// <summary>
     /// 通常用于 OnResizeChildrenWidth 阶段直接设置 OuterBounds.Width
     /// </summary>
-    protected static void SetOuterWidth(UIView target, float width)
+    protected static void SetOuterWidthClamped(UIView target, float width)
     {
-        target.SetOuterBoundsWidth(MathHelper.Clamp(width, target.MinOuterWidth, target.MaxOuterWidth));
+        target.SetOuterBoundsWidthRaw(MathHelper.Clamp(width, target.MinOuterWidth, target.MaxOuterWidth));
     }
 
     /// <summary>
     /// 通常用于 OnResizeChildrenHeight 阶段直接设置 OuterBounds.Height
     /// </summary>
-    protected static void SetOuterHeight(UIView target, float height)
+    protected static void SetOuterHeightClamped(UIView target, float height)
     {
-        target.SetOuterBoundsHeight(MathHelper.Clamp(height, target.MinOuterHeight, target.MaxOuterHeight));
+        target.SetOuterBoundsHeightRaw(MathHelper.Clamp(height, target.MinOuterHeight, target.MaxOuterHeight));
     }
 
     #endregion

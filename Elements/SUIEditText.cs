@@ -122,25 +122,24 @@ public class SUIEditText : UITextView
 
     public override void HandlePlayerInput(bool inputMethodStatus)
     {
-        if (Main.dedServ) return; // 服务器
         if (!Main.hasFocus) return; // 焦点不在游戏
 
         // 不能再获取了
         Main.oldInputText = Main.inputText;
-        Main.inputText = Keyboard.GetState();
+        var keyboardState = Main.inputText = Keyboard.GetState();
 
         var inputString = string.Empty;
         // 裁剪，复制，粘贴
-        if (Main.inputText.IsControlKeyDown())
+        if (keyboardState.IsControlKeyDown())
         {
             if (Keys.X.JustPressed())
             {
-                EditTextHelper.SetClipboard(Text);
+                KeyboardInputHelper.SetClipboard(Text);
                 Text = "";
             }
             else if (Keys.C.JustPressed())
             {
-                EditTextHelper.SetClipboard(Text);
+                KeyboardInputHelper.SetClipboard(Text);
             }
             else if (Keys.V.JustPressed())
             {
@@ -149,12 +148,13 @@ public class SUIEditText : UITextView
         }
         else
         {
-            inputString = EditTextHelper.GetPlayerInput();
+            inputString = KeyboardInputHelper.GetPlayerInput();
         }
 
-        if (EditTextHelper.CanLineBreak())
-            inputString += "\n";
-        else if (Main.inputText.IsKeyDown(Keys.Enter))
+        var lineBreak = Keys.Enter.JustPressed() && keyboardState.IsShiftKeyDown();
+
+        if (lineBreak) inputString += "\n";
+        else if (keyboardState.IsKeyDown(Keys.Enter))
             inputString = string.Empty;
 
         if (inputMethodStatus)
@@ -163,7 +163,7 @@ public class SUIEditText : UITextView
         }
         else
         {
-            if (Main.inputText.IsKeyDown(Keys.Back) && !Main.oldInputText.IsKeyDown(Keys.Back))
+            if (keyboardState.IsKeyDown(Keys.Back) && !Main.oldInputText.IsKeyDown(Keys.Back))
                 DownBackspace();
             LongPressBackSpace();
         }
@@ -172,7 +172,7 @@ public class SUIEditText : UITextView
 
         UpdateCursorMovement(); // 移动光标靠后点，总不会同一帧就想移动并把文本输入到移动后的地方吧？
 
-        if (!Keys.Enter.JustPressed() || EditTextHelper.CanLineBreak()) return;
+        if (!Keys.Enter.JustPressed() || lineBreak) return;
 
         OnEnterKeyDown?.Invoke();
     }
